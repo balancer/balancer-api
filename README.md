@@ -89,10 +89,10 @@ your API Gateway URL, all endpoints below should be appended to this. Run `expor
 
 ## API Endpoints
 
-`/pools/update/` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
-`/pools/` - Returns a JSON array of all Balancer pools
-`/pools/{id}` - Returns JSON information about a pool of a specific `id`.
-`/sor/` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
+- `/pools/update/` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
+- `/pools/` - Returns a JSON array of all Balancer pools
+- `/pools/{id}` - Returns JSON information about a pool of a specific `id`.
+- `/sor/` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
 
 ### Pools Update Lambda
 

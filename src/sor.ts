@@ -19,10 +19,9 @@ const provider: any = new JsonRpcProvider(nodeUrl);
 
 const log = console.log;
 
-export async function fetchPoolsFromChain(): Promise<SubgraphPoolBase[]> {
+export async function fetchPoolsFromChain(chainId): Promise<SubgraphPoolBase[]> {
   const nodeUrl = `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
   const poolsSource = 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2';
-  const chainId = Network.MAINNET;
 
   const provider: any = new JsonRpcProvider(nodeUrl);
 

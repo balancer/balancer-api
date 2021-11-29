@@ -5,8 +5,9 @@ const AWS = require("aws-sdk");
 const log = console.log;
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-export async function updatePools(pools) {
+export async function updatePools(chainId, pools) {
   return Promise.all(pools.map(function(pool) {
+    pool.chainId = parseInt(chainId);
     const params = {
         TableName: "pools",
         Item: pool
@@ -20,9 +21,16 @@ export async function updatePools(pools) {
   }));
 }
 
-export async function getPools() {
+export async function getPools(chainId: number) {
+  const params = {
+    TableName: 'pools',
+    KeyConditionExpression: 'chainId = :chainId',
+    ExpressionAttributeValues: {
+        ':chainId': chainId
+    },
+  }
   try {
-    const pools = await docClient.scan({TableName: 'pools'}).promise()
+    const pools = await docClient.query(params).promise()
     return pools.Items;
   } catch (e) {
       console.error("Failed to get pools, error is: ", e)
@@ -30,11 +38,12 @@ export async function getPools() {
   }
 }
 
-export async function getPool(id: string) {
+export async function getPool(chainId: number, id: string) {
   const params = {
     TableName: 'pools',
     Key: {
-      'id': id
+      'id': id,
+      'chainId': chainId
     }
   };
 
@@ -78,9 +87,11 @@ export async function createPoolsTable() {
     TableName : "pools",
     KeySchema: [       
         { AttributeName: "id", KeyType: "HASH"},  //Partition key
+        { AttributeName: "chainId", KeyType: "RANGE"},  //Partition key
     ],
     AttributeDefinitions: [       
         { AttributeName: "id", AttributeType: "S" },
+        { AttributeName: "chainId", AttributeType: "N" },
     ],
     ProvisionedThroughput: {       
         ReadCapacityUnits: 100, 

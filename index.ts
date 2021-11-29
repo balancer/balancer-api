@@ -17,6 +17,10 @@ export class BalancerPoolsAPI extends Stack {
         name: 'id',
         type: AttributeType.STRING
       },
+      sortKey: {
+        name: 'chainId',
+        type: AttributeType.NUMBER
+      },
       tableName: 'pools',
       removalPolicy: RemovalPolicy.DESTROY,
       readCapacity: 100,

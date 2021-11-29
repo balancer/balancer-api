@@ -9,10 +9,11 @@ import {
 } from "./utils";
 import { getPools } from "./dynamodb";
 
-const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
+const { INFURA_PROJECT_ID, MAX_POOLS } = process.env;
+
 const nodeUrl = `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
 const chainId = Network.MAINNET;
-let maxPools: number = 4;
+const maxPools = MAX_POOLS ? parseInt(MAX_POOLS) : 4;
 
 const provider: any = new JsonRpcProvider(nodeUrl);
 

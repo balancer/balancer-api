@@ -7,7 +7,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 export async function updatePools(pools) {
   return Promise.all(pools.map(function(pool) {
-    var params = {
+    const params = {
         TableName: "pools",
         Item: pool
     };
@@ -110,7 +110,7 @@ export async function createTokensTable() {
 }
 
 export async function createTable(params) {
-  var dynamodb = new AWS.DynamoDB();
+  const dynamodb = new AWS.DynamoDB();
   await dynamodb.createTable(params, function(err, data) {
     if (err) {
         console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));

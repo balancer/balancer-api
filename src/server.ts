@@ -11,12 +11,12 @@ const { PORT } = process.env;
 const port = PORT || 8890;
 const app = express();
 
-app.get("/pools/", async (req, res, next) => {
+app.get("/pools/", async (req, res) => {
   const pools = await getPools() ;
   res.json(pools);
 });
 
-app.get("/pools/:id", async (req, res, next) => {
+app.get("/pools/:id", async (req, res) => {
   const poolId = req.params['id'];
   log(`Retrieving pool of id ${poolId}`);
   const pools = await getPool(poolId);

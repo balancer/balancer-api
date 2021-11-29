@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
-import { SwapTypes } from "@balancer-labs/sor2";
+import { SwapTypes } from "@balancer-labs/sor";
 import { getToken, insertToken } from "./dynamodb";
 
 async function getTokenInfo(provider, address: string) {

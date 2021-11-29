@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js";
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { SOR, SwapInfo, SubGraphPoolsBase } from "@balancer-labs/sor2";
+import { SOR, SwapInfo, SubgraphPoolBase } from "@balancer-labs/sor";
 import { Network, Order } from "./types";
 import { 
   getDecimals, 
@@ -18,25 +18,21 @@ const provider: any = new JsonRpcProvider(nodeUrl);
 
 const log = console.log;
 
-export async function fetchPoolsFromChain() {
+export async function fetchPoolsFromChain(): Promise<SubgraphPoolBase[]> {
   const nodeUrl = `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
   const poolsSource = 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2';
   const chainId = Network.MAINNET;
-  const gasPrice = new BigNumber('30000000000');
-  let maxPools: number = 4;
 
   const provider: any = new JsonRpcProvider(nodeUrl);
 
   const sor = new SOR(
     provider,
-    gasPrice,
-    maxPools,
     chainId,
     poolsSource
   );
 
-  await sor.fetchPools(true);  
-  const pools = sor.onChainBalanceCache.pools;
+  await sor.fetchPools();  
+  const pools: SubgraphPoolBase[] = sor.getPools();
   return pools;
 }
 
@@ -44,17 +40,13 @@ export async function getSorSwap(order: Order): Promise<SwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const sorGasPrice = new BigNumber('30000000000');
 
-  const pools = await getPools();
-  const poolsSource: SubGraphPoolsBase = {
-    pools: pools
-  };
+  const pools: SubgraphPoolBase[] = await getPools();
 
   const sor = new SOR(
     provider,
-    sorGasPrice,
-    maxPools,
     chainId,
-    poolsSource
+    null,
+    pools
   );
 
   const { sellToken, buyToken, orderKind, amount } = order;
@@ -64,7 +56,7 @@ export async function getSorSwap(order: Order): Promise<SwapInfo> {
   const swapType = orderKindToSwapType(orderKind);
 
   log(`fetching onChain pool info`)
-  await sor.fetchPools(false);
+  await sor.fetchPools(pools, false);
   log(`Fetched data`);
 
   const amountUnits = new BigNumber(amount).dividedBy(
@@ -85,7 +77,7 @@ export async function getSorSwap(order: Order): Promise<SwapInfo> {
     sellToken,
     buyToken,
     swapType,
-    amountUnits
+    amountUnits.toString()
   );
 
   log(`SwapInfo: ${JSON.stringify(swapInfo)}`);

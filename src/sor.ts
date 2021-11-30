@@ -5,25 +5,21 @@ import { Network, Order } from "./types";
 import { 
   getDecimals, 
   getSymbol, 
-  orderKindToSwapType 
+  orderKindToSwapType,
+  getInfuraUrl,
+  getTheGraphURL
 } from "./utils";
 import { getPools } from "./dynamodb";
 
-const { INFURA_PROJECT_ID, MAX_POOLS } = process.env;
+const { INFURA_PROJECT_ID } = process.env;
 
-const nodeUrl = `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
-const chainId = Network.MAINNET;
-const maxPools = MAX_POOLS ? parseInt(MAX_POOLS) : 4;
-
-const provider: any = new JsonRpcProvider(nodeUrl);
 
 const log = console.log;
 
-export async function fetchPoolsFromChain(chainId): Promise<SubgraphPoolBase[]> {
-  const nodeUrl = `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
-  const poolsSource = 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2';
-
-  const provider: any = new JsonRpcProvider(nodeUrl);
+export async function fetchPoolsFromChain(chainId: number): Promise<SubgraphPoolBase[]> {
+  const poolsSource = getTheGraphURL(chainId);
+  const infuraUrl = getInfuraUrl(chainId);
+  const provider: any = new JsonRpcProvider(infuraUrl);
 
   const sor = new SOR(
     provider,
@@ -36,11 +32,11 @@ export async function fetchPoolsFromChain(chainId): Promise<SubgraphPoolBase[]> 
   return pools;
 }
 
-export async function getSorSwap(order: Order): Promise<SwapInfo> {
+export async function getSorSwap(chainId: number, order: Order): Promise<SwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
-  const sorGasPrice = new BigNumber('30000000000');
-
-  const pools: SubgraphPoolBase[] = await getPools();
+  const infuraUrl = getInfuraUrl(chainId);
+  const provider: any = new JsonRpcProvider(infuraUrl);
+  const pools: SubgraphPoolBase[] = await getPools(chainId);
 
   const sor = new SOR(
     provider,
@@ -61,17 +57,17 @@ export async function getSorSwap(order: Order): Promise<SwapInfo> {
 
   const amountUnits = new BigNumber(amount).dividedBy(
     new BigNumber(10).pow(
-      await getDecimals(provider, orderKind === "sell" ? sellToken : buyToken)
+      await getDecimals(provider, chainId, orderKind === "sell" ? sellToken : buyToken)
     )
   );
 
   log(
-    `${orderKind}ing ${amountUnits} ${await getSymbol(provider, sellToken)}` +
-      ` for ${await getSymbol(provider, buyToken)}`
+    `${orderKind}ing ${amountUnits} ${await getSymbol(provider, chainId, sellToken)}` +
+      ` for ${await getSymbol(provider, chainId, buyToken)}`
   );
   log(orderKind);
   log(`Token In: ${tokenIn}`);
-  log(`Token In: ${tokenOut}`);
+  log(`Token Out: ${tokenOut}`);
   log(`Amount: ${amountUnits.toString()}`);
   const swapInfo = await sor.getSwaps(
     sellToken,

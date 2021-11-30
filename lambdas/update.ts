@@ -9,7 +9,7 @@ export const handler = async (event: any = {}): Promise<any> => {
 
   if (event.body) {
     const eventBody = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
-    chainId = eventBody.chainId || Network.MAINNET;
+    chainId = eventBody.chainId ? Number(eventBody.chainId) : Network.MAINNET;
     if (!Object.values(Network).includes(chainId)) {
       return { statusCode: 400, body: 'Invalid ChainID'}
     }

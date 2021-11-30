@@ -3,11 +3,11 @@
 const AWS = require("aws-sdk");
 
 const log = console.log;
-const docClient = new AWS.DynamoDB.DocumentClient();
 
-export async function updatePools(chainId, pools) {
+export async function updatePools(chainId: number, pools) {
+  const docClient = new AWS.DynamoDB.DocumentClient();
   return Promise.all(pools.map(function(pool) {
-    pool.chainId = parseInt(chainId);
+    pool.chainId = chainId;
     const params = {
         TableName: "pools",
         Item: pool
@@ -22,15 +22,16 @@ export async function updatePools(chainId, pools) {
 }
 
 export async function getPools(chainId: number) {
+  const docClient = new AWS.DynamoDB.DocumentClient();
   const params = {
     TableName: 'pools',
-    KeyConditionExpression: 'chainId = :chainId',
+    FilterExpression: 'chainId = :chainId',
     ExpressionAttributeValues: {
         ':chainId': chainId
     },
   }
   try {
-    const pools = await docClient.query(params).promise()
+    const pools = await docClient.scan(params).promise()
     return pools.Items;
   } catch (e) {
       console.error("Failed to get pools, error is: ", e)
@@ -39,12 +40,10 @@ export async function getPools(chainId: number) {
 }
 
 export async function getPool(chainId: number, id: string) {
+  const docClient = new AWS.DynamoDB.DocumentClient();
   const params = {
     TableName: 'pools',
-    Key: {
-      'id': id,
-      'chainId': chainId
-    }
+    Key: { id, chainId }
   };
 
   try {
@@ -55,10 +54,11 @@ export async function getPool(chainId: number, id: string) {
   }
 }
 
-export async function getToken(address: string) {
+export async function getToken(chainId: number, address: string) {
+  const docClient = new AWS.DynamoDB.DocumentClient();
   const params = {
     TableName: "tokens",
-    Key: { address }
+    Key: { chainId, address }
   }
 
   try {
@@ -70,15 +70,16 @@ export async function getToken(address: string) {
 }
 
 export async function insertToken(tokenInfo) {
+  const docClient = new AWS.DynamoDB.DocumentClient();
   const params = {
     TableName: "tokens",
     Item: tokenInfo
-  }
+  };
 
   try {
-    await docClient.put(params).promise()
-  } catch (e) {
-    console.error("Failed to inser token, error is: ", e);
+    await docClient.put(params).promise();
+  } catch (err) {
+    log(`Unable to add token. Error JSON: ${JSON.stringify(err, null, 2)}`);
   }
 }
 
@@ -86,8 +87,8 @@ export async function createPoolsTable() {
   const params = {
     TableName : "pools",
     KeySchema: [       
-        { AttributeName: "id", KeyType: "HASH"},  //Partition key
-        { AttributeName: "chainId", KeyType: "RANGE"},  //Partition key
+        { AttributeName: "id", KeyType: "HASH"},
+        { AttributeName: "chainId", KeyType: "RANGE"},
     ],
     AttributeDefinitions: [       
         { AttributeName: "id", AttributeType: "S" },
@@ -106,10 +107,12 @@ export async function createTokensTable() {
   const params = {
     TableName : "tokens",
     KeySchema: [       
-        { AttributeName: "address", KeyType: "HASH"},  //Partition key
+        { AttributeName: "address", KeyType: "HASH"},
+        { AttributeName: "chainId", KeyType: "RANGE"},
     ],
     AttributeDefinitions: [       
         { AttributeName: "address", AttributeType: "S" },
+        { AttributeName: "chainId", AttributeType: "N" },
     ],
     ProvisionedThroughput: {       
         ReadCapacityUnits: 10, 
@@ -122,11 +125,11 @@ export async function createTokensTable() {
 
 export async function createTable(params) {
   const dynamodb = new AWS.DynamoDB();
-  await dynamodb.createTable(params, function(err, data) {
-    if (err) {
-        console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
-    } else {
-        console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
-    }
-  });
+  console.log("Creating table with params: ", params);
+  try {
+    await dynamodb.createTable(params).promise();
+  } catch (err) {
+    console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
+  }
+  console.log("Created table.");
 }

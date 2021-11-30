@@ -2,56 +2,98 @@ import { ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
 import { SwapTypes } from "@balancer-labs/sor";
 import { getToken, insertToken } from "./dynamodb";
+import { Network } from "./types";
 
-async function getTokenInfo(provider, address: string) {
-    const tokenAddress = ethers.utils.getAddress(address);
-    const cachedInfo = await getToken(tokenAddress);
-    if (cachedInfo !== undefined) {
-        return cachedInfo;
-    }
+const { INFURA_PROJECT_ID } = process.env;
 
-    const contract = new Contract(
-        tokenAddress,
-        [
-            "function symbol() view returns (string)",
-            "function decimals() view returns (uint8)",
-        ],
-        provider
-    );
-    const info = await Promise.all([
-        contract
-            .symbol()
-            .catch(
-                () => `${tokenAddress.substr(0, 4)}..${tokenAddress.substr(40)}`
-            ),
-        contract.decimals().then((d) => ethers.BigNumber.from(d).toNumber()),
-    ]);
-    const tokenInfo = {
-        address: tokenAddress,
-        symbol: info[0],
-        decimals: info[1]
-    }
-    await insertToken(tokenInfo);
-
-    return tokenInfo;
+export const localAWSConfig = {
+  accessKeyId: 'not-important',
+  secretAccessKey: 'not-important',  
+  region: 'local',
+  endpoint: 'http://localhost:8000'
 }
 
-export async function getSymbol(provider, tokenAddress) {
-    const tokenInfo = await getTokenInfo(provider, tokenAddress);
-    return tokenInfo.symbol;
+async function getTokenInfo(provider, chainId: number, address: string) {
+  const tokenAddress = ethers.utils.getAddress(address);
+  const cachedInfo = await getToken(chainId, tokenAddress);
+  if (cachedInfo !== undefined) {
+    return cachedInfo;
+  }
+
+  const contract = new Contract(
+    tokenAddress,
+    [
+      "function symbol() view returns (string)",
+      "function decimals() view returns (uint8)",
+    ],
+    provider
+  );
+  const info = await Promise.all([
+    contract
+      .symbol()
+      .catch(
+          () => `${tokenAddress.substr(0, 4)}..${tokenAddress.substr(40)}`
+      ),
+    contract.decimals().then((d) => ethers.BigNumber.from(d).toNumber()),
+  ]);
+  const tokenInfo = {
+    chainId,
+    address: tokenAddress,
+    symbol: info[0],
+    decimals: info[1]
+  }
+  console.log("Inserting token info: ", tokenInfo);
+  await insertToken(tokenInfo);
+
+  return tokenInfo;
 }
-export async function getDecimals(provider, tokenAddress) {
-    const tokenInfo = await getTokenInfo(provider, tokenAddress);
-    return tokenInfo.decimals;
+
+export async function getSymbol(provider, chainId: number, tokenAddress: string) {
+  const tokenInfo = await getTokenInfo(provider, chainId, tokenAddress);
+  return tokenInfo.symbol;
+}
+export async function getDecimals(provider, chainId: number, tokenAddress: string) {
+  const tokenInfo = await getTokenInfo(provider, chainId, tokenAddress);
+  return tokenInfo.decimals;
 }
 
 export function orderKindToSwapType(orderKind: string): SwapTypes {
-    switch (orderKind) {
-        case "sell":
-            return SwapTypes.SwapExactIn;
-        case "buy":
-            return SwapTypes.SwapExactOut;
-        default:
-            throw new Error(`invalid order kind ${orderKind}`);
-    }
+  switch (orderKind) {
+    case "sell":
+      return SwapTypes.SwapExactIn;
+    case "buy":
+      return SwapTypes.SwapExactOut;
+    default:
+      throw new Error(`invalid order kind ${orderKind}`);
+  }
 }
+
+export function getInfuraUrl(chainId: number): string {
+  switch (chainId) {
+    case Network.KOVAN:
+      return `https://kovan.infura.io/v3/${INFURA_PROJECT_ID}`;
+    case Network.POLYGON:
+      return `https://polygon-mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
+    case Network.ARBITRUM:
+      return `https://arbitrum-mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
+    case Network.MAINNET:
+    default:
+      return `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
+  }
+}
+
+export function getTheGraphURL(chainId: number): string {
+  switch (chainId) {
+    case Network.KOVAN:
+      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-kovan-v2';
+    case Network.POLYGON:
+      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2';
+    case Network.ARBITRUM:
+      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2'
+    case Network.MAINNET:
+    default:
+      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2';
+  }
+  
+}
+

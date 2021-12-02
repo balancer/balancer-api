@@ -1,15 +1,26 @@
+import { Network } from "types";
 import { updatePools } from "../src/dynamodb";
 import { fetchPoolsFromChain } from "../src/sor";
 
-export const handler = async (): Promise<any> => {
+export const handler = async (event: any = {}): Promise<any> => {
   const log = console.log;
 
-  log(`Fetching pools from chain`)
-  const pools = await fetchPoolsFromChain();
+  let chainId = Network.MAINNET;
+
+  if (event.body) {
+    const eventBody = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
+    chainId = eventBody.chainId ? Number(eventBody.chainId) : Network.MAINNET;
+    if (!Object.values(Network).includes(chainId)) {
+      return { statusCode: 400, body: 'Invalid ChainID'}
+    }
+  }
+
+  log(`Fetching pools from chain ${chainId}`)
+  const pools = await fetchPoolsFromChain(chainId);
 
   try {
     log(`Updating Pools`)
-    await updatePools(pools);
+    await updatePools(chainId, pools);
     log(`Saved pools`);
     return { statusCode: 201, body: '' };
   } catch (dbError) {

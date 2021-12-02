@@ -8,6 +8,7 @@
     "lint": "eslint . --ext .ts",
     "build": "tsc",
     "watch": "tsc -w",
+    "dynamodb": "docker-compose up -d",
     "init": "node dist/init.js",
     "start": "node dist/server.js",
     "worker": "node dist/worker.js",

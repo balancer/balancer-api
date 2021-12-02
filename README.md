@@ -13,8 +13,6 @@ It has the following components:
 - A Lambda that fetches the latest data from the graph / infura and updates the database.
 - An API Gateway server and set of lambdas that handle user requests.
 
-Currently only pools for Ethereum Mainnet are retrieved/queriable. More networks will be added soon.
-
 ## Disclaimers
 
 This software is in Alpha and may have breaking changes at any time. There is little security implemented on the Lambda functions
@@ -24,7 +22,7 @@ so anyone can call them.
 
 - NodeJS 14.X (others may work, not tested yet)
 - An Infura Account (for retrieving pool information, this is free to create)
-- Docker (for local development)
+- Docker + Docker Compose (for local development)
 - An AWS Account (for AWS development)
 
 ## Usage
@@ -47,10 +45,13 @@ This runs a local DynamoDB in a docker container, a worker process that polls fo
 
 ```sh
 # Run a local DynamoDB Database
-docker-compose up -d
+npm run dynamodb
 
 # Create Tables
 npm run init
+
+# NOTE: If the init command hangs, you may need to fix permissions on your dynamodb data folder. You can do this with:
+sudo chown -R $(whoami):docker ./docker
 
 # Run Worker 
 npm run worker
@@ -59,7 +60,7 @@ npm run worker
 npm start
 ```
 
-The API server runs on port 8890, you can run queries against the endpoint `http://localhost:8890/`
+The API server runs on port 8090, you can run queries against the endpoint `http://localhost:8090/`
 
 ### AWS Development
 
@@ -89,10 +90,12 @@ your API Gateway URL, all endpoints below should be appended to this. Run `expor
 
 ## API Endpoints
 
-- `/pools/update/` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
-- `/pools/` - Returns a JSON array of all Balancer pools
-- `/pools/{id}` - Returns JSON information about a pool of a specific `id`.
-- `/sor/` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
+The `{chainId}` in each endpoint is the chain/network number you wish to request from. 1 for Mainnet, 137 for Polygon, 42161 for Arbitrum etc.
+
+- `/pools/update/{chainId}` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
+- `/pools/{chainId}` - Returns a JSON array of all Balancer pools of that chain
+- `/pools/{chainId}/{id}` - Returns JSON information about a pool of a specific `id`.
+- `/sor/{chainId}` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
 
 ### Pools Update Lambda
 
@@ -102,7 +105,7 @@ this endpoint that runs with every new Ethereum block, or whenever a transaction
 Example worker update
 
 ```sh
-curl -X POST $ENDPOINT_URL/pools/update
+curl -X POST $ENDPOINT_URL/pools/update/1
 ```
 
 On success this will return a 201 code and no other data. 
@@ -112,13 +115,13 @@ On success this will return a 201 code and no other data.
 Retrieve JSON array of all pools
 
 ```sh
-curl $ENDPOINT_URL/pools/
+curl $ENDPOINT_URL/pools/1
 ```
 
 Retrieve JSON object describing a single pool
 
 ```sh
-curl $ENDPOINT_URL/pools/0x5aa90c7362ea46b3cbfbd7f01ea5ca69c98fef1c000200000000000000000020
+curl $ENDPOINT_URL/pools/1/0x5aa90c7362ea46b3cbfbd7f01ea5ca69c98fef1c000200000000000000000020
 ```
 
 ### Smart Order Router Queries
@@ -148,7 +151,7 @@ Order Kind - Set to 'buy' to buy the exact amount of your `buyToken` and sell as
 ```sh
 curl -X POST -H "Content-Type: application/json" \
  -d '{"sellToken":"0xba100000625a3754423978a60c9317c58a424e3d","buyToken":"0x6b175474e89094c44da98b954eedeac495271d0f","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' \
-$ENDPOINT_URL/sor/
+$ENDPOINT_URL/sor/1
 ```
 
 #### Swap USDC for DAI
@@ -156,7 +159,7 @@ $ENDPOINT_URL/sor/
 ```sh
 curl -X POST -H "Content-Type: application/json" \
  -d '{"sellToken":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48","buyToken":"0x6b175474e89094c44da98b954eedeac495271d0f","orderKind":"sell", "amount":"100000", "gasPrice":"10000000"}' \
-$ENDPOINT_URL/sor/
+$ENDPOINT_URL/sor/1
 ```
 
 #### Swap WETH for an exact amount of BAL
@@ -164,5 +167,19 @@ $ENDPOINT_URL/sor/
 ```sh
 curl -X POST -H "Content-Type: application/json" \
  -d '{"sellToken":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","buyToken":"0xba100000625a3754423978a60c9317c58a424e3d","orderKind":"buy", "amount":"1000000000000000000", "gasPrice":"10000000"}' \
-$ENDPOINT_URL/sor/
+$ENDPOINT_URL/sor/1
 ```
+
+#### Swap BAL for DAI on the Polygon network
+
+```sh
+curl -X POST -H "Content-Type: application/json" \
+ -d '{"sellToken":"0x9a71012B13CA4d3D0Cdc72A177DF3ef03b0E76A3","buyToken":"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' \
+$ENDPOINT_URL/sor/137
+```
+
+#### Swap WETH for BAL on the Arbitrum network
+
+```sh
+ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
+ ```

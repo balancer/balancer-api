@@ -1,8 +1,8 @@
-export enum Network {
-    MAINNET = 1,
-    GOERLI = 5,
-    KOVAN = 42,
-    POLYGON = 137,
+export const Network = {
+    MAINNET: 1,
+    KOVAN: 42,
+    POLYGON: 137,
+    ARBITRUM: 42161
 }
 
 export interface Order {

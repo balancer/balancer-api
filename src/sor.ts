@@ -1,18 +1,13 @@
-import BigNumber from "bignumber.js";
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { SOR, SwapInfo, SubgraphPoolBase } from "@balancer-labs/sor";
-import { Network, Order } from "./types";
+import { Order } from "./types";
 import { 
-  getDecimals, 
   getSymbol, 
   orderKindToSwapType,
   getInfuraUrl,
   getTheGraphURL
 } from "./utils";
 import { getPools } from "./dynamodb";
-
-const { INFURA_PROJECT_ID } = process.env;
-
 
 const log = console.log;
 
@@ -51,29 +46,21 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   const tokenOut = buyToken;
   const swapType = orderKindToSwapType(orderKind);
 
-  log(`fetching onChain pool info`)
   await sor.fetchPools(pools, false);
-  log(`Fetched data`);
-
-  const amountUnits = new BigNumber(amount).dividedBy(
-    new BigNumber(10).pow(
-      await getDecimals(provider, chainId, orderKind === "sell" ? sellToken : buyToken)
-    )
-  );
 
   log(
-    `${orderKind}ing ${amountUnits} ${await getSymbol(provider, chainId, sellToken)}` +
+    `${orderKind}ing ${amount} ${await getSymbol(provider, chainId, sellToken)}` +
       ` for ${await getSymbol(provider, chainId, buyToken)}`
   );
   log(orderKind);
   log(`Token In: ${tokenIn}`);
   log(`Token Out: ${tokenOut}`);
-  log(`Amount: ${amountUnits.toString()}`);
+  log(`Amount: ${amount}`);
   const swapInfo = await sor.getSwaps(
     sellToken,
     buyToken,
     swapType,
-    amountUnits.toString()
+    amount
   );
 
   log(`SwapInfo: ${JSON.stringify(swapInfo)}`);

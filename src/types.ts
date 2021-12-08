@@ -1,3 +1,5 @@
+import { SubgraphPoolBase } from '@balancer-labs/sor';
+
 export const Network = {
     MAINNET: 1,
     KOVAN: 42,
@@ -19,4 +21,8 @@ export interface Token {
     decimals: number;
     symbol: string;
     price: string; // Price of the token in the native asset (ETH, MATIC, etc)
+}
+
+export interface Pool extends SubgraphPoolBase {
+  chainId: number;
 }

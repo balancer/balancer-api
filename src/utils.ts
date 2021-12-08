@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
 import { SwapTypes } from "@balancer-labs/sor";
 import { getToken, updateToken } from "./dynamodb";
-import { Network, Token } from "./types";
+import { Network, Token, Pool } from "./types";
 
 const { INFURA_PROJECT_ID } = process.env;
 
@@ -13,7 +13,7 @@ export const localAWSConfig = {
   endpoint: 'http://localhost:8000'
 }
 
-async function getTokenInfo(provider, chainId: number, address: string): Promise<Token> {
+export async function getTokenInfo(provider, chainId: number, address: string): Promise<Token> {
   const tokenAddress = ethers.utils.getAddress(address);
   const cachedInfo = await getToken(chainId, tokenAddress);
   if (cachedInfo !== undefined) {
@@ -45,6 +45,16 @@ async function getTokenInfo(provider, chainId: number, address: string): Promise
   }
 
   return tokenInfo;
+}
+
+export function getTokenAddressesFromPools(pools: Pool[]) {
+  const tokenAddressMap = {};
+  pools.forEach((pool) => {
+    pool.tokensList.forEach(address => {
+      tokenAddressMap[address] = true;
+    });
+  });
+  return Object.keys(tokenAddressMap);
 }
 
 export async function getSymbol(provider, chainId: number, tokenAddress: string) {

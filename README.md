@@ -173,5 +173,5 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13C
 #### Swap WETH for BAL on the Arbitrum network
 
 ```sh
- curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
+curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
  ```

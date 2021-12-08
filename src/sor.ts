@@ -1,8 +1,8 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { SOR, SwapInfo, SubgraphPoolBase } from "@balancer-labs/sor";
-import { Order, Token } from "./types";
+import { Order, Token, Pool } from "./types";
 import { 
-  getSymbol, 
+  getTokenInfo, 
   orderKindToSwapType,
   getInfuraUrl,
   getTheGraphURL,
@@ -14,7 +14,7 @@ import fetch from 'isomorphic-fetch';
 
 const log = console.log;
 
-export async function fetchPoolsFromChain(chainId: number): Promise<SubgraphPoolBase[]> {
+export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const poolsSource = getTheGraphURL(chainId);
   const infuraUrl = getInfuraUrl(chainId);
   const provider: any = new JsonRpcProvider(infuraUrl);
@@ -26,8 +26,33 @@ export async function fetchPoolsFromChain(chainId: number): Promise<SubgraphPool
   );
 
   await sor.fetchPools();  
-  const pools: SubgraphPoolBase[] = sor.getPools();
+  const pools: Pool[] = sor.getPools().map((pool) => {
+    return Object.assign({}, pool, {chainId});
+  });
   return pools;
+}
+
+export async function removeKnownTokens(chainId: number, tokenAddresses: string[]): Promise<string[]> {
+  const infuraUrl = getInfuraUrl(chainId);
+  const provider: any = new JsonRpcProvider(infuraUrl);
+
+  const addressesWithNoInfo = await Promise.all(tokenAddresses.map(async (tokenAddress) => {
+    const hasInfo = await getTokenInfo(provider, chainId, tokenAddress)
+    if (hasInfo) return null;
+    return tokenAddress;
+  }));
+  return addressesWithNoInfo.filter((tokenAddress) => tokenAddress != null);
+}
+
+export async function fetchTokens(chainId: number, tokenAddresses: string[]): Promise<Token[]> {
+  const infuraUrl = getInfuraUrl(chainId);
+  const provider: any = new JsonRpcProvider(infuraUrl);
+
+  const tokens: Token[] = await Promise.all(tokenAddresses.map((tokenAddress) => {
+    return getTokenInfo(provider, chainId, tokenAddress);
+  }));
+
+  return tokens;
 }
 
 export async function getSorSwap(chainId: number, order: Order): Promise<SwapInfo> {

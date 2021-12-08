@@ -1,21 +1,15 @@
 /* Functions for writing and reading to DynamoDB database */
-import { SubgraphPoolBase } from '@balancer-labs/sor';
 import AWS from 'aws-sdk';
-import { Token } from './types';
-
-interface PoolDetails extends SubgraphPoolBase {
-  chainId: number;
-}
+import { Token, Pool } from './types';
 
 const log = console.log;
 
-export async function updatePools(chainId: number, pools: SubgraphPoolBase[]) {
+export async function updatePools(pools: Pool[]) {
   const docClient = new AWS.DynamoDB.DocumentClient();
   return Promise.all(pools.map(function(pool) {
-    const dbPool: PoolDetails = Object.assign({}, pool, {chainId});
     const params = {
         TableName: "pools",
-        Item: dbPool
+        Item: pool
     };
 
     return docClient.put(params, (err) => {
@@ -26,7 +20,7 @@ export async function updatePools(chainId: number, pools: SubgraphPoolBase[]) {
   }));
 }
 
-export async function getPools(chainId: number): Promise<PoolDetails[]> {
+export async function getPools(chainId: number): Promise<Pool[]> {
   const docClient = new AWS.DynamoDB.DocumentClient();
   const params = {
     TableName: 'pools',
@@ -37,7 +31,7 @@ export async function getPools(chainId: number): Promise<PoolDetails[]> {
   }
   try {
     const pools = await docClient.scan(params).promise()
-    return pools.Items as PoolDetails[];
+    return pools.Items as Pool[];
   } catch (e) {
       console.error("Failed to get pools, error is: ", e)
       return [];
@@ -67,11 +61,8 @@ export async function getToken(chainId: number, address: string): Promise<Token>
     Key: { chainId, address }
   }
 
-  console.log("Getting token of params: ", params);
-
   try {
     const token = await docClient.get(params).promise();
-    console.log("GOt token: ", token);
     return token.Item as Token;
   } catch (e) {
     console.error("Failed to get token of address ", address);
@@ -109,6 +100,22 @@ export async function updateToken(tokenInfo: Token) {
   }
 }
 
+export async function updateTokens(tokens: Token[]) {
+  const docClient = new AWS.DynamoDB.DocumentClient();
+  return Promise.all(tokens.map(function(token) {
+    const params = {
+        TableName: "tokens",
+        Item: token
+    };
+
+    return docClient.put(params, (err) => {
+      if (err) {
+        log(`Unable to add token ${token.address}. Error JSON: ${JSON.stringify(err, null, 2)}`);
+      }
+    }).promise();
+  }));
+}
+
 export async function createPoolsTable() {
   const params = {
     TableName : "pools",
@@ -141,8 +148,8 @@ export async function createTokensTable() {
         { AttributeName: "chainId", AttributeType: "N" },
     ],
     ProvisionedThroughput: {       
-        ReadCapacityUnits: 10, 
-        WriteCapacityUnits: 10
+        ReadCapacityUnits: 100, 
+        WriteCapacityUnits: 100
     }
   }
   

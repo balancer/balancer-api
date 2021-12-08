@@ -7,9 +7,9 @@ require("dotenv").config();
 import debug from "debug";
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Network } from "./types";
-import { fetchPoolsFromChain, getTokenPriceInNativeAsset } from "./sor";
-import { getTokens, updatePools, updateToken } from "./dynamodb";
-import { localAWSConfig, getInfuraUrl } from "./utils";
+import { fetchPoolsFromChain, fetchTokens, getTokenPriceInNativeAsset, removeKnownTokens } from "./sor";
+import { getTokens, updatePools, updateToken, updateTokens } from "./dynamodb";
+import { localAWSConfig, getInfuraUrl, getTokenAddressesFromPools  } from "./utils";
 
 const log = debug("balancer");
 
@@ -41,8 +41,15 @@ async function fetchAndSavePools(chainId: number) {
     log(`Fetching pools from chain ${chainId}`)
     const pools = await fetchPoolsFromChain(chainId);
     log(`Saving ${pools.length} pools for chain ${chainId} to database`);
-    await updatePools(chainId, pools);
-    log(`Saved pools`);
+    await updatePools(pools);
+    log(`Saved pools. Fetching Tokens for pools`);
+    const tokenAddresses = getTokenAddressesFromPools(pools);
+    log(`Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`);
+    const filteredTokenAddresses = await removeKnownTokens(chainId, tokenAddresses);
+    log(`Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`);
+    const tokens = await fetchTokens(chainId, filteredTokenAddresses);
+    await updateTokens(tokens);
+    log(`Saved ${filteredTokenAddresses.length} Tokens`);
     lastBlockNumber[chainId] = currentBlockNo;
   }
 

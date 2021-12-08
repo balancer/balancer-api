@@ -149,33 +149,25 @@ Order Kind - Set to 'buy' to buy the exact amount of your `buyToken` and sell as
 #### Swap BAL for DAI
 
 ```sh
-curl -X POST -H "Content-Type: application/json" \
- -d '{"sellToken":"0xba100000625a3754423978a60c9317c58a424e3d","buyToken":"0x6b175474e89094c44da98b954eedeac495271d0f","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' \
-$ENDPOINT_URL/sor/1
+curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0xba100000625a3754423978a60c9317c58a424e3d","buyToken":"0x6b175474e89094c44da98b954eedeac495271d0f","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/1
 ```
 
 #### Swap USDC for DAI
 
 ```sh
-curl -X POST -H "Content-Type: application/json" \
- -d '{"sellToken":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48","buyToken":"0x6b175474e89094c44da98b954eedeac495271d0f","orderKind":"sell", "amount":"100000", "gasPrice":"10000000"}' \
-$ENDPOINT_URL/sor/1
+curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48","buyToken":"0x6b175474e89094c44da98b954eedeac495271d0f","orderKind":"sell", "amount":"100000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/1
 ```
 
 #### Swap WETH for an exact amount of BAL
 
 ```sh
-curl -X POST -H "Content-Type: application/json" \
- -d '{"sellToken":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","buyToken":"0xba100000625a3754423978a60c9317c58a424e3d","orderKind":"buy", "amount":"1000000000000000000", "gasPrice":"10000000"}' \
-$ENDPOINT_URL/sor/1
+curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","buyToken":"0xba100000625a3754423978a60c9317c58a424e3d","orderKind":"buy", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/1
 ```
 
 #### Swap BAL for DAI on the Polygon network
 
 ```sh
-curl -X POST -H "Content-Type: application/json" \
- -d '{"sellToken":"0x9a71012B13CA4d3D0Cdc72A177DF3ef03b0E76A3","buyToken":"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' \
-$ENDPOINT_URL/sor/137
+curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13CA4d3D0Cdc72A177DF3ef03b0E76A3","buyToken":"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/137
 ```
 
 #### Swap WETH for BAL on the Arbitrum network

@@ -1,16 +1,21 @@
 /* Functions for writing and reading to DynamoDB database */
+import { SubgraphPoolBase } from '@balancer-labs/sor';
+import AWS from 'aws-sdk';
+import { Token } from './types';
 
-const AWS = require("aws-sdk");
+interface PoolDetails extends SubgraphPoolBase {
+  chainId: number;
+}
 
 const log = console.log;
 
-export async function updatePools(chainId: number, pools) {
+export async function updatePools(chainId: number, pools: SubgraphPoolBase[]) {
   const docClient = new AWS.DynamoDB.DocumentClient();
   return Promise.all(pools.map(function(pool) {
-    pool.chainId = chainId;
+    const dbPool: PoolDetails = Object.assign({}, pool, {chainId});
     const params = {
         TableName: "pools",
-        Item: pool
+        Item: dbPool
     };
 
     return docClient.put(params, (err) => {
@@ -21,7 +26,7 @@ export async function updatePools(chainId: number, pools) {
   }));
 }
 
-export async function getPools(chainId: number) {
+export async function getPools(chainId: number): Promise<PoolDetails[]> {
   const docClient = new AWS.DynamoDB.DocumentClient();
   const params = {
     TableName: 'pools',
@@ -32,7 +37,7 @@ export async function getPools(chainId: number) {
   }
   try {
     const pools = await docClient.scan(params).promise()
-    return pools.Items;
+    return pools.Items as PoolDetails[];
   } catch (e) {
       console.error("Failed to get pools, error is: ", e)
       return [];
@@ -54,27 +59,48 @@ export async function getPool(chainId: number, id: string) {
   }
 }
 
-export async function getToken(chainId: number, address: string) {
+export async function getToken(chainId: number, address: string): Promise<Token> {
   const docClient = new AWS.DynamoDB.DocumentClient();
+  address = address.toLowerCase();
   const params = {
     TableName: "tokens",
     Key: { chainId, address }
   }
 
+  console.log("Getting token of params: ", params);
+
   try {
     const token = await docClient.get(params).promise();
-    return token.Item;
+    console.log("GOt token: ", token);
+    return token.Item as Token;
   } catch (e) {
     console.error("Failed to get token of address ", address);
   }
 }
 
-export async function insertToken(tokenInfo) {
+export async function getTokens(): Promise<Token[]> {
   const docClient = new AWS.DynamoDB.DocumentClient();
+  const params = {
+    TableName: 'tokens'
+  }
+  try {
+    const tokens = await docClient.scan(params).promise()
+    return tokens.Items as Token[];
+  } catch (e) {
+      console.error("Failed to get tokens, error is: ", e)
+      return [];
+  }
+}
+
+export async function updateToken(tokenInfo: Token) {
+  const docClient = new AWS.DynamoDB.DocumentClient();
+  tokenInfo.address = tokenInfo.address.toLowerCase();
   const params = {
     TableName: "tokens",
     Item: tokenInfo
   };
+
+  console.log("Updating token with params: ", params);
 
   try {
     await docClient.put(params).promise();

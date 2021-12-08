@@ -7,8 +7,8 @@ require("dotenv").config();
 import debug from "debug";
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Network } from "./types";
-import { fetchPoolsFromChain } from "./sor";
-import { updatePools } from "./dynamodb";
+import { fetchPoolsFromChain, getTokenPriceInNativeAsset } from "./sor";
+import { getTokens, updatePools, updateToken } from "./dynamodb";
 import { localAWSConfig, getInfuraUrl } from "./utils";
 
 const log = debug("balancer");
@@ -16,6 +16,8 @@ const log = debug("balancer");
 const AWS = require("aws-sdk");
 AWS.config.update(localAWSConfig);
 
+const UPDATE_POOLS_INTERVAL = 500;
+const UPDATE_PRICES_INTERVAL = 5000;
 
 const lastBlockNumber = {} 
 
@@ -25,6 +27,7 @@ function doWork() {
     lastBlockNumber[chainId] = 0;
     fetchAndSavePools(chainId);
   });
+  updateTokenPrices();
 }
 
 async function fetchAndSavePools(chainId: number) {
@@ -43,7 +46,21 @@ async function fetchAndSavePools(chainId: number) {
     lastBlockNumber[chainId] = currentBlockNo;
   }
 
-  setTimeout(fetchAndSavePools.bind(null, chainId), 500);
+  setTimeout(fetchAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
+}
+
+async function updateTokenPrices() {
+  const tokens = await getTokens();
+  console.log("Updating token prices");
+  await Promise.all(tokens.map(async (token) => {
+    const tokenPrice = await getTokenPriceInNativeAsset(token.chainId, token.address);
+    token.price = tokenPrice;
+    await updateToken(token);
+    console.log(`Updated token ${token.symbol} to price ${token.price}`);
+  }));
+  console.log("Updated token prices");
+
+  setTimeout(updateTokenPrices, UPDATE_PRICES_INTERVAL);
 }
 
 

@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
 import { SwapTypes } from "@balancer-labs/sor";
-import { getToken, insertToken } from "./dynamodb";
-import { Network } from "./types";
+import { getToken, updateToken } from "./dynamodb";
+import { Network, Token } from "./types";
 
 const { INFURA_PROJECT_ID } = process.env;
 
@@ -13,7 +13,7 @@ export const localAWSConfig = {
   endpoint: 'http://localhost:8000'
 }
 
-async function getTokenInfo(provider, chainId: number, address: string) {
+async function getTokenInfo(provider, chainId: number, address: string): Promise<Token> {
   const tokenAddress = ethers.utils.getAddress(address);
   const cachedInfo = await getToken(chainId, tokenAddress);
   if (cachedInfo !== undefined) {
@@ -40,10 +40,9 @@ async function getTokenInfo(provider, chainId: number, address: string) {
     chainId,
     address: tokenAddress,
     symbol: info[0],
-    decimals: info[1]
+    decimals: info[1],
+    price: ''
   }
-  console.log("Inserting token info: ", tokenInfo);
-  await insertToken(tokenInfo);
 
   return tokenInfo;
 }
@@ -97,3 +96,26 @@ export function getTheGraphURL(chainId: number): string {
   
 }
 
+export function getPlatformId(chainId: string | number): string {
+  const mapping = {
+      '1': 'ethereum',
+      '42': 'ethereum',
+      '137': 'polygon-pos',
+      '42161': 'arbitrum-one',
+  };
+
+  return mapping[chainId.toString()] || 'ethereum';
+}
+
+export function getNativeAssetId(chainId: string | number): string {
+  const mapping = {
+      '1': 'eth',
+      '42': 'eth',
+      // CoinGecko does not provide prices in terms of MATIC
+      // TODO: convert through ETH as intermediary
+      '137': '',
+      '42161': 'eth',
+  };
+
+  return mapping[chainId.toString()] || 'eth';
+}

@@ -7,12 +7,13 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
+    "build-cdk": "tsc --project ./tsconfig-cdk.json",
     "watch": "tsc -w",
     "dynamodb": "docker-compose up -d",
     "init": "node dist/init.js",
     "start": "node dist/server.js",
     "worker": "node dist/worker.js",
-    "deploy": "cdk deploy",
+    "deploy": "npm run build-cdk && cdk deploy",
     "cdk": "cdk"
   },
   "license": "MIT",

@@ -69,10 +69,18 @@ export async function getToken(chainId: number, address: string): Promise<Token>
   }
 }
 
-export async function getTokens(): Promise<Token[]> {
+export async function getTokens(chainId?: number): Promise<Token[]> {
   const docClient = new AWS.DynamoDB.DocumentClient();
-  const params = {
+  const params: any = {
     TableName: 'tokens'
+  }
+  if (chainId != null) {
+    Object.assign(params, {
+      FilterExpression: 'chainId = :chainId',
+      ExpressionAttributeValues: {
+          ':chainId': chainId
+      },
+    })
   }
   try {
     const tokens = await docClient.scan(params).promise()

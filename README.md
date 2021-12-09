@@ -96,19 +96,21 @@ The `{chainId}` in each endpoint is the chain/network number you wish to request
 - `/pools/{chainId}` - Returns a JSON array of all Balancer pools of that chain
 - `/pools/{chainId}/{id}` - Returns JSON information about a pool of a specific `id`.
 - `/sor/{chainId}` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
+- `/tokens/{chainId}` - Returns a JSON array of all known tokens of that chain
+- `/tokens/update/` - Runs the worker lambda that for every known token, fetches the latest price (in the chains native asset) from coingecko and saves it in the database.
 
-### Pools Update Lambda
+### Update Pools Lambda
 
 The update lambda is not called automatically, you must call it to initially poplate the database. We recommend connecting a webhook to
 this endpoint that runs with every new Ethereum block, or whenever a transaction is made to the [Balancer Vault Contract](https://etherscan.io/address/0xba12222222228d8ba445958a75a0704d566bf2c8).
 
-Example worker update
+Example pools update
 
 ```sh
 curl -X POST $ENDPOINT_URL/pools/update/1
 ```
 
-On success this will return a 201 code and no other data. 
+On success this will return a 201 code and no other data.
 
 ### Get Pools Examples
 
@@ -123,6 +125,18 @@ Retrieve JSON object describing a single pool
 ```sh
 curl $ENDPOINT_URL/pools/1/0x5aa90c7362ea46b3cbfbd7f01ea5ca69c98fef1c000200000000000000000020
 ```
+
+### Update Token Prices Lambda
+
+The lambda is automatically called every 30 seconds.
+
+Example token prices update
+
+```sh
+curl -X POST $ENDPOINT_URL/tokens/update/
+```
+
+On success this will return a 201 code and no other data.
 
 ### Smart Order Router Queries
 

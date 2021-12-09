@@ -34,6 +34,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
+      readCapacity: 100,
+      writeCapacity: 100
     });
 
     const nodeJsFunctionProps: NodejsFunctionProps = {
@@ -43,7 +45,7 @@ export class BalancerPoolsAPI extends Stack {
         ],
       },
       environment: {
-        INFURA_PROJECT_ID,
+        INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15)
@@ -57,13 +59,24 @@ export class BalancerPoolsAPI extends Stack {
       entry: join(__dirname, 'lambdas', 'get-pools.ts'),
       ...nodeJsFunctionProps,
     });
+    const getTokensLambda = new NodejsFunction(this, 'getTokensFunction', {
+      entry: join(__dirname, 'lambdas', 'get-tokens.ts'),
+      ...nodeJsFunctionProps,
+    });
     const runSORLambda = new NodejsFunction(this, 'runSORFunction', {
       entry: join(__dirname, 'lambdas', 'run-sor.ts'),
       ...nodeJsFunctionProps,
       memorySize: 256
     });
     const updatePoolsLambda = new NodejsFunction(this, 'updatePoolsFunction', {
-      entry: join(__dirname, 'lambdas', 'update.ts'),
+      entry: join(__dirname, 'lambdas', 'update-pools.ts'),
+      ...nodeJsFunctionProps,
+      memorySize: 512,
+      timeout: Duration.seconds(60)
+    });
+    
+    const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {
+      entry: join(__dirname, 'lambdas', 'update-prices.ts'),
       ...nodeJsFunctionProps,
       memorySize: 512,
       timeout: Duration.seconds(60)
@@ -74,12 +87,17 @@ export class BalancerPoolsAPI extends Stack {
     poolsTable.grantReadWriteData(runSORLambda);
     poolsTable.grantReadWriteData(updatePoolsLambda);
 
+    tokensTable.grantReadData(getTokensLambda);
     tokensTable.grantReadWriteData(runSORLambda);
+    tokensTable.grantReadWriteData(updatePoolsLambda);
+    tokensTable.grantReadWriteData(updateTokenPricesLambda);
 
-    const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
-    const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
     const getPoolIntegration = new LambdaIntegration(getPoolLambda);
+    const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
+    const getTokensIntegration = new LambdaIntegration(getTokensLambda);
     const runSORIntegration = new LambdaIntegration(runSORLambda);
+    const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
+    const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
 
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service'
@@ -89,13 +107,21 @@ export class BalancerPoolsAPI extends Stack {
     pools.addMethod('GET', getPoolsIntegration);
     addCorsOptions(pools);
 
-    const update = pools.addResource('update');
-    update.addMethod('POST', updatePoolsIntegration);
-    addCorsOptions(update);
+    const updatePools = pools.addResource('update');
+    updatePools.addMethod('POST', updatePoolsIntegration);
+    addCorsOptions(updatePools);
 
     const singlePool = pools.addResource('{id}');
     singlePool.addMethod('GET', getPoolIntegration);
     addCorsOptions(singlePool);
+
+    const tokens = api.root.addResource('tokens');
+    tokens.addMethod('GET', getTokensIntegration);
+    addCorsOptions(tokens);
+
+    const updatePrices = tokens.addResource('update');
+    updatePrices.addMethod('POST', updateTokenPricesIntegration);
+    addCorsOptions(updatePrices);
 
     const sor = api.root.addResource('sor');
     sor.addMethod('POST', runSORIntegration);

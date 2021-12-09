@@ -94,6 +94,7 @@ export async function getTokens(chainId?: number): Promise<Token[]> {
 export async function updateToken(tokenInfo: Token) {
   const docClient = new AWS.DynamoDB.DocumentClient();
   tokenInfo.address = tokenInfo.address.toLowerCase();
+  tokenInfo.lastUpdate = Date.now();
   const params = {
     TableName: "tokens",
     Item: tokenInfo
@@ -110,6 +111,7 @@ export async function updateTokens(tokens: Token[]) {
   const docClient = new AWS.DynamoDB.DocumentClient();
   return Promise.all(tokens.map(function(token) {
     token.address = token.address.toLowerCase();
+    token.lastUpdate = Date.now();
     const params = {
         TableName: "tokens",
         Item: token

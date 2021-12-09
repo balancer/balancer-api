@@ -1,7 +1,15 @@
 import { updateToken } from "./dynamodb";
 import { getPlatformId, getNativeAssetId } from "./utils";
+import { Network, Token } from "./types";
+
+const TOKEN_UPDATE_TIME = 60 * 15; // 5 Minutes
+const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 7; // 1 Week
 
 const log = console.log;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * @dev Assumes that the native asset has 18 decimals
@@ -26,6 +34,10 @@ const log = console.log;
       },
   });
 
+  if (response.status === 429) {
+    throw new Error('ratelimit');
+  }
+
   if (response.status >= 300) {
     throw new Error(`Received ${response.status} status code from CoinGecko`);
   }
@@ -38,16 +50,27 @@ const log = console.log;
   return data[tokenAddress.toLowerCase()][nativeAssetId];
 }
 
-export async function updateTokenPrices(tokens: any[]) {
+export async function updateTokenPrices(tokens: Token[]) {
 
-  await Promise.all(tokens.map(async (token) => {
+  await Promise.all(tokens.map(async (token, idx) => {
     try {
+      if (token.chainId == Network.KOVAN) return;
+      if (token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME) return;
+      if (token.noPriceData && token.lastUpdate > Date.now() - TOKEN_RETRY_PRICE_DATA_TIME) return;
+
+      const sleepTime = idx * 200;
+      await sleep(sleepTime);
       const tokenPrice = await getTokenPriceInNativeAsset(token.chainId, token.address);
       token.price = tokenPrice;
       await updateToken(token);
       log(`Updated token ${token.symbol} to price ${token.price}`);
-    } catch (e) {
-      log(`Unable to fetch price data for token ${token.symbol}. Error is: ${JSON.stringify(e)}`);
+    } catch (err) {
+      log(`Unable to fetch price data for token ${token.symbol}. ChainID: ${token.chainId}, address ${token.address} Error is: ${err.message}`);
+      if (err.message !== 'ratelimit') {
+        log(`Marking token as having no price data`);
+        token.noPriceData = true;
+        await updateToken(token);
+      }
     }
   }));
   log("Updated token prices");

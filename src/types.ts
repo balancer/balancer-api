@@ -21,6 +21,8 @@ export interface Token {
     decimals: number;
     symbol: string;
     price: string; // Price of the token in the native asset (ETH, MATIC, etc)
+    lastUpdate?: number;
+    noPriceData?: boolean;
 }
 
 export interface Pool extends SubgraphPoolBase {

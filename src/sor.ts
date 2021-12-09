@@ -63,13 +63,12 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
     pools
   );
 
-  const tokens = await getTokens();
-  console.log("All tokens: ", tokens);
-
   const { sellToken, buyToken, orderKind, amount } = order;
 
   const sellTokenDetails: Token = await getToken(chainId, sellToken);
+  log(`Got sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
   const buyTokenDetails: Token = await getToken(chainId, buyToken);
+  log(`Got buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
 
   sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
   sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);

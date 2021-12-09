@@ -49,7 +49,7 @@ export async function getPool(chainId: number, id: string) {
     const pool = await docClient.get(params).promise();
     return pool.Item;
   } catch (e) {
-    return undefined;
+    console.error(`Failed to get pool: ${chainId}, ${id}. Error is:`, e);
   }
 }
 
@@ -65,7 +65,7 @@ export async function getToken(chainId: number, address: string): Promise<Token>
     const token = await docClient.get(params).promise();
     return token.Item as Token;
   } catch (e) {
-    return undefined;
+    console.error(`Failed to get token: ${chainId}, ${address}. Error is:`, e);
   }
 }
 
@@ -109,6 +109,7 @@ export async function updateToken(tokenInfo: Token) {
 export async function updateTokens(tokens: Token[]) {
   const docClient = new AWS.DynamoDB.DocumentClient();
   return Promise.all(tokens.map(function(token) {
+    token.address = token.address.toLowerCase();
     const params = {
         TableName: "tokens",
         Item: token

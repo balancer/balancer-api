@@ -104,19 +104,21 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     const pools = api.root.addResource('pools');
-    pools.addMethod('GET', getPoolsIntegration);
+    const poolsOnChain = pools.addResource('{chainId}')
+    poolsOnChain.addMethod('GET', getPoolsIntegration);
     addCorsOptions(pools);
 
-    const updatePools = pools.addResource('update');
+    const updatePools = poolsOnChain.addResource('update');
     updatePools.addMethod('POST', updatePoolsIntegration);
     addCorsOptions(updatePools);
 
-    const singlePool = pools.addResource('{id}');
+    const singlePool = poolsOnChain.addResource('{id}');
     singlePool.addMethod('GET', getPoolIntegration);
     addCorsOptions(singlePool);
 
     const tokens = api.root.addResource('tokens');
-    tokens.addMethod('GET', getTokensIntegration);
+    const tokensOnChain = tokens.addResource('{chainId}');
+    tokensOnChain.addMethod('GET', getTokensIntegration);
     addCorsOptions(tokens);
 
     const updatePrices = tokens.addResource('update');
@@ -124,7 +126,8 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(updatePrices);
 
     const sor = api.root.addResource('sor');
-    sor.addMethod('POST', runSORIntegration);
+    const sorOnChain = sor.addResource('{chainId}')
+    sorOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(sor);
   }
 }

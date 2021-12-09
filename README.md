@@ -92,7 +92,7 @@ your API Gateway URL, all endpoints below should be appended to this. Run `expor
 
 The `{chainId}` in each endpoint is the chain/network number you wish to request from. 1 for Mainnet, 137 for Polygon, 42161 for Arbitrum etc.
 
-- `/pools/update/{chainId}` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
+- `/pools/{chainId}/update` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
 - `/pools/{chainId}` - Returns a JSON array of all Balancer pools of that chain
 - `/pools/{chainId}/{id}` - Returns JSON information about a pool of a specific `id`.
 - `/sor/{chainId}` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
@@ -107,7 +107,7 @@ this endpoint that runs with every new Ethereum block, or whenever a transaction
 Example pools update
 
 ```sh
-curl -X POST $ENDPOINT_URL/pools/update/1
+curl -X POST $ENDPOINT_URL/pools/1/update
 ```
 
 On success this will return a 201 code and no other data.

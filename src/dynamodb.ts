@@ -49,7 +49,7 @@ export async function getPool(chainId: number, id: string) {
     const pool = await docClient.get(params).promise();
     return pool.Item;
   } catch (e) {
-    console.error("Failed to get pool of id: ", id);
+    return undefined;
   }
 }
 
@@ -65,7 +65,7 @@ export async function getToken(chainId: number, address: string): Promise<Token>
     const token = await docClient.get(params).promise();
     return token.Item as Token;
   } catch (e) {
-    console.error("Failed to get token of address ", address);
+    return undefined;
   }
 }
 
@@ -98,8 +98,6 @@ export async function updateToken(tokenInfo: Token) {
     TableName: "tokens",
     Item: tokenInfo
   };
-
-  console.log("Updating token with params: ", params);
 
   try {
     await docClient.put(params).promise();

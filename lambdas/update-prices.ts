@@ -1,5 +1,5 @@
-import { getTokens, updateToken } from "../src/dynamodb";
-import { getTokenPriceInNativeAsset } from "../src/sor";
+import { getTokens } from "../src/dynamodb";
+import { updateTokenPrices } from "../src/tokens";
 
 export const handler = async (): Promise<any> => {
   const log = console.log;
@@ -8,13 +8,8 @@ export const handler = async (): Promise<any> => {
     log("Fetching all tokens.")
     const tokens = await getTokens();
     log(`Fetched ${tokens.length} tokens. Updating token prices`);
-    await Promise.all(tokens.map(async (token) => {
-      const tokenPrice = await getTokenPriceInNativeAsset(token.chainId, token.address);
-      token.price = tokenPrice;
-      await updateToken(token);
-      log(`Updated token ${token.symbol} to price ${token.price}`);
-    }));
-    log("Updated token prices");
+    await updateTokenPrices(tokens);
+    log(`Updated prices`);
     return { statusCode: 201, body: '' };
   } catch (err) {
     log(`Received error: ${err}`);

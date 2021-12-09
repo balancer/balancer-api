@@ -1,4 +1,3 @@
-import { Network } from "../src/types";
 import { getTokenAddressesFromPools } from "../src/utils";
 import { updatePools, updateTokens } from "../src/dynamodb";
 import { fetchPoolsFromChain, fetchTokens, removeKnownTokens } from "../src/sor";
@@ -6,14 +5,9 @@ import { fetchPoolsFromChain, fetchTokens, removeKnownTokens } from "../src/sor"
 export const handler = async (event: any = {}): Promise<any> => {
   const log = console.log;
 
-  let chainId = Network.MAINNET;
-
-  if (event.body) {
-    const eventBody = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
-    chainId = eventBody.chainId ? Number(eventBody.chainId) : Network.MAINNET;
-    if (!Object.values(Network).includes(chainId)) {
-      return { statusCode: 400, body: 'Invalid ChainID'}
-    }
+  const chainId = parseInt(event.pathParameters.chainId);
+  if (!chainId) {
+    return { statusCode: 400, body: `Error: You are missing the chainId` };
   }
 
   try {

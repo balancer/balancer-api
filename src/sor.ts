@@ -5,9 +5,7 @@ import {
   getTokenInfo, 
   orderKindToSwapType,
   getInfuraUrl,
-  getTheGraphURL,
-  getPlatformId,
-  getNativeAssetId
+  getTheGraphURL
 } from "./utils";
 import { getPools, getToken, getTokens } from "./dynamodb";
 import fetch from 'isomorphic-fetch';
@@ -33,11 +31,8 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
 }
 
 export async function removeKnownTokens(chainId: number, tokenAddresses: string[]): Promise<string[]> {
-  const infuraUrl = getInfuraUrl(chainId);
-  const provider: any = new JsonRpcProvider(infuraUrl);
-
   const addressesWithNoInfo = await Promise.all(tokenAddresses.map(async (tokenAddress) => {
-    const hasInfo = await getTokenInfo(provider, chainId, tokenAddress)
+    const hasInfo = await getToken(chainId, tokenAddress)
     if (hasInfo) return null;
     return tokenAddress;
   }));
@@ -107,34 +102,3 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   return swapInfo;
 }
 
-
-/**
- * @dev Assumes that the native asset has 18 decimals
- * @param chainId - the chain id on which the token is deployed
- * @param tokenAddress - the address of the token contract
- * @param tokenDecimals - the number of decimals places which the token is divisible by
- * @returns the price of 1 ETH in terms of the token base units
- */
-export async function getTokenPriceInNativeAsset(
-    chainId: number,
-    tokenAddress: string
-): Promise<string> {
-    const platformId = getPlatformId(chainId);
-    const nativeAssetId = getNativeAssetId(chainId);
-    const endpoint = `https://api.coingecko.com/api/v3/simple/token_price/${platformId}?contract_addresses=${tokenAddress}&vs_currencies=${nativeAssetId}`;
-
-    const response = await fetch(endpoint, {
-        method: 'GET',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-    });
-
-    const data = await response.json();
-
-    if (data[tokenAddress.toLowerCase()][nativeAssetId] === undefined)
-        throw Error('No price returned from Coingecko');
-
-    return data[tokenAddress.toLowerCase()][nativeAssetId];
-}

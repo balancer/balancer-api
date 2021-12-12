@@ -100,6 +100,8 @@ export async function updateToken(tokenInfo: Token) {
     Item: tokenInfo
   };
 
+  log(`Saving token: ${JSON.stringify(tokenInfo)}`);
+
   try {
     await docClient.put(params).promise();
   } catch (err) {

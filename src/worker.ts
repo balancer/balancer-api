@@ -18,16 +18,16 @@ const AWS = require("aws-sdk");
 AWS.config.update(localAWSConfig);
 
 const UPDATE_POOLS_INTERVAL = 500;
-const UPDATE_PRICES_INTERVAL = 5000;
+const UPDATE_PRICES_INTERVAL = 60 * 1000;
 
 const lastBlockNumber = {} 
 
 function doWork() {
   log(`Working...`);
-  Object.values(Network).forEach(async (chainId) => {
-    lastBlockNumber[chainId] = 0;
-    fetchAndSavePools(chainId);
-  });
+  // Object.values(Network).forEach(async (chainId) => {
+  //   lastBlockNumber[chainId] = 0;
+  //   fetchAndSavePools(chainId);
+  // });
   updatePrices();
 }
 

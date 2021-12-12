@@ -6,7 +6,6 @@ const TOKEN_UPDATE_TIME = 60 * 15 * 1000; // 5 Minutes
 const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 7 * 1000; // 1 Week
 
 const COINGECKO_MAX_TPS = 10;
-const COINGECKO_MAX_TPM = 49;
 
 const HTTP_ERROR_RATELIMIT = 429;
 
@@ -21,7 +20,6 @@ class HTTPError extends Error {
 
 class TokenFetcher {
   queue: Token[];
-  maxQueueSize: number;
   activeThreads: number;
   maxThreads: number;
   maxTPS: number;
@@ -30,15 +28,14 @@ class TokenFetcher {
   rateLimitWaitTimeMS: number; 
   onCompleteCallback: () => void | null;
 
-  constructor()  {
+  constructor(private abortOnRateLimit = false)  {
     this.queue = [];
-    this.maxQueueSize = COINGECKO_MAX_TPM; // So we process queue before ratelimit inside lambda
     this.activeThreads = 0;
     this.maxThreads = 5;
     this.maxTPS = COINGECKO_MAX_TPS
     this.availableTransactions = COINGECKO_MAX_TPS;
     this.lastRateLimit = 0;
-    this.rateLimitWaitTimeMS = 60 * 1000;
+    this.rateLimitWaitTimeMS = 90 * 1000;
     this.onCompleteCallback = null;
     this.fillTokenBucket();
   }
@@ -97,6 +94,10 @@ class TokenFetcher {
     } catch (err)  {
       if ((err as HTTPError).code != null) {
         if (err.code === HTTP_ERROR_RATELIMIT) {
+          log(`Hit rate limit`);
+          if (this.abortOnRateLimit) {
+            return this.abort();
+          }
           this.lastRateLimit = Date.now();
           throw new Error("Rate Limited");
         } else {
@@ -165,9 +166,7 @@ class TokenFetcher {
       if (token.noPriceData && token.lastUpdate > Date.now() - TOKEN_RETRY_PRICE_DATA_TIME) return;
 
       log(`Token: ${token.symbol} has price data: ${token.noPriceData}, was last updated ${(Date.now() - token.lastUpdate)/1000} seconds ago`)
-      if (this.queue.length < this.maxQueueSize) {
-        this.queue.push(token);
-      }
+      this.queue.push(token);
     });
 
     this.startProcessing();
@@ -179,10 +178,19 @@ class TokenFetcher {
     });
     return promise;
   }
+
+  public abort() {
+    log(`Aborting`);
+    this.maxThreads = 0;
+    this.queue = [];
+    if (this.onCompleteCallback){
+      this.onCompleteCallback();
+    }
+  }
 }
 
-export async function updateTokenPrices(tokens: Token[]) {
-  const tokenFetcher = new TokenFetcher()
+export async function updateTokenPrices(tokens: Token[], abortOnRateLimit = false) {
+  const tokenFetcher = new TokenFetcher(abortOnRateLimit)
   log(`fetching prics for ${tokens.length} tokens`)
   tokenFetcher.fetchPrices(tokens);
   log('waiting for completion')

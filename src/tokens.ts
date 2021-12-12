@@ -152,6 +152,9 @@ class TokenFetcher {
   }
 
   private async startProcessing() {
+    if (this.queue.length === 0) {
+      return setTimeout(() => this.onCompleteCallback && this.onCompleteCallback(), 10);
+    }
     const totalThreads = (this.maxThreads - this.activeThreads);
     log(`Creating ${totalThreads} threads`);
     for (let i = 0; i < totalThreads; i++) {

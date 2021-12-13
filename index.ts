@@ -4,6 +4,8 @@ import { AttributeType, Table } from '@aws-cdk/aws-dynamodb';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { App, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
 import { NodejsFunction, NodejsFunctionProps } from '@aws-cdk/aws-lambda-nodejs';
+import { Rule, Schedule } from '@aws-cdk/aws-events';
+import { LambdaFunction } from '@aws-cdk/aws-events-targets';
 import { join } from 'path'
 
 const { INFURA_PROJECT_ID } = process.env;
@@ -11,6 +13,10 @@ const { INFURA_PROJECT_ID } = process.env;
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
     super(app, id);
+    
+    /**
+     * DynamoDB Tables
+     */
 
     const poolsTable = new Table(this, 'pools', {
       partitionKey: {
@@ -41,6 +47,10 @@ export class BalancerPoolsAPI extends Stack {
       readCapacity: 100,
       writeCapacity: 100
     });
+
+    /**
+     * Lambdas
+     */
 
     const nodeJsFunctionProps: NodejsFunctionProps = {
       bundling: {
@@ -86,6 +96,20 @@ export class BalancerPoolsAPI extends Stack {
       timeout: Duration.seconds(60)
     });
 
+    /** 
+     * Lambda Schedules
+     */
+
+    const rule = new Rule(this, 'updateTokenPricesEachMinute', {
+      schedule: Schedule.expression('rate(1 minute)')
+    });
+
+    rule.addTarget(new LambdaFunction(updateTokenPricesLambda))
+
+    /**
+     * Access Rules
+     */
+
     poolsTable.grantReadData(getPoolsLambda);
     poolsTable.grantReadData(getPoolLambda);
     poolsTable.grantReadWriteData(runSORLambda);
@@ -95,6 +119,10 @@ export class BalancerPoolsAPI extends Stack {
     tokensTable.grantReadWriteData(runSORLambda);
     tokensTable.grantReadWriteData(updatePoolsLambda);
     tokensTable.grantReadWriteData(updateTokenPricesLambda);
+
+    /**
+     * API Gateway
+     */
 
     const getPoolIntegration = new LambdaIntegration(getPoolLambda);
     const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);

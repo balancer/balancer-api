@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
 import { SwapTypes } from "@balancer-labs/sor";
 import { getToken, updateToken } from "./dynamodb";
-import { Network, Token, Pool } from "./types";
+import { Network, Token, Pool, NativeAssetAddress } from "./types";
 
 const { INFURA_PROJECT_ID } = process.env;
 
@@ -117,14 +117,14 @@ export function getPlatformId(chainId: string | number): string {
   return mapping[chainId.toString()] || 'ethereum';
 }
 
-export function getNativeAssetId(chainId: string | number): string {
+export function getNativeAssetAddress(chainId: string | number): string {
   const mapping = {
-      '1': 'eth',
-      '42': 'eth',
+      '1': NativeAssetAddress.ETH,
+      '42': NativeAssetAddress.ETH,
       // CoinGecko does not provide prices in terms of MATIC
       // TODO: convert through ETH as intermediary
-      '137': '',
-      '42161': 'eth',
+      '137': NativeAssetAddress.MATIC,
+      '42161': NativeAssetAddress.ETH,
   };
 
   return mapping[chainId.toString()] || 'eth';

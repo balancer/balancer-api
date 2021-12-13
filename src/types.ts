@@ -7,6 +7,11 @@ export const Network = {
     ARBITRUM: 42161
 }
 
+export const NativeAssetAddress = {
+    ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    MATIC: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0"
+}
+
 export interface Order {
     sellToken: string;
     buyToken: string;

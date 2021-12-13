@@ -1,6 +1,7 @@
-import { updateToken } from "./dynamodb";
-import { getPlatformId, getNativeAssetId } from "./utils";
-import { Network, Token } from "./types";
+import { getToken, updateToken } from "./dynamodb";
+import { getPlatformId, getNativeAssetAddress } from "./utils";
+import { NativeAssetAddress, Network, Token } from "./types";
+import { BigNumber } from "bignumber.js";
 
 const TOKEN_UPDATE_TIME = 60 * 15 * 1000; // 5 Minutes
 const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 7 * 1000; // 1 Week
@@ -50,8 +51,7 @@ class TokenFetcher {
   private getEndpoint(chainId: number, tokenAddress: string) {
     const endpointBase = 'https://api.coingecko.com/api/v3/simple/token_price/';
     const platformId = getPlatformId(chainId);
-    const nativeAssetId = getNativeAssetId(chainId);
-    const endpoint = `${endpointBase}${platformId}?contract_addresses=${tokenAddress}&vs_currencies=${nativeAssetId}`;
+    const endpoint = `${endpointBase}${platformId}?contract_addresses=${tokenAddress}&vs_currencies=eth`;
 
     return endpoint;
   }
@@ -59,7 +59,7 @@ class TokenFetcher {
   private async fetchPrice(token: Token): Promise<string> {
     this.availableTransactions--;
 
-    const nativeAssetId = getNativeAssetId(token.chainId);
+    const nativeAssetAddress = getNativeAssetAddress(token.chainId);
     const endpoint = this.getEndpoint(token.chainId, token.address);
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -77,13 +77,22 @@ class TokenFetcher {
   
     const data = await response.json();
   
-    if (data[token.address.toLowerCase()] == null || data[token.address.toLowerCase()][nativeAssetId] == null) {
+    if (data[token.address.toLowerCase()] == null || data[token.address.toLowerCase()]["eth"] == null) {
       const err = new HTTPError('No price returned from Coingecko');
       err.code = 404;
       throw err;
     }
   
-    return data[token.address.toLowerCase()][nativeAssetId];
+    const tokenPriceInEth = data[token.address.toLowerCase()]["eth"];
+    if (nativeAssetAddress === NativeAssetAddress.ETH) {
+      return tokenPriceInEth;
+    }
+
+    const nativeAssetToken = await getToken(1, nativeAssetAddress);
+    const nativeAssetToETHRatio = nativeAssetToken.price;
+    log(`Token ${token.symbol}, chain ${token.chainId} - Price in ETH: ${tokenPriceInEth}, native asset to ETH ratio: ${nativeAssetToETHRatio}`)
+    const tokenPriceInNativeAsset = new BigNumber(tokenPriceInEth).div(new BigNumber(nativeAssetToETHRatio));
+    return tokenPriceInNativeAsset.toString();
   }
 
   private async updateTokenPrice(token: Token): Promise<void> {
@@ -123,7 +132,7 @@ class TokenFetcher {
       return;
     }
     if (this.lastRateLimit > Date.now() - this.rateLimitWaitTimeMS) {
-      log(`Currently rate limited, waiting ${((this.lastRateLimit + this.rateLimitWaitTimeMS) - Date.now())/1000} more seconds`);
+      // log(`Currently rate limited, waiting ${((this.lastRateLimit + this.rateLimitWaitTimeMS) - Date.now())/1000} more seconds`);
       setTimeout(() => this.processQueue(), 1000);
       return;
     }
@@ -164,7 +173,7 @@ class TokenFetcher {
 
   public fetchPrices(tokens: Token[]) {
     tokens.forEach((token) => {
-      if (token.chainId == Network.KOVAN || token.chainId == Network.POLYGON) return;
+      if (token.chainId == Network.KOVAN) return;
       if (token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME) return;
       if (token.noPriceData && token.lastUpdate > Date.now() - TOKEN_RETRY_PRICE_DATA_TIME) return;
 

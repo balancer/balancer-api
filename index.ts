@@ -4,6 +4,8 @@ import { AttributeType, Table } from '@aws-cdk/aws-dynamodb';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { App, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
 import { NodejsFunction, NodejsFunctionProps } from '@aws-cdk/aws-lambda-nodejs';
+import { Rule, Schedule } from '@aws-cdk/aws-events';
+import { LambdaFunction } from '@aws-cdk/aws-events-targets';
 import { join } from 'path'
 
 const { INFURA_PROJECT_ID } = process.env;
@@ -11,6 +13,10 @@ const { INFURA_PROJECT_ID } = process.env;
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
     super(app, id);
+    
+    /**
+     * DynamoDB Tables
+     */
 
     const poolsTable = new Table(this, 'pools', {
       partitionKey: {
@@ -32,9 +38,19 @@ export class BalancerPoolsAPI extends Stack {
         name: 'address',
         type: AttributeType.STRING
       },
+      sortKey: {
+        name: 'chainId',
+        type: AttributeType.NUMBER
+      },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
+      readCapacity: 100,
+      writeCapacity: 100
     });
+
+    /**
+     * Lambdas
+     */
 
     const nodeJsFunctionProps: NodejsFunctionProps = {
       bundling: {
@@ -43,7 +59,7 @@ export class BalancerPoolsAPI extends Stack {
         ],
       },
       environment: {
-        INFURA_PROJECT_ID,
+        INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15)
@@ -57,48 +73,93 @@ export class BalancerPoolsAPI extends Stack {
       entry: join(__dirname, 'lambdas', 'get-pools.ts'),
       ...nodeJsFunctionProps,
     });
+    const getTokensLambda = new NodejsFunction(this, 'getTokensFunction', {
+      entry: join(__dirname, 'lambdas', 'get-tokens.ts'),
+      ...nodeJsFunctionProps,
+    });
     const runSORLambda = new NodejsFunction(this, 'runSORFunction', {
       entry: join(__dirname, 'lambdas', 'run-sor.ts'),
       ...nodeJsFunctionProps,
       memorySize: 256
     });
     const updatePoolsLambda = new NodejsFunction(this, 'updatePoolsFunction', {
-      entry: join(__dirname, 'lambdas', 'update.ts'),
+      entry: join(__dirname, 'lambdas', 'update-pools.ts'),
       ...nodeJsFunctionProps,
       memorySize: 512,
       timeout: Duration.seconds(60)
     });
+    
+    const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {
+      entry: join(__dirname, 'lambdas', 'update-prices.ts'),
+      ...nodeJsFunctionProps,
+      memorySize: 512,
+      timeout: Duration.seconds(60)
+    });
+
+    /** 
+     * Lambda Schedules
+     */
+
+    const rule = new Rule(this, 'updateTokenPricesEachMinute', {
+      schedule: Schedule.expression('rate(1 minute)')
+    });
+
+    rule.addTarget(new LambdaFunction(updateTokenPricesLambda))
+
+    /**
+     * Access Rules
+     */
 
     poolsTable.grantReadData(getPoolsLambda);
     poolsTable.grantReadData(getPoolLambda);
     poolsTable.grantReadWriteData(runSORLambda);
     poolsTable.grantReadWriteData(updatePoolsLambda);
 
+    tokensTable.grantReadData(getTokensLambda);
     tokensTable.grantReadWriteData(runSORLambda);
+    tokensTable.grantReadWriteData(updatePoolsLambda);
+    tokensTable.grantReadWriteData(updateTokenPricesLambda);
 
-    const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
-    const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
+    /**
+     * API Gateway
+     */
+
     const getPoolIntegration = new LambdaIntegration(getPoolLambda);
+    const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
+    const getTokensIntegration = new LambdaIntegration(getTokensLambda);
     const runSORIntegration = new LambdaIntegration(runSORLambda);
+    const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
+    const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
 
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service'
     });
 
     const pools = api.root.addResource('pools');
-    pools.addMethod('GET', getPoolsIntegration);
+    const poolsOnChain = pools.addResource('{chainId}')
+    poolsOnChain.addMethod('GET', getPoolsIntegration);
     addCorsOptions(pools);
 
-    const update = pools.addResource('update');
-    update.addMethod('POST', updatePoolsIntegration);
-    addCorsOptions(update);
+    const updatePools = poolsOnChain.addResource('update');
+    updatePools.addMethod('POST', updatePoolsIntegration);
+    addCorsOptions(updatePools);
 
-    const singlePool = pools.addResource('{id}');
+    const singlePool = poolsOnChain.addResource('{id}');
     singlePool.addMethod('GET', getPoolIntegration);
     addCorsOptions(singlePool);
 
+    const tokens = api.root.addResource('tokens');
+    const tokensOnChain = tokens.addResource('{chainId}');
+    tokensOnChain.addMethod('GET', getTokensIntegration);
+    addCorsOptions(tokens);
+
+    const updatePrices = tokens.addResource('update');
+    updatePrices.addMethod('POST', updateTokenPricesIntegration);
+    addCorsOptions(updatePrices);
+
     const sor = api.root.addResource('sor');
-    sor.addMethod('POST', runSORIntegration);
+    const sorOnChain = sor.addResource('{chainId}')
+    sorOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(sor);
   }
 }

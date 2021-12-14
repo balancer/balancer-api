@@ -27,15 +27,14 @@ app.get("/pools/:chainId", async (req, res, next) => {
 });
 
 app.get("/pools/:chainId/:id", async (req, res, next) => {
-  try {
-    const chainId = Number(req.params['chainId']);
-    const poolId = req.params['id'];
-    log(`Retrieving pool of id ${poolId}`);
-    const pools = await getPool(chainId, poolId);
-    res.json(pools);
-  } catch (error) {
-    log(`Error: ${error.message}`);
-    return next(error);
+  const chainId = Number(req.params['chainId']);
+  const poolId = req.params['id'];
+  log(`Retrieving pool of id ${poolId}`);
+  const pool = await getPool(chainId, poolId);
+  if (pool) {
+    return res.json(pool)
+  } else {
+    return res.sendStatus(404);
   }
 });
 

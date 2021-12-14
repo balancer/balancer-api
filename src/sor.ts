@@ -1,17 +1,19 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { SOR, SwapInfo, SubgraphPoolBase } from "@balancer-labs/sor";
-import { Order } from "./types";
+import { SOR, SwapInfo, SubgraphPoolBase, SwapOptions } from "@balancer-labs/sor";
+import { Order, Token, Pool } from "./types";
 import { 
-  getSymbol, 
+  getTokenInfo, 
   orderKindToSwapType,
   getInfuraUrl,
   getTheGraphURL
 } from "./utils";
-import { getPools } from "./dynamodb";
+import { getPools, getToken, getTokens } from "./dynamodb";
+import fetch from 'isomorphic-fetch';
+import { BigNumber } from '@ethersproject/bignumber';
 
 const log = console.log;
 
-export async function fetchPoolsFromChain(chainId: number): Promise<SubgraphPoolBase[]> {
+export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const poolsSource = getTheGraphURL(chainId);
   const infuraUrl = getInfuraUrl(chainId);
   const provider: any = new JsonRpcProvider(infuraUrl);
@@ -23,8 +25,30 @@ export async function fetchPoolsFromChain(chainId: number): Promise<SubgraphPool
   );
 
   await sor.fetchPools();  
-  const pools: SubgraphPoolBase[] = sor.getPools();
+  const pools: Pool[] = sor.getPools().map((pool) => {
+    return Object.assign({}, pool, {chainId});
+  });
   return pools;
+}
+
+export async function removeKnownTokens(chainId: number, tokenAddresses: string[]): Promise<string[]> {
+  const addressesWithNoInfo = await Promise.all(tokenAddresses.map(async (tokenAddress) => {
+    const hasInfo = await getToken(chainId, tokenAddress)
+    if (hasInfo) return null;
+    return tokenAddress;
+  }));
+  return addressesWithNoInfo.filter((tokenAddress) => tokenAddress != null);
+}
+
+export async function fetchTokens(chainId: number, tokenAddresses: string[]): Promise<Token[]> {
+  const infuraUrl = getInfuraUrl(chainId);
+  const provider: any = new JsonRpcProvider(infuraUrl);
+
+  const tokens: Token[] = await Promise.all(tokenAddresses.map((tokenAddress) => {
+    return getTokenInfo(provider, chainId, tokenAddress);
+  }));
+
+  return tokens;
 }
 
 export async function getSorSwap(chainId: number, order: Order): Promise<SwapInfo> {
@@ -40,17 +64,29 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
     pools
   );
 
-  const { sellToken, buyToken, orderKind, amount } = order;
+  const { sellToken, buyToken, orderKind, amount, gasPrice } = order;
+
+  const sellTokenDetails: Token = await getToken(chainId, sellToken);
+  log(`Got sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
+  const buyTokenDetails: Token = await getToken(chainId, buyToken);
+  log(`Got buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
+
+  sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
+  sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
 
   const tokenIn = sellToken;
   const tokenOut = buyToken;
   const swapType = orderKindToSwapType(orderKind);
 
+  const swapOptions = { 
+    gasPrice: BigNumber.from(gasPrice)
+  };
+
   await sor.fetchPools(pools, false);
 
   log(
-    `${orderKind}ing ${amount} ${await getSymbol(provider, chainId, sellToken)}` +
-      ` for ${await getSymbol(provider, chainId, buyToken)}`
+    `${orderKind}ing ${amount} ${sellTokenDetails.symbol}` +
+      ` for ${buyTokenDetails.symbol}`
   );
   log(orderKind);
   log(`Token In: ${tokenIn}`);
@@ -60,7 +96,8 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
     sellToken,
     buyToken,
     swapType,
-    amount
+    amount,
+    swapOptions
   );
 
   log(`SwapInfo: ${JSON.stringify(swapInfo)}`);
@@ -69,3 +106,4 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   log(swapInfo.returnAmount.toString());
   return swapInfo;
 }
+

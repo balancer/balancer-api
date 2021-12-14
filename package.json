@@ -7,21 +7,23 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc",
+    "build-cdk": "tsc --project ./tsconfig-cdk.json",
     "watch": "tsc -w",
     "dynamodb": "docker-compose up -d",
     "init": "node dist/init.js",
     "start": "node dist/server.js",
     "worker": "node dist/worker.js",
-    "deploy": "cdk deploy",
+    "deploy": "npm run build-cdk && cdk deploy",
     "cdk": "cdk"
   },
   "license": "MIT",
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "*",
-    "@aws-cdk/aws-dynamodb": "*",
-    "@aws-cdk/aws-lambda": "*",
-    "@aws-cdk/aws-lambda-nodejs": "*",
-    "@aws-cdk/core": "*",
+    "@aws-cdk/aws-apigateway": "^1.135.0",
+    "@aws-cdk/aws-dynamodb": "^1.135.0",
+    "@aws-cdk/aws-events-targets": "^1.135.0",
+    "@aws-cdk/aws-lambda": "^1.135.0",
+    "@aws-cdk/aws-lambda-nodejs": "^1.135.0",
+    "@aws-cdk/core": "^1.135.0",
     "@balancer-labs/sor": "^2.0.0-beta.8",
     "@ethersproject/contracts": "^5.0.5",
     "@ethersproject/providers": "^5.0.5",
@@ -31,6 +33,7 @@
     "dotenv": "^10.0.0",
     "ethers": "^5.3.0",
     "express": "^4.17.1",
+    "isomorphic-fetch": "^3.0.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {

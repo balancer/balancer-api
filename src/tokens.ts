@@ -4,7 +4,7 @@ import { NativeAssetAddress, Network, Token } from "./types";
 import { BigNumber } from "bignumber.js";
 
 const TOKEN_UPDATE_TIME = 60 * 15 * 1000; // 5 Minutes
-const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 7 * 1000; // 1 Week
+const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 60 * 7 * 1000; // 1 Week
 
 const COINGECKO_MAX_TPS = 10;
 

@@ -1,5 +1,5 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { SOR, SwapInfo, SubgraphPoolBase } from "@balancer-labs/sor";
+import { SOR, SwapInfo, SubgraphPoolBase, SwapOptions } from "@balancer-labs/sor";
 import { Order, Token, Pool } from "./types";
 import { 
   getTokenInfo, 
@@ -9,6 +9,7 @@ import {
 } from "./utils";
 import { getPools, getToken, getTokens } from "./dynamodb";
 import fetch from 'isomorphic-fetch';
+import { BigNumber } from '@ethersproject/bignumber';
 
 const log = console.log;
 
@@ -63,7 +64,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
     pools
   );
 
-  const { sellToken, buyToken, orderKind, amount } = order;
+  const { sellToken, buyToken, orderKind, amount, gasPrice } = order;
 
   const sellTokenDetails: Token = await getToken(chainId, sellToken);
   log(`Got sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
@@ -76,6 +77,10 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   const tokenIn = sellToken;
   const tokenOut = buyToken;
   const swapType = orderKindToSwapType(orderKind);
+
+  const swapOptions = { 
+    gasPrice: BigNumber.from(gasPrice)
+  };
 
   await sor.fetchPools(pools, false);
 
@@ -91,7 +96,8 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
     sellToken,
     buyToken,
     swapType,
-    amount
+    amount,
+    swapOptions
   );
 
   log(`SwapInfo: ${JSON.stringify(swapInfo)}`);

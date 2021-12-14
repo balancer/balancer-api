@@ -85,14 +85,16 @@ class TokenFetcher {
   
     const tokenPriceInEth = data[token.address.toLowerCase()]["eth"];
     if (nativeAssetAddress === NativeAssetAddress.ETH) {
-      return tokenPriceInEth;
+      const ethPriceInToken = new BigNumber(1).div(tokenPriceInEth);
+      return ethPriceInToken.toString();
     }
 
     const nativeAssetToken = await getToken(1, nativeAssetAddress);
     const nativeAssetToETHRatio = nativeAssetToken.price;
     log(`Token ${token.symbol}, chain ${token.chainId} - Price in ETH: ${tokenPriceInEth}, native asset to ETH ratio: ${nativeAssetToETHRatio}`)
     const tokenPriceInNativeAsset = new BigNumber(tokenPriceInEth).div(new BigNumber(nativeAssetToETHRatio));
-    return tokenPriceInNativeAsset.toString();
+    const nativeAssetPriceInToken = new BigNumber(1).div(tokenPriceInNativeAsset)
+    return nativeAssetPriceInToken.toString();
   }
 
   private async updateTokenPrice(token: Token): Promise<void> {

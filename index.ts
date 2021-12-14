@@ -161,6 +161,11 @@ export class BalancerPoolsAPI extends Stack {
     const sorOnChain = sor.addResource('{chainId}')
     sorOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(sor);
+
+    const gnosis = api.root.addResource('gnosis');
+    const gnosisOnChain = gnosis.addResource('{chainId}')
+    gnosisOnChain.addMethod('POST', runSORIntegration);
+    addCorsOptions(gnosis);
   }
 }
 

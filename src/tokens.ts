@@ -90,10 +90,9 @@ class TokenFetcher {
     }
 
     const nativeAssetToken = await getToken(1, nativeAssetAddress);
-    const nativeAssetToETHRatio = nativeAssetToken.price;
-    log(`Token ${token.symbol}, chain ${token.chainId} - Price in ETH: ${tokenPriceInEth}, native asset to ETH ratio: ${nativeAssetToETHRatio}`)
-    const tokenPriceInNativeAsset = new BigNumber(tokenPriceInEth).div(new BigNumber(nativeAssetToETHRatio));
-    const nativeAssetPriceInToken = new BigNumber(1).div(tokenPriceInNativeAsset)
+    const ethPriceInNativeAsset = nativeAssetToken.price;
+    log(`Token ${token.symbol}, chain ${token.chainId} - Price in ETH: ${tokenPriceInEth}, eth price in native asset: ${ethPriceInNativeAsset}`)
+    const nativeAssetPriceInToken = new BigNumber(tokenPriceInEth).times(new BigNumber(ethPriceInNativeAsset));
     return nativeAssetPriceInToken.toString();
   }
 
@@ -173,10 +172,37 @@ class TokenFetcher {
     }
   }
 
-  public fetchPrices(tokens: Token[]) {
+  /**
+   * Fetches the price of all native assets as a pre-load so that 
+   * token prices on their chain can be calculated accurately
+   **/
+  private async fetchNativeAssetPrices() {
+    await Promise.all(Object.entries(NativeAssetAddress).map(async ([key, address]) => {
+      console.log(`Checking native asset: ${key} ${address}`)
+      if (address === NativeAssetAddress.ETH) return;
+      let token = await getToken(1, address);
+      console.log(`Got current token info ${JSON.stringify(token)}`)
+      if (!token || !token.price) {
+        token = {
+          chainId: 1,
+          symbol: key,
+          address: address,
+          decimals: 18,
+          price: null
+        }
+      }
+        
+      console.log(`Adding native asset ${token.symbol} to queue`);
+      this.queue.push(token);
+    }));
+  }
+
+  public async fetchPrices(tokens: Token[]) {
+    await this.fetchNativeAssetPrices();
+
     tokens.forEach((token) => {
       if (token.chainId == Network.KOVAN) return;
-      if (token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME) return;
+      if (token.price && token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME) return;
       if (token.noPriceData && token.lastUpdate > Date.now() - TOKEN_RETRY_PRICE_DATA_TIME) return;
 
       log(`Token: ${token.symbol} has price data: ${token.noPriceData}, was last updated ${(Date.now() - token.lastUpdate)/1000} seconds ago`)

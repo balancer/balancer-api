@@ -24,7 +24,7 @@
     "@aws-cdk/aws-lambda": "^1.135.0",
     "@aws-cdk/aws-lambda-nodejs": "^1.135.0",
     "@aws-cdk/core": "^1.135.0",
-    "@balancer-labs/sor": "^2.0.0-beta.8",
+    "@balancer-labs/sor": "^2.1.0-beta.1",
     "@ethersproject/contracts": "^5.0.5",
     "@ethersproject/providers": "^5.0.5",
     "aws-sdk": "^2.1035.0",

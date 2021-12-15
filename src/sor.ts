@@ -91,10 +91,16 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
 
   if (sellTokenDetails) {
     sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
+  } else {
+    log(`No price found for token ${sellToken}. Defaulting to 0.`)
+    sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, '0');
   }
 
   if (buyTokenDetails) {
     sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
+  } else {
+    log(`No price found for token ${buyToken}. Defaulting to 0.`)
+    sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, '0');
   }
 
   const tokenIn = sellToken;

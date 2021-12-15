@@ -67,12 +67,18 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   const { sellToken, buyToken, orderKind, amount, gasPrice } = order;
 
   const sellTokenDetails: Token = await getToken(chainId, sellToken);
-  log(`Got sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
+  log(`Sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
   const buyTokenDetails: Token = await getToken(chainId, buyToken);
-  log(`Got buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
+  log(`Buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
 
-  sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
-  sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
+
+  if (sellTokenDetails) {
+    sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
+  }
+
+  if (buyTokenDetails) {
+    sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
+  }
 
   const tokenIn = sellToken;
   const tokenOut = buyToken;
@@ -84,9 +90,12 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
 
   await sor.fetchPools(pools, false);
 
+  const buyTokenSymbol = buyTokenDetails ? buyTokenDetails.symbol : buyToken;
+  const sellTokenSymbol = sellTokenDetails ? sellTokenDetails.symbol : sellToken;
+
   log(
-    `${orderKind}ing ${amount} ${sellTokenDetails.symbol}` +
-      ` for ${buyTokenDetails.symbol}`
+    `${orderKind}ing ${amount} ${sellTokenSymbol}` +
+      ` for ${buyTokenSymbol}`
   );
   log(orderKind);
   log(`Token In: ${tokenIn}`);

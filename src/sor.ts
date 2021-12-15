@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { SOR, SwapInfo, SubgraphPoolBase, SwapOptions } from "@balancer-labs/sor";
-import { Order, Token, Pool } from "./types";
+import { Order, Token, Pool, SerializedSwapInfo } from "./types";
 import { 
   getTokenInfo, 
   orderKindToSwapType,
@@ -51,7 +51,24 @@ export async function fetchTokens(chainId: number, tokenAddresses: string[]): Pr
   return tokens;
 }
 
-export async function getSorSwap(chainId: number, order: Order): Promise<SwapInfo> {
+function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
+  const serializedSwapInfo: SerializedSwapInfo = {
+    tokenAddresses: swapInfo.tokenAddresses,
+    swaps: swapInfo.swaps,
+    swapAmount: swapInfo.swapAmount.toString(),
+    swapAmountForSwaps: swapInfo.swapAmountForSwaps ? swapInfo.swapAmountForSwaps.toString() : '',
+    returnAmount: swapInfo.returnAmount.toString(),
+    returnAmountFromSwaps: swapInfo.returnAmountFromSwaps ? swapInfo.returnAmountFromSwaps.toString() : '',
+    returnAmountConsideringFees: swapInfo.returnAmountConsideringFees.toString(),
+    tokenIn: swapInfo.tokenIn,
+    tokenOut: swapInfo.tokenOut,
+    marketSp: swapInfo.marketSp
+  };
+
+  return serializedSwapInfo;
+}
+
+export async function getSorSwap(chainId: number, order: Order): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);
   const provider: any = new JsonRpcProvider(infuraUrl);
@@ -113,6 +130,10 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   log(swapInfo.swaps);
   log(swapInfo.tokenAddresses);
   log(swapInfo.returnAmount.toString());
-  return swapInfo;
+
+  const serializedSwapInfo = serializeSwapInfo(swapInfo);
+  log(`Serialized SwapInfo: ${JSON.stringify(swapInfo)}`);
+
+  return serializedSwapInfo;
 }
 

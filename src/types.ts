@@ -1,4 +1,5 @@
-import { SubgraphPoolBase } from '@balancer-labs/sor';
+import { SubgraphPoolBase, SwapV2 } from '@balancer-labs/sor';
+import { BigNumber } from '@ethersproject/bignumber';
 
 export const Network = {
     MAINNET: 1,
@@ -28,6 +29,19 @@ export interface Token {
     price: string; // Price of the token in the native asset (ETH, MATIC, etc)
     lastUpdate?: number;
     noPriceData?: boolean;
+}
+
+export interface SerializedSwapInfo {
+    tokenAddresses: string[];
+    swaps: SwapV2[];
+    swapAmount: string;
+    swapAmountForSwaps?: string;
+    returnAmount: string;
+    returnAmountFromSwaps?: string;
+    returnAmountConsideringFees: string;
+    tokenIn: string;
+    tokenOut: string;
+    marketSp: string;
 }
 
 export interface Pool extends SubgraphPoolBase {

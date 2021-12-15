@@ -24,10 +24,10 @@ const lastBlockNumber = {}
 
 function doWork() {
   log(`Working...`);
-  // Object.values(Network).forEach(async (chainId) => {
-  //   lastBlockNumber[chainId] = 0;
-  //   fetchAndSavePools(chainId);
-  // });
+  Object.values(Network).forEach(async (chainId) => {
+    lastBlockNumber[chainId] = 0;
+    fetchAndSavePools(chainId);
+  });
   updatePrices();
 }
 

@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { SOR, SwapInfo, SubgraphPoolBase, SwapOptions } from "@balancer-labs/sor";
-import { Order, Token, Pool } from "./types";
+import { Order, Token, Pool, SerializedSwapInfo } from "./types";
 import { 
   getTokenInfo, 
   orderKindToSwapType,
@@ -51,7 +51,24 @@ export async function fetchTokens(chainId: number, tokenAddresses: string[]): Pr
   return tokens;
 }
 
-export async function getSorSwap(chainId: number, order: Order): Promise<SwapInfo> {
+function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
+  const serializedSwapInfo: SerializedSwapInfo = {
+    tokenAddresses: swapInfo.tokenAddresses,
+    swaps: swapInfo.swaps,
+    swapAmount: swapInfo.swapAmount.toString(),
+    swapAmountForSwaps: swapInfo.swapAmountForSwaps ? swapInfo.swapAmountForSwaps.toString() : '',
+    returnAmount: swapInfo.returnAmount.toString(),
+    returnAmountFromSwaps: swapInfo.returnAmountFromSwaps ? swapInfo.returnAmountFromSwaps.toString() : '',
+    returnAmountConsideringFees: swapInfo.returnAmountConsideringFees.toString(),
+    tokenIn: swapInfo.tokenIn,
+    tokenOut: swapInfo.tokenOut,
+    marketSp: swapInfo.marketSp
+  };
+
+  return serializedSwapInfo;
+}
+
+export async function getSorSwap(chainId: number, order: Order): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);
   const provider: any = new JsonRpcProvider(infuraUrl);
@@ -67,12 +84,24 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   const { sellToken, buyToken, orderKind, amount, gasPrice } = order;
 
   const sellTokenDetails: Token = await getToken(chainId, sellToken);
-  log(`Got sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
+  log(`Sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
   const buyTokenDetails: Token = await getToken(chainId, buyToken);
-  log(`Got buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
+  log(`Buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
 
-  sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
-  sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
+
+  if (sellTokenDetails) {
+    sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
+  } else {
+    log(`No price found for token ${sellToken}. Defaulting to 0.`)
+    sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, '0');
+  }
+
+  if (buyTokenDetails) {
+    sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
+  } else {
+    log(`No price found for token ${buyToken}. Defaulting to 0.`)
+    sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, '0');
+  }
 
   const tokenIn = sellToken;
   const tokenOut = buyToken;
@@ -84,9 +113,12 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
 
   await sor.fetchPools(pools, false);
 
+  const buyTokenSymbol = buyTokenDetails ? buyTokenDetails.symbol : buyToken;
+  const sellTokenSymbol = sellTokenDetails ? sellTokenDetails.symbol : sellToken;
+
   log(
-    `${orderKind}ing ${amount} ${sellTokenDetails.symbol}` +
-      ` for ${buyTokenDetails.symbol}`
+    `${orderKind}ing ${amount} ${sellTokenSymbol}` +
+      ` for ${buyTokenSymbol}`
   );
   log(orderKind);
   log(`Token In: ${tokenIn}`);
@@ -104,6 +136,10 @@ export async function getSorSwap(chainId: number, order: Order): Promise<SwapInf
   log(swapInfo.swaps);
   log(swapInfo.tokenAddresses);
   log(swapInfo.returnAmount.toString());
-  return swapInfo;
+
+  const serializedSwapInfo = serializeSwapInfo(swapInfo);
+  log(`Serialized SwapInfo: ${JSON.stringify(swapInfo)}`);
+
+  return serializedSwapInfo;
 }
 

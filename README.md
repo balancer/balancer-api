@@ -88,6 +88,12 @@ cdk deploy # Run CDK to create/update your infrastructure
 After the deployment you will get an API URL that looks similar to `https://gtrabwaex9.execute-api.ap-southeast-2.amazonaws.com/prod/` this is
 your API Gateway URL, all endpoints below should be appended to this. Run `export ENDPOINT_URL=<your API url>` to be able to copy and paste the example queries below.
 
+## Infrastructure Overview
+
+Note: Everything inside the AWS container is setup by the CDK scripts in this repository. You'll need to manually configure any external services, such as Alchemy event triggers.
+
+![](./pools-api-diagram.png)
+
 ## API Endpoints
 
 The `{chainId}` in each endpoint is the chain/network number you wish to request from. 1 for Mainnet, 137 for Polygon, 42161 for Arbitrum etc.
@@ -189,3 +195,5 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13C
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
  ```
+
+

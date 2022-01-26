@@ -14,6 +14,10 @@ jobs:
       run: npm install -g npm@7 && npm ci
     - name: Install CDK
       run: npm install -g aws-cdk@2.9.0
+    - name: Build Project
+      run: npm run build
+    - name: Build CDK Templates
+      run: npm run build-cdk
     - name: Deploy CDK
       run: |
         cdk deploy --require-approval never

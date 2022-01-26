@@ -29,8 +29,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'pools',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: 100,
-      writeCapacity: 100
+      readCapacity: 10,
+      writeCapacity: 10
     });
 
     const tokensTable = new Table(this, 'tokens', {
@@ -44,8 +44,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: 100,
-      writeCapacity: 100
+      readCapacity: 10,
+      writeCapacity: 10
     });
 
     /**

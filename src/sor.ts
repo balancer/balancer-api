@@ -14,7 +14,6 @@ const log = console.log;
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const infuraUrl = getInfuraUrl(chainId);
-  console.log(infuraUrl);
 
   // Uses default PoolDataService to retrieve onChain data
   const balancer = new BalancerSDK({

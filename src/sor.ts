@@ -1,31 +1,29 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { SOR, SwapInfo, SubgraphPoolBase, SwapOptions } from "@balancer-labs/sor";
+import { BalancerSDK, SwapInfo } from '@balancer-labs/sdk';
 import { Order, Token, Pool, SerializedSwapInfo } from "./types";
 import { 
   getTokenInfo, 
   orderKindToSwapType,
   getInfuraUrl,
-  getTheGraphURL
 } from "./utils";
-import { getPools, getToken, getTokens } from "./dynamodb";
-import fetch from 'isomorphic-fetch';
+import { getToken } from "./dynamodb";
 import { BigNumber } from '@ethersproject/bignumber';
+import { DataBasePoolDataService } from './poolDataService';
 
 const log = console.log;
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
-  const poolsSource = getTheGraphURL(chainId);
   const infuraUrl = getInfuraUrl(chainId);
-  const provider: any = new JsonRpcProvider(infuraUrl);
+  console.log(infuraUrl);
 
-  const sor = new SOR(
-    provider,
-    chainId,
-    poolsSource
-  );
+  // Uses default PoolDataService to retrieve onChain data
+  const balancer = new BalancerSDK({
+    network: chainId,
+    rpcUrl: infuraUrl
+  });
 
-  await sor.fetchPools();  
-  const pools: Pool[] = sor.getPools().map((pool) => {
+  await balancer.sor.fetchPools();  
+  const pools: Pool[] = balancer.sor.getPools().map((pool) => {
     return Object.assign({}, pool, {chainId});
   });
   return pools;
@@ -71,15 +69,19 @@ function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
 export async function getSorSwap(chainId: number, order: Order): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);
-  const provider: any = new JsonRpcProvider(infuraUrl);
-  const pools: SubgraphPoolBase[] = await getPools(chainId);
 
-  const sor = new SOR(
-    provider,
-    chainId,
-    null,
-    pools
-  );
+  // SDK/SOR will use this to retrieve pool list from db (default uses onchain call which will be slow)
+  const dbPoolDataService = new DataBasePoolDataService({
+    chainId: chainId,
+  });
+  
+  const balancer = new BalancerSDK({
+    network: chainId,
+    rpcUrl: infuraUrl,
+    sor: {
+      poolDataService: dbPoolDataService
+    },
+  });
 
   const { sellToken, buyToken, orderKind, amount, gasPrice } = order;
 
@@ -90,17 +92,17 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
 
 
   if (sellTokenDetails) {
-    sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
+    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
   } else {
     log(`No price found for token ${sellToken}. Defaulting to 0.`)
-    sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, '0');
+    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, '0');
   }
 
   if (buyTokenDetails) {
-    sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
+    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
   } else {
     log(`No price found for token ${buyToken}. Defaulting to 0.`)
-    sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, '0');
+    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, '0');
   }
 
   const tokenIn = sellToken;
@@ -111,7 +113,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
     gasPrice: BigNumber.from(gasPrice)
   };
 
-  await sor.fetchPools(pools, false);
+  await balancer.sor.fetchPools();
 
   const buyTokenSymbol = buyTokenDetails ? buyTokenDetails.symbol : buyToken;
   const sellTokenSymbol = sellTokenDetails ? sellTokenDetails.symbol : sellToken;
@@ -124,7 +126,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   log(`Token In: ${tokenIn}`);
   log(`Token Out: ${tokenOut}`);
   log(`Amount: ${amount}`);
-  const swapInfo = await sor.getSwaps(
+  const swapInfo = await balancer.sor.getSwaps(
     sellToken,
     buyToken,
     swapType,

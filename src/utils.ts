@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
-import { SwapTypes } from "@balancer-labs/sor";
-import { getToken, updateToken } from "./dynamodb";
+import { SwapTypes } from "@balancer-labs/sdk";
+import { getToken } from "./dynamodb";
 import { Network, Token, Pool, NativeAssetAddress } from "./types";
 
 const { INFURA_PROJECT_ID } = process.env;

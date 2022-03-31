@@ -8,7 +8,7 @@ import {
 } from "./utils";
 import { getToken } from "./dynamodb";
 import { BigNumber } from '@ethersproject/bignumber';
-import { DataBasePoolDataService } from './poolDataService';
+import { DatabasePoolDataService } from './poolDataService';
 
 const log = console.log;
 
@@ -70,7 +70,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   const infuraUrl = getInfuraUrl(chainId);
 
   // SDK/SOR will use this to retrieve pool list from db (default uses onchain call which will be slow)
-  const dbPoolDataService = new DataBasePoolDataService({
+  const dbPoolDataService = new DatabasePoolDataService({
     chainId: chainId,
   });
   

@@ -2,17 +2,19 @@ import { SubgraphPoolBase } from '@balancer-labs/sdk';
 import { PoolDataService } from '@balancer-labs/sor';
 import { getPools } from "./dynamodb";
 
+interface DatabasePoolDataServiceConfig {
+    chainId: number;
+}
 
-export class DataBasePoolDataService implements PoolDataService {
+export class DatabasePoolDataService implements PoolDataService {
     chainId;
     constructor(
-        private readonly config: {
-            chainId: number;
-        }
-    ) { }
+        readonly config: DatabasePoolDataServiceConfig
+    ) { 
+        this.chainId = config.chainId;
+    }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
-        // FETCH POOLS FROM DB
         const pools = await getPools(this.chainId);
         return pools ?? [];
     }

@@ -8,7 +8,7 @@ import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { LambdaFunction } from '@aws-cdk/aws-events-targets';
 import { join } from 'path'
 
-const { INFURA_PROJECT_ID } = process.env;
+const { INFURA_PROJECT_ID, POOLS_API_DDB_READ_CAPACITY, POOLS_API_DDB_WRITE_CAPACITY } = process.env;
 
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
@@ -29,8 +29,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'pools',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: 100,
-      writeCapacity: 100
+      readCapacity: Number.parseInt(POOLS_API_DDB_READ_CAPACITY) || 10,
+      writeCapacity: Number.parseInt(POOLS_API_DDB_WRITE_CAPACITY) || 10
     });
 
     const tokensTable = new Table(this, 'tokens', {
@@ -44,8 +44,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: 100,
-      writeCapacity: 100
+      readCapacity: Number.parseInt(POOLS_API_DDB_READ_CAPACITY) || 10,
+      writeCapacity: Number.parseInt(POOLS_API_DDB_WRITE_CAPACITY) || 10
     });
 
     /**

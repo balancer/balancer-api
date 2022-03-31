@@ -10,6 +10,9 @@ import { join } from 'path'
 
 const { INFURA_PROJECT_ID, POOLS_API_DDB_READ_CAPACITY, POOLS_API_DDB_WRITE_CAPACITY } = process.env;
 
+const READ_CAPACITY = POOLS_API_DDB_READ_CAPACITY || '10';
+const WRITE_CAPACITY = POOLS_API_DDB_WRITE_CAPACITY || '10';
+
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
     super(app, id);
@@ -29,8 +32,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'pools',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: Number.parseInt(POOLS_API_DDB_READ_CAPACITY) || 10,
-      writeCapacity: Number.parseInt(POOLS_API_DDB_WRITE_CAPACITY) || 10
+      readCapacity: Number.parseInt(READ_CAPACITY),
+      writeCapacity: Number.parseInt(WRITE_CAPACITY)
     });
 
     const tokensTable = new Table(this, 'tokens', {
@@ -44,8 +47,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: Number.parseInt(POOLS_API_DDB_READ_CAPACITY) || 10,
-      writeCapacity: Number.parseInt(POOLS_API_DDB_WRITE_CAPACITY) || 10
+      readCapacity: Number.parseInt(READ_CAPACITY),
+      writeCapacity: Number.parseInt(WRITE_CAPACITY)
     });
 
     /**

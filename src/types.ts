@@ -1,5 +1,4 @@
-import { SubgraphPoolBase, SwapV2 } from '@balancer-labs/sor';
-import { BigNumber } from '@ethersproject/bignumber';
+import { SubgraphPoolBase, SwapV2 } from '@balancer-labs/sdk';
 
 export const Network = {
     MAINNET: 1,

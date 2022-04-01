@@ -177,3 +177,13 @@ export async function createTable(params) {
   }
   console.log("Created table.");
 }
+
+export async function deleteTable(name) {
+  const dynamodb = new AWS.DynamoDB();
+  try {
+    await dynamodb.deleteTable({TableName: name}).promise();
+  } catch(err) {
+    console.error("Unable to delete table ", name, " error: ", err);
+  }
+  console.log("Deleted table ", name);
+}

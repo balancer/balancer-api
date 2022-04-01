@@ -49,6 +49,8 @@ app.post("/sor/:chainId", express.json(), async (req, res, next) => {
   }
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   log(`Server listening at http://localhost:${port}`);
 });
+
+export default server;

@@ -57,7 +57,10 @@ jobs:
         node-version: '14.x'
     - name: Install deps
       run: npm install -g npm@7 && npm ci
-    - name: Start DynamoDB container
-      run: npm run dynamodb
+    - name: Setup DynamoDB Local
+      uses: rrainn/dynamodb-action@v2.0.1
+      with:
+        port: 8000
+        cors: '*'
     - name: Run Test
       run: npm run test

@@ -32,8 +32,13 @@ describe('server.ts', () => {
 
   describe('GET /pools/:chainId', () => {
     it('Should return the pools on Ethereum', async () => {
-      const response = await supertest(server).get('/pools/1')
-      expect(response.status).toEqual(200);
+      const response = await supertest(server)
+        .get('/pools/1')
+        .expect(200)
+        .then((res) => {
+          const pools = res.body;
+          expect(pools.length).toEqual(POOLS.length);
+        });
     });
   });
 
@@ -156,7 +161,7 @@ describe('server.ts', () => {
       });
 
     });
-    
+
   });
 
 });

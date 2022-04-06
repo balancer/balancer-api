@@ -10,7 +10,7 @@ export const localAWSConfig = {
   accessKeyId: 'not-important',
   secretAccessKey: 'not-important',  
   region: 'local',
-  endpoint: 'http://localhost:8000'
+  endpoint: 'http://172.19.0.2:8000'
 }
 
 export async function getTokenInfo(provider, chainId: number, address: string): Promise<Token> {

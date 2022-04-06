@@ -32,7 +32,7 @@ describe('server.ts', () => {
 
   describe('GET /pools/:chainId', () => {
     it('Should return the pools on Ethereum', async () => {
-      const response = await supertest(server)
+      await supertest(server)
         .get('/pools/1')
         .expect(200)
         .then((res) => {
@@ -41,6 +41,24 @@ describe('server.ts', () => {
         });
     });
   });
+
+  describe('GET /pools/:chainId/:poolId', () => {
+    it('Should return a single pools information', async () => {
+      await supertest(server)
+        .get('/pools/1/0x3ebf48cd7586d7a4521ce59e53d9a907ebf1480f000200000000000000000028')
+        .expect(200)
+        .then((res) => {
+          const pool = res.body;
+          expect(pool.address).toEqual('0x3ebf48cd7586d7a4521ce59e53d9a907ebf1480f');
+        });
+    });
+
+    it('Should return a 404 status code for a pool that doesnt exist', async () => {
+      await supertest(server)
+        .get('/pools/1/0xabcdefcd7586d7a4521ce59e53d9a907ebf1480f000200000000000000000028')
+        .expect(404);
+    })
+  })
 
   describe("POST /sor/:chainId", () => {
 

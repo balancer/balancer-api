@@ -193,6 +193,44 @@ describe('server.ts', () => {
 
   });
 
+  
+  describe('GET /tokens/:chainId', () => {
+    it('Should return the tokens on Ethereum', async () => {
+      await supertest(server)
+        .get('/tokens/1')
+        .expect(200)
+        .then((res) => {
+          const tokens = res.body;
+          expect(tokens.length).toEqual(TOKENS.length);
+        });
+    });
+
+    it('Should return a 404 status code for a chain that doesnt exist', async () => {
+      await supertest(server)
+        .get('/tokens/1111')
+        .expect(404)
+    });
+  });
+
+  describe('GET /tokens/:chainId/:tokenId', () => {
+    it('Should return a single tokens information', async () => {
+      await supertest(server)
+        .get(`/tokens/1/${TOKEN_ADDRESSES[Network.MAINNET].DAI}`)
+        .expect(200)
+        .then((res) => {
+          const token = res.body;
+          expect(token.symbol).toEqual('DAI');
+        });
+    });
+
+    it('Should return a 404 status code for a token that doesnt exist', async () => {
+      await supertest(server)
+        .get('/tokens/1/0xaaaaaaaab223fe8d0a0e5c4f27ead9083c756cc2')
+        .expect(404);
+    })
+  })
+
+
 });
 
 afterAll(async () => {

@@ -3,7 +3,7 @@ import debug from "debug";
 import express from "express";
 import { getSorSwap } from "./sor";
 import { getPool, getPools } from "./dynamodb";
-import { localAWSConfig } from "./utils";
+import { isValidChainId, localAWSConfig } from "./utils";
 
 const log = debug("balancer");
 
@@ -18,6 +18,7 @@ const app = express();
 app.get("/pools/:chainId", async (req, res, next) => {
   try {
     const chainId = Number(req.params['chainId']);
+    if (!isValidChainId(chainId)) return res.sendStatus(404);
     const pools = await getPools(chainId);
     res.json(pools);
   } catch (error) {

@@ -4,6 +4,19 @@ import { Token, Pool } from './types';
 
 const log = console.log;
 
+export async function isAlive() {
+  const dynamodb = new AWS.DynamoDB();
+  try {
+    await Promise.race([
+      dynamodb.listTables().promise(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+    ])
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 export async function updatePools(pools: Pool[]) {
   const docClient = new AWS.DynamoDB.DocumentClient();
   return Promise.all(pools.map(function(pool) {

@@ -106,6 +106,10 @@ export function getTheGraphURL(chainId: number): string {
   
 }
 
+export function isValidChainId(chainId: number): boolean {
+  return Object.values(Network).includes(chainId)
+}
+
 export function getPlatformId(chainId: string | number): string {
   const mapping = {
       '1': 'ethereum',

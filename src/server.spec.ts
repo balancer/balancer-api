@@ -1,13 +1,18 @@
 import { parseUnits } from 'ethers/lib/utils';
 import supertest from 'supertest';
 import { Network, SorRequest, SerializedSwapInfo } from './types';
-import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools } from './dynamodb';
+import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive } from './dynamodb';
 import TOKENS from '../test/mocks/tokens.json';
 import POOLS from '../test/mocks/pools.json';
 import server from './server';
 
 beforeAll(async () => {
   console.log("Checking DynamoDB is running...");
+  const isDynamoDBAlive = await isAlive();
+  if (!isDynamoDBAlive) {
+    console.error("DynamoDB is not running. Please start it with `npm run dynamodb` before running the tests.");
+    process.exit(1);
+  }
   console.log("Create DynamoDB Tables...");
   await createPoolsTable();
   await createTokensTable();
@@ -39,6 +44,12 @@ describe('server.ts', () => {
           const pools = res.body;
           expect(pools.length).toEqual(POOLS.length);
         });
+    });
+
+    it('Should return a 404 status code for a chain that doesnt exist', async () => {
+      await supertest(server)
+        .get('/pools/1111')
+        .expect(404)
     });
   });
 

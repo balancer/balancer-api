@@ -50,3 +50,12 @@ export interface SerializedSwapInfo {
 export interface Pool extends SubgraphPoolBase {
   chainId: number;
 }
+
+
+export interface SorRequest {
+    sellToken: string;
+    buyToken: string;
+    orderKind: 'sell' | 'buy',
+    amount: string;
+    gasPrice: string;
+}

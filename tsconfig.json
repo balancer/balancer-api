@@ -12,6 +12,9 @@
       "declaration": true,
   },
   "include": [
-      "src"
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts"
   ]
 }

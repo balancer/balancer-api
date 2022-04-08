@@ -2,8 +2,8 @@ require("dotenv").config();
 import debug from "debug";
 import express from "express";
 import { getSorSwap } from "./sor";
-import { getPool, getPools } from "./dynamodb";
-import { localAWSConfig } from "./utils";
+import { getPool, getPools, getToken, getTokens } from "./dynamodb";
+import { isValidChainId, localAWSConfig } from "./utils";
 
 const log = debug("balancer");
 
@@ -18,6 +18,7 @@ const app = express();
 app.get("/pools/:chainId", async (req, res, next) => {
   try {
     const chainId = Number(req.params['chainId']);
+    if (!isValidChainId(chainId)) return res.sendStatus(404);
     const pools = await getPools(chainId);
     res.json(pools);
   } catch (error) {
@@ -26,7 +27,7 @@ app.get("/pools/:chainId", async (req, res, next) => {
   }
 });
 
-app.get("/pools/:chainId/:id", async (req, res, next) => {
+app.get("/pools/:chainId/:id", async (req, res) => {
   const chainId = Number(req.params['chainId']);
   const poolId = req.params['id'];
   log(`Retrieving pool of id ${poolId}`);
@@ -49,6 +50,32 @@ app.post("/sor/:chainId", express.json(), async (req, res, next) => {
   }
 });
 
-app.listen(port, () => {
+app.get("/tokens/:chainId", async (req, res, next) => {
+  try {
+    const chainId = Number(req.params['chainId']);
+    if (!isValidChainId(chainId)) return res.sendStatus(404);
+    const tokens = await getTokens(chainId);
+    res.json(tokens);
+  } catch (error) {
+    log(`Error: ${error.message}`);
+    return next(error);
+  }
+});
+
+app.get("/tokens/:chainId/:id", async (req, res) => {
+  const chainId = Number(req.params['chainId']);
+  const tokenId = req.params['id'];
+  log(`Retrieving token of id ${tokenId}`);
+  const token = await getToken(chainId, tokenId);
+  if (token) {
+    return res.json(token)
+  } else {
+    return res.sendStatus(404);
+  }
+});
+
+const server = app.listen(port, () => {
   log(`Server listening at http://localhost:${port}`);
 });
+
+export default server;

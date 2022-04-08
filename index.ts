@@ -1,14 +1,20 @@
 require("dotenv").config();
-import { IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway';
+import { DomainName, IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway';
 import { AttributeType, Table } from '@aws-cdk/aws-dynamodb';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { App, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
 import { NodejsFunction, NodejsFunctionProps } from '@aws-cdk/aws-lambda-nodejs';
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { LambdaFunction } from '@aws-cdk/aws-events-targets';
+import { Certificate  } from '@aws-cdk/aws-certificatemanager';
 import { join } from 'path'
 
-const { INFURA_PROJECT_ID, POOLS_API_DDB_READ_CAPACITY, POOLS_API_DDB_WRITE_CAPACITY } = process.env;
+const { 
+  INFURA_PROJECT_ID, 
+  POOLS_API_DDB_READ_CAPACITY, 
+  POOLS_API_DDB_WRITE_CAPACITY,
+  DOMAIN_NAME 
+} = process.env;
 
 const READ_CAPACITY = POOLS_API_DDB_READ_CAPACITY || '10';
 const WRITE_CAPACITY = POOLS_API_DDB_WRITE_CAPACITY || '10';
@@ -169,6 +175,19 @@ export class BalancerPoolsAPI extends Stack {
     const gnosisOnChain = gnosis.addResource('{chainId}')
     gnosisOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
+
+    /**
+     * Subdomain
+     */
+    if (DOMAIN_NAME) {
+      const domainName = DOMAIN_NAME;
+      const domain = new DomainName(this, 'domain-name', {
+          domainName,
+          certificate: new Certificate(this, 'Cert', { domainName }),
+      });
+
+      domain.addBasePathMapping(api);
+    }
   }
 }
 

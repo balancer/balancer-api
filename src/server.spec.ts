@@ -5,6 +5,10 @@ import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updateP
 import TOKENS from '../test/mocks/tokens.json';
 import POOLS from '../test/mocks/pools.json';
 import server from './server';
+import { localAWSConfig } from "./utils";
+
+const AWS = require("aws-sdk");
+AWS.config.update(localAWSConfig);
 
 beforeAll(async () => {
   console.log("Checking DynamoDB is running...");

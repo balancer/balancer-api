@@ -207,7 +207,7 @@ class PriceFetcher {
       this.queue.push(token);
     });
 
-    tokens.sort((a, b) => {
+    this.queue.sort((a, b) => {
       return a.chainId - b.chainId;
     })
 

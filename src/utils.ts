@@ -110,7 +110,7 @@ export function isValidChainId(chainId: number): boolean {
   return Object.values(Network).includes(chainId)
 }
 
-export function getPlatformId(chainId: string | number): string {
+export function getPlatformId(chainId: string | number): string | undefined {
   const mapping = {
       '1': 'ethereum',
       '42': 'ethereum',
@@ -118,7 +118,7 @@ export function getPlatformId(chainId: string | number): string {
       '42161': 'arbitrum-one',
   };
 
-  return mapping[chainId.toString()] || 'ethereum';
+  return mapping[chainId.toString()];
 }
 
 export function getNativeAssetAddress(chainId: string | number): string {

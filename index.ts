@@ -95,7 +95,8 @@ export class BalancerPoolsAPI extends Stack {
       entry: join(__dirname, 'lambdas', 'update-pools.ts'),
       ...nodeJsFunctionProps,
       memorySize: 512,
-      timeout: Duration.seconds(60)
+      timeout: Duration.seconds(60),
+      reservedConcurrentExecutions: 1
     });
     
     const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {

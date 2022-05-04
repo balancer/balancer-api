@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
 import { SwapTypes } from "@balancer-labs/sdk";
 import { getToken } from "./dynamodb";
@@ -28,19 +28,25 @@ export async function getTokenInfo(provider, chainId: number, address: string): 
     ],
     provider
   );
-  const info = await Promise.all([
-    contract
-      .symbol()
-      .catch(
-          () => `${tokenAddress.substr(0, 4)}..${tokenAddress.substr(40)}`
-      ),
-    contract.decimals().then((d) => ethers.BigNumber.from(d).toNumber()),
-  ]);
+
+  let symbol = `${tokenAddress.substr(0, 4)}..${tokenAddress.substr(40)}`;
+  try {
+    symbol = await contract.symbol()
+  // eslint-disable-next-line no-empty
+  } catch {}
+
+  let decimals = 18;
+  try {
+    decimals = await contract.decimals();
+    decimals = BigNumber.from(decimals).toNumber();
+  // eslint-disable-next-line no-empty
+  } catch {}
+
   const tokenInfo = {
     chainId,
     address: tokenAddress,
-    symbol: info[0],
-    decimals: info[1],
+    symbol,
+    decimals,
     price: ''
   }
 

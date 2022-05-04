@@ -21,7 +21,7 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     rpcUrl: infuraUrl
   });
 
-  await balancer.sor.fetchPools();  
+  await balancer.sor.fetchPools();
   const pools: Pool[] = balancer.sor.getPools().map((pool) => {
     return Object.assign({}, pool, {chainId});
   });
@@ -41,9 +41,11 @@ export async function fetchTokens(chainId: number, tokenAddresses: string[]): Pr
   const infuraUrl = getInfuraUrl(chainId);
   const provider: any = new JsonRpcProvider(infuraUrl);
 
-  const tokens: Token[] = await Promise.all(tokenAddresses.map((tokenAddress) => {
-    return getTokenInfo(provider, chainId, tokenAddress);
-  }));
+  const tokens = await Promise.all(
+    tokenAddresses.map(
+      (tokenAddress) => getTokenInfo(provider, chainId, tokenAddress)
+    )
+  );
 
   return tokens;
 }

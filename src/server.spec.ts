@@ -1,10 +1,14 @@
 import { parseUnits } from 'ethers/lib/utils';
 import supertest from 'supertest';
-import { Network, SorRequest, SerializedSwapInfo } from './types';
-import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive } from './dynamodb';
+import { Network, SorRequest, SerializedSwapInfo, Token } from './types';
+import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive, updateToken } from './dynamodb';
 import TOKENS from '../test/mocks/tokens.json';
 import POOLS from '../test/mocks/pools.json';
 import server from './server';
+import { localAWSConfig } from "./utils";
+
+const AWS = require("aws-sdk");
+AWS.config.update(localAWSConfig);
 
 beforeAll(async () => {
   console.log("Checking DynamoDB is running...");
@@ -72,17 +76,18 @@ describe('server.ts', () => {
   })
 
   describe("POST /sor/:chainId", () => {
+    const defaultSwapAmount = parseUnits('1', 18).toString();
+    const defaultSorRequest: SorRequest = {
+      sellToken: '',
+      buyToken: '',
+      orderKind: 'sell',
+      amount: defaultSwapAmount,
+      gasPrice: parseUnits('10', 'gwei').toString()
+    }
+
 
     describe("Happy Swaps", () => {
-      const defaultSwapAmount = parseUnits('1', 18).toString();
-      const defaultSorRequest: SorRequest = {
-        sellToken: '',
-        buyToken: '',
-        orderKind: 'sell',
-        amount: defaultSwapAmount,
-        gasPrice: parseUnits('10', 'gwei').toString()
-      }
-
+      
       it('Should return BAL to DAI swap information', async () => {
         const sorRequest: SorRequest = {
           ...defaultSorRequest,
@@ -185,6 +190,39 @@ describe('server.ts', () => {
             expect(response.tokenAddresses).toContain(TOKEN_ADDRESSES[Network.MAINNET].USDT);
             expect(response.swaps.length).toBeGreaterThanOrEqual(1);
             expect(response.swapAmount).toBe(defaultSwapAmount);
+          });
+
+      });
+
+    });
+
+    describe("Error Handling", () => {
+      it("Should not crash when handling a token without decimals", async () => {
+        const badTokenAddress = "0xa7fD7D83E2d63f093b71C5F3B84c27cFF66A7802";
+        const tokenWithoutDecimals: Token = {
+          "chainId": 137,
+          "symbol": "BAD",
+          "decimals": null,
+          "address": badTokenAddress,
+          "price": "5",
+        }
+        await updateToken(tokenWithoutDecimals);
+
+        const sorRequest: SorRequest = {
+          ...defaultSorRequest,
+          sellToken: '0xa7fD7D83E2d63f093b71C5F3B84c27cFF66A7802',
+          buyToken: TOKEN_ADDRESSES[Network.MAINNET].DAI,
+        };
+
+        await supertest(server).post('/sor/1')
+          .send(sorRequest)
+          .expect(200)
+          .then((res) => {
+            const response = res.body as SerializedSwapInfo;
+            console.log("Response: ", response);
+            expect(response.tokenAddresses.length).toEqual(0);
+            expect(response.swaps.length).toEqual(0);
+            expect(response.swapAmount).toBe('0');
           });
 
       });

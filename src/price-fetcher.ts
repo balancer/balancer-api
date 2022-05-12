@@ -139,13 +139,13 @@ class PriceFetcher {
     }
   
     const tokenPriceInEth = data[token.address.toLowerCase()]["eth"];
-    const ethPriceInToken = new BigNumber(1).div(tokenPriceInEth);
+    const ethPriceInToken = new BigNumber(1).div(tokenPriceInEth).dp(token.decimals);
     if (nativeAssetAddress === NativeAssetAddress.ETH) {
       return ethPriceInToken.toString();
     }
 
     const ethPriceInNativeAsset = this.nativeAssetPrices[nativeAssetAddress];
-    const nativeAssetPriceInToken = new BigNumber(ethPriceInToken).div(new BigNumber(ethPriceInNativeAsset));
+    const nativeAssetPriceInToken = new BigNumber(ethPriceInToken).div(new BigNumber(ethPriceInNativeAsset)).dp(token.decimals);
     return nativeAssetPriceInToken.toString();
   }
 

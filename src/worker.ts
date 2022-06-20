@@ -8,11 +8,12 @@ import debug from "debug";
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Network } from "./types";
 import { fetchPoolsFromChain, fetchTokens, removeKnownTokens } from "./sor";
-import { getTokens, updatePools, updateTokens } from "./dynamodb";
+import { getPools, getTokens, updatePools, updateTokens } from "./dynamodb";
 import { localAWSConfig, getInfuraUrl, getTokenAddressesFromPools  } from "./utils";
 import { updateTokenPrices } from "./tokens";
+import { decoratePools } from "./pools";
 
-const log = debug("balancer");
+const log = debug("balancer:worker");
 
 const AWS = require("aws-sdk");
 AWS.config.update(localAWSConfig);
@@ -27,6 +28,7 @@ function doWork() {
   Object.values(Network).forEach(async (chainId) => {
     lastBlockNumber[chainId] = 0;
     fetchAndSavePools(chainId);
+    decorateAndSavePools(chainId);
   });
   updatePrices();
 }
@@ -57,6 +59,13 @@ async function fetchAndSavePools(chainId: number) {
   setTimeout(fetchAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
 }
 
+async function decorateAndSavePools(chainId: number) {
+  const tokens = await getTokens();
+  const pools = await getPools(chainId);
+  const decoratedPools = await decoratePools(pools, tokens)
+  // await updatePools(decoratedPools);
+}
+
 async function updatePrices() {
   const tokens = await getTokens();
   console.log("Updating token prices");
@@ -64,6 +73,5 @@ async function updatePrices() {
   console.log("Updated token prices");
   setTimeout(updatePrices, UPDATE_PRICES_INTERVAL);
 }
-
 
 doWork();

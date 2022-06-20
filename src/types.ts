@@ -49,6 +49,7 @@ export interface SerializedSwapInfo {
 
 export interface Pool extends SubgraphPoolBase {
   chainId: number;
+  totalLiquidity: string;
 }
 
 

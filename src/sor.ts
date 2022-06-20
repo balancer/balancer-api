@@ -23,7 +23,7 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
 
   await balancer.sor.fetchPools();
   const pools: Pool[] = balancer.sor.getPools().map((pool) => {
-    return Object.assign({}, pool, {chainId});
+    return Object.assign({totalLiquidity: '0'}, pool, {chainId});
   });
   return pools;
 }

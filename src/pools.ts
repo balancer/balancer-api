@@ -11,10 +11,10 @@ export async function decoratePools(pools: Pool[], tokens: Token[]) {
       const tokenPriceMatch = token.price.match(/[0-9]+\.[0-9]{0,18}/);
       const tokenPrice = tokenPriceMatch ? tokenPriceMatch[0] : '0';
       console.log("Token price: ", tokenPrice);
-      const priceInETH = formatFixed(
+      const priceInETH = tokenPrice !== '0' ? formatFixed(
         parseFixed('1', 36).div(parseFixed(tokenPrice, 18)),
         18
-      );
+      ) : '0';
       tokenPrices[token.address] = {
         eth: priceInETH,
       };
@@ -34,9 +34,11 @@ export async function decoratePools(pools: Pool[], tokens: Token[]) {
       poolLiquidity = await liquidityProvider.getLiquidity(pool as SDKPool);
     } catch (e) {
       console.log("Failed to calculate liquidity. Error is: ", e);
+      console.log("Pool is: ", pool);
       console.log("Tokens are: ", pool.tokens.map((token) => {
         return {...token, ...{price: tokenPrices[token.address]}}
       }));
+      // continue;
     }
 
     console.log("Current Liquidity: ", pool.totalLiquidity);

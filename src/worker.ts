@@ -28,6 +28,7 @@ function doWork() {
   Object.values(Network).forEach(async (chainId) => {
     lastBlockNumber[chainId] = 0;
     fetchAndSavePools(chainId);
+    console.log("Decorating and saving pools for chain ", chainId);
     decorateAndSavePools(chainId);
   });
   updatePrices();
@@ -61,8 +62,11 @@ async function fetchAndSavePools(chainId: number) {
 
 async function decorateAndSavePools(chainId: number) {
   const tokens = await getTokens();
+  console.log("Got tokens");
   const pools = await getPools(chainId);
+  console.log("Got pools")
   const decoratedPools = await decoratePools(pools, tokens)
+  console.log("Got decorated pools");
   // await updatePools(decoratedPools);
 }
 

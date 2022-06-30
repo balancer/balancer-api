@@ -107,8 +107,9 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     const sanctionsCheckLambda = new NodejsFunction(this, 'sanctionsCheckFunction', {
-      entry: join(__dirname, 'lambdas', 'sanctions-check.ts'),
-      ...nodeJsFunctionProps
+        entry: join(__dirname, 'lambdas', 'sanctions-check.ts'),
+        runtime: Runtime.NODEJS_14_X,
+        timeout: Duration.seconds(15)
     });
 
     /** 

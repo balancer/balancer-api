@@ -2,9 +2,22 @@ import fetch from 'isomorphic-fetch';
 
 const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v1/sanctions/screening';
 
+function formatResponse(statusCode, body) {
+  return { 
+    statusCode, 
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Headers" : "Content-Type",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "OPTIONS,POST"
+    },
+    body
+  };
+}
+
 export const handler = async (event: any = {}): Promise<any> => {
   if (!event.body) {
-    return { statusCode: 400, body: 'invalid request, you are missing the parameter body' };
+    return formatResponse(400, 'Error: invalid request, you are missing the request body');
   }
 
   const request = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
@@ -14,7 +27,7 @@ export const handler = async (event: any = {}): Promise<any> => {
   for (const check of sanctionChecks) {
     const address = check.address;
     if (!address) {
-      return { statusCode: 400, body: `Error: You are missing the address in one of your sanction checks` };
+      return formatResponse(400, 'Error: You are missing the address in one of your sanction checks');
     }
   }
 
@@ -28,9 +41,10 @@ export const handler = async (event: any = {}): Promise<any> => {
     });
 
     const result = await response.json();
-    return { statusCode: 200, body: JSON.stringify(result) };
+    return formatResponse(200, JSON.stringify(result));
+   
   } catch (e) {
     console.log(`Received error performing sanctions check on addresses ${sanctionChecks}: ${e}`)
-    return { statusCode: 500, body: '' };
+    return formatResponse(500, 'Unable to perform sanctions check');
   }
 };

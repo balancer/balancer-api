@@ -106,6 +106,12 @@ export class BalancerPoolsAPI extends Stack {
       timeout: Duration.seconds(60)
     });
 
+    const sanctionsCheckLambda = new NodejsFunction(this, 'sanctionsCheckFunction', {
+        entry: join(__dirname, 'lambdas', 'sanctions-check.ts'),
+        runtime: Runtime.NODEJS_14_X,
+        timeout: Duration.seconds(15)
+    });
+
     /** 
      * Lambda Schedules
      */
@@ -140,6 +146,7 @@ export class BalancerPoolsAPI extends Stack {
     const runSORIntegration = new LambdaIntegration(runSORLambda);
     const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
     const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
+    const sanctionsCheckIntegration = new LambdaIntegration(sanctionsCheckLambda);
 
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service'
@@ -176,6 +183,10 @@ export class BalancerPoolsAPI extends Stack {
     const gnosisOnChain = gnosis.addResource('{chainId}')
     gnosisOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
+
+    const sanctionsCheck = api.root.addResource('sanctions-check');
+    sanctionsCheck.addMethod('POST', sanctionsCheckIntegration);
+    addCorsOptions(sanctionsCheck);
 
     /**
      * Subdomain

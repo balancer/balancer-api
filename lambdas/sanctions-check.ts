@@ -9,9 +9,13 @@ export const handler = async (event: any = {}): Promise<any> => {
 
   const request = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
 
-  const address = request.address;
-  if (!address) {
-    return { statusCode: 400, body: `Error: You are missing the address in the body` };
+  const sanctionChecks = Array.isArray(request) ? request : [request];
+
+  for (const check of sanctionChecks) {
+    const address = check.address;
+    if (!address) {
+      return { statusCode: 400, body: `Error: You are missing the address in one of your sanction checks` };
+    }
   }
 
   try {
@@ -20,17 +24,13 @@ export const handler = async (event: any = {}): Promise<any> => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify([
-        {
-          address: address.toLowerCase()
-        }
-      ])
+      body: JSON.stringify(sanctionChecks)
     });
 
     const result = await response.json();
     return { statusCode: 200, body: JSON.stringify(result) };
   } catch (e) {
-    console.log(`Received error performing sanctions check on address ${address}: ${e}`)
+    console.log(`Received error performing sanctions check on addresses ${sanctionChecks}: ${e}`)
     return { statusCode: 500, body: '' };
   }
 };

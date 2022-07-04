@@ -98,6 +98,14 @@ export class BalancerPoolsAPI extends Stack {
       timeout: Duration.seconds(60),
       reservedConcurrentExecutions: 1
     });
+
+    const decoratePoolsLambda = new NodejsFunction(this, 'decoratePoolsFunction', {
+      entry: join(__dirname, 'lambdas', 'decorate-pools.ts'),
+      ...nodeJsFunctionProps,
+      memorySize: 256,
+      timeout: Duration.seconds(60),
+      reservedConcurrentExecutions: 1
+    });
     
     const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {
       entry: join(__dirname, 'lambdas', 'update-prices.ts'),
@@ -116,11 +124,12 @@ export class BalancerPoolsAPI extends Stack {
      * Lambda Schedules
      */
 
-    const rule = new Rule(this, 'updateTokenPricesEachMinute', {
+    const rule = new Rule(this, 'updateEachMinute', {
       schedule: Schedule.expression('rate(1 minute)')
     });
 
     rule.addTarget(new LambdaFunction(updateTokenPricesLambda))
+    rule.addTarget(new LambdaFunction(decoratePoolsLambda))
 
     /**
      * Access Rules
@@ -130,8 +139,10 @@ export class BalancerPoolsAPI extends Stack {
     poolsTable.grantReadData(getPoolLambda);
     poolsTable.grantReadWriteData(runSORLambda);
     poolsTable.grantReadWriteData(updatePoolsLambda);
+    poolsTable.grantReadWriteData(decoratePoolsLambda);
 
     tokensTable.grantReadData(getTokensLambda);
+    tokensTable.grantReadData(decoratePoolsLambda);
     tokensTable.grantReadWriteData(runSORLambda);
     tokensTable.grantReadWriteData(updatePoolsLambda);
     tokensTable.grantReadWriteData(updateTokenPricesLambda);

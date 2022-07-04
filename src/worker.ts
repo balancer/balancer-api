@@ -8,10 +8,11 @@ import debug from "debug";
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Network } from "./types";
 import { fetchPoolsFromChain, fetchTokens, removeKnownTokens } from "./sor";
-import { getPools, getTokens, updatePools, updateTokens } from "./dynamodb";
+import { getPools, getTokens, isAlive, updatePools, updateTokens } from "./dynamodb";
 import { localAWSConfig, getInfuraUrl, getTokenAddressesFromPools  } from "./utils";
 import { updateTokenPrices } from "./tokens";
-import { decoratePools } from "./pools";
+import { PoolDecorator } from "./pools/pool.decorator";
+import { exit } from "process";
 
 const log = debug("balancer:worker");
 
@@ -23,13 +24,20 @@ const UPDATE_PRICES_INTERVAL = 60 * 1000;
 
 const lastBlockNumber = {} 
 
-function doWork() {
+async function doWork() {
   log(`Working...`);
+  const isDynamoDBAlive = await isAlive();
+  if (!isDynamoDBAlive) {
+    console.error("Could not connect to DynamoDB. Please start it first before running worker");
+    exit(1);
+  }
   Object.values(Network).forEach(async (chainId) => {
     lastBlockNumber[chainId] = 0;
     fetchAndSavePools(chainId);
     console.log("Decorating and saving pools for chain ", chainId);
-    decorateAndSavePools(chainId);
+    if (chainId !== Network.KOVAN) {
+      decorateAndSavePools(chainId);
+    }
   });
   updatePrices();
 }
@@ -65,9 +73,12 @@ async function decorateAndSavePools(chainId: number) {
   console.log("Got tokens");
   const pools = await getPools(chainId);
   console.log("Got pools")
-  const decoratedPools = await decoratePools(pools, tokens)
+  const poolDecorator = new PoolDecorator(pools);
+  const decoratedPools = await poolDecorator.decorate(tokens);
   console.log("Got decorated pools");
   // await updatePools(decoratedPools);
+  console.log("Saved decorated pools");
+  setTimeout(decorateAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
 }
 
 async function updatePrices() {

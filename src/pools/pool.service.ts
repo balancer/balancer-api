@@ -31,7 +31,7 @@ export class PoolService {
       return '0';
     }
 
-    if (Number(poolLiquidity) == 0 && Number(this.pool.totalLiquidity) > 0) {
+    if (this.pool.id === '0xcf3ae4b9235b1c203457e472a011c12c3a2fde93000100000000000000000019' || (Number(poolLiquidity) == 0 && Number(this.pool.totalLiquidity) > 0)) {
       console.log("Failed to calculate liquidity for pool: ", this.pool);
       console.log("Tokens are: ", await Promise.all(this.pool.tokens.map(async (token) => {
         const tokenPrice = await this.tokenPriceProvider.find(token.address)

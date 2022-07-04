@@ -34,7 +34,6 @@ async function doWork() {
   Object.values(Network).forEach(async (chainId) => {
     lastBlockNumber[chainId] = 0;
     fetchAndSavePools(chainId);
-    console.log("Decorating and saving pools for chain ", chainId);
     if (chainId !== Network.KOVAN) {
       decorateAndSavePools(chainId);
     }
@@ -69,15 +68,16 @@ async function fetchAndSavePools(chainId: number) {
 }
 
 async function decorateAndSavePools(chainId: number) {
+  log(`Decorating and saving pools for chain ${chainId}`);
   const tokens = await getTokens();
-  console.log("Got tokens");
+  log(`loaded ${tokens.length} tokens`)
   const pools = await getPools(chainId);
-  console.log("Got pools")
+  log(`loaded ${pools.length} pools`);
   const poolDecorator = new PoolDecorator(pools);
   const decoratedPools = await poolDecorator.decorate(tokens);
-  console.log("Got decorated pools");
+  log(`Got ${decoratedPools.length} decorated pools`)
   // await updatePools(decoratedPools);
-  console.log("Saved decorated pools");
+  log(`Saved decorated pools`)
   setTimeout(decorateAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
 }
 

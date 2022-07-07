@@ -33,7 +33,7 @@ export async function updatePools(pools: Pool[]) {
   }));
 }
 
-export async function getPools(chainId: number): Promise<Pool[]> {
+export async function getPools(chainId: number, lastResult?: any): Promise<Pool[]> {
   const docClient = new AWS.DynamoDB.DocumentClient();
   const params = {
     TableName: 'pools',
@@ -41,9 +41,16 @@ export async function getPools(chainId: number): Promise<Pool[]> {
     ExpressionAttributeValues: {
         ':chainId': chainId
     },
+    ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
   }
   try {
     const pools = await docClient.scan(params).promise()
+    if (lastResult) {
+      pools.Items = lastResult.Items.concat(pools.Items);
+    }
+    if (pools.LastEvaluatedKey) {
+      return await getPools(chainId, pools);
+    }
     return pools.Items as Pool[];
   } catch (e) {
       console.error("Failed to get pools, error is: ", e)
@@ -82,10 +89,11 @@ export async function getToken(chainId: number, address: string): Promise<Token>
   }
 }
 
-export async function getTokens(chainId?: number): Promise<Token[]> {
+export async function getTokens(chainId?: number, lastResult?: any): Promise<Token[]> {
   const docClient = new AWS.DynamoDB.DocumentClient();
   const params: any = {
-    TableName: 'tokens'
+    TableName: 'tokens',
+    ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
   }
   if (chainId != null) {
     Object.assign(params, {
@@ -96,7 +104,13 @@ export async function getTokens(chainId?: number): Promise<Token[]> {
     })
   }
   try {
-    const tokens = await docClient.scan(params).promise()
+    const tokens = await docClient.scan(params).promise();
+    if (lastResult) {
+      tokens.Items = lastResult.Items.concat(tokens.Items);
+    }
+    if (tokens.LastEvaluatedKey) {
+      return await getTokens(chainId, tokens);
+    }
     return tokens.Items as Token[];
   } catch (e) {
       console.error("Failed to get tokens, error is: ", e)

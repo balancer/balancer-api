@@ -89,12 +89,12 @@ export class BalancerPoolsAPI extends Stack {
     const runSORLambda = new NodejsFunction(this, 'runSORFunction', {
       entry: join(__dirname, 'lambdas', 'run-sor.ts'),
       ...nodeJsFunctionProps,
-      memorySize: 256
+      memorySize: 2048
     });
     const updatePoolsLambda = new NodejsFunction(this, 'updatePoolsFunction', {
       entry: join(__dirname, 'lambdas', 'update-pools.ts'),
       ...nodeJsFunctionProps,
-      memorySize: 512,
+      memorySize: 2048,
       timeout: Duration.seconds(60),
       reservedConcurrentExecutions: 1
     });

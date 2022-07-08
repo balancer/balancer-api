@@ -6,7 +6,7 @@ import {
   getNativeAssetPriceSymbol,
 } from "./utils";
 import { getToken } from "./data-providers/dynamodb";
-import { BigNumber } from '@ethersproject/bignumber';
+import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './poolDataService';
 
 const log = console.log;
@@ -55,7 +55,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   const nativeAssetPriceSymbol = getNativeAssetPriceSymbol(chainId);
 
   if (sellTokenDetails && sellTokenDetails.price[nativeAssetPriceSymbol]) {
-    const priceOfNativeAssetInToken = BigNumber.from('1').div(sellTokenDetails.price[nativeAssetPriceSymbol]);
+    const priceOfNativeAssetInToken = formatFixed(parseFixed('1', 72).div(parseFixed(sellTokenDetails.price[nativeAssetPriceSymbol], 36)), 36);
     balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, priceOfNativeAssetInToken.toString());
   } else {
     log(`No price found for token ${sellToken}. Defaulting to 0.`)
@@ -63,7 +63,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   }
 
   if (buyTokenDetails && buyTokenDetails.price[nativeAssetPriceSymbol]) {
-    const priceOfNativeAssetInToken = BigNumber.from('1').div(buyTokenDetails.price[nativeAssetPriceSymbol]);
+    const priceOfNativeAssetInToken = formatFixed(parseFixed('1', 72).div(parseFixed(buyTokenDetails.price[nativeAssetPriceSymbol], 36)), 36);
     balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, priceOfNativeAssetInToken.toString());
   } else {
     log(`No price found for token ${buyToken}. Defaulting to 0.`)

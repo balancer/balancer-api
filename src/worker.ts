@@ -7,8 +7,8 @@ require("dotenv").config();
 import debug from "debug";
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Network } from "./types";
-import { fetchPoolsFromChain, fetchTokens, removeKnownTokens } from "./sor";
-import { getPools, getTokens, isAlive, updatePools, updateTokens } from "./dynamodb";
+import { fetchPoolsFromChain, fetchTokens, removeKnownTokens, sanitizePools } from "./data-providers/onchain";
+import { getPools, getTokens, isAlive, updatePools, updateTokens } from "./data-providers/dynamodb";
 import { localAWSConfig, getInfuraUrl, getTokenAddressesFromPools  } from "./utils";
 import { updateTokenPrices } from "./tokens";
 import { PoolDecorator } from "./pools/pool.decorator";
@@ -50,7 +50,9 @@ async function fetchAndSavePools(chainId: number) {
   if(currentBlockNo !== lastBlockNumber[chainId]){
     log(`New block ${currentBlockNo} found on chain ${chainId}!`);
     log(`Fetching pools from chain ${chainId}`)
-    const pools = await fetchPoolsFromChain(chainId);
+    const poolsFromChain = await fetchPoolsFromChain(chainId);
+    log(`Sanitizing ${poolsFromChain.length} pools`);
+    const pools = sanitizePools(poolsFromChain);
     log(`Saving ${pools.length} pools for chain ${chainId} to database`);
     await updatePools(pools);
     log(`Saved pools. Fetching Tokens for pools`);

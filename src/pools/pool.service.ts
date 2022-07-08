@@ -1,5 +1,5 @@
 import { Pool } from '../types';
-import { Pool as SDKPool, TokenPrices, PoolProvider, TokenPriceProvider, Liquidity  } from "@balancer-labs/sdk";
+import { Pool as SDKPool, PoolProvider, TokenPriceProvider, Liquidity  } from "@balancer-labs/sdk";
 
 
 export class PoolService {
@@ -40,6 +40,7 @@ export class PoolService {
     }
 
     console.log("Updating Liquidity for Pool: ", this.pool.id, " on chain: ", this.pool.chainId);
+    console.log("Graph Provided Liquidity: \t", this.pool.graphData?.totalLiquidity);
     console.log("Current Liquidity: \t\t", this.pool.totalLiquidity);
     console.log("Re-calculated liquidity: \t", poolLiquidity);
     console.log("---");

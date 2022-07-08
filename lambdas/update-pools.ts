@@ -1,6 +1,6 @@
 import { getTokenAddressesFromPools } from "../src/utils";
-import { updatePools, updateTokens } from "../src/dynamodb";
-import { fetchPoolsFromChain, fetchTokens, removeKnownTokens } from "../src/sor";
+import { updatePools, updateTokens } from "../src/data-providers/dynamodb";
+import { fetchPoolsFromChain, fetchTokens, removeKnownTokens, sanitizePools } from "../src/data-providers/onchain";
 
 export const handler = async (event: any = {}): Promise<any> => {
   const log = console.log;
@@ -12,7 +12,9 @@ export const handler = async (event: any = {}): Promise<any> => {
 
   try {
     log(`Fetching pools from chain ${chainId}`)
-    const pools = await fetchPoolsFromChain(chainId);
+    const poolsFromChain = await fetchPoolsFromChain(chainId);
+    log(`Sanitizing ${poolsFromChain.length} pools`);
+    const pools = sanitizePools(poolsFromChain);
     log(`Saving ${pools.length} pools for chain ${chainId} to database`);
     await updatePools(pools);
     log(`Saved pools. Fetching Tokens for pools`);

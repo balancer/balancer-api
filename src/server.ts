@@ -2,7 +2,7 @@ require("dotenv").config();
 import debug from "debug";
 import express from "express";
 import { getSorSwap } from "./sor";
-import { getPool, getPools, getToken, getTokens } from "./dynamodb";
+import { getPool, getPools, getToken, getTokens } from "./data-providers/dynamodb";
 import { isValidChainId, localAWSConfig } from "./utils";
 
 const log = debug("balancer");

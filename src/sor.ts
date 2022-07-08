@@ -1,54 +1,15 @@
-import { JsonRpcProvider } from '@ethersproject/providers';
 import { BalancerSDK, SwapInfo } from '@balancer-labs/sdk';
-import { Order, Token, Pool, SerializedSwapInfo } from "./types";
+import { Order, Token, SerializedSwapInfo } from "./types";
 import { 
-  getTokenInfo, 
   orderKindToSwapType,
   getInfuraUrl,
+  getNativeAssetPriceSymbol,
 } from "./utils";
-import { getToken } from "./dynamodb";
+import { getToken } from "./data-providers/dynamodb";
 import { BigNumber } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './poolDataService';
 
 const log = console.log;
-
-export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
-  const infuraUrl = getInfuraUrl(chainId);
-
-  // Uses default PoolDataService to retrieve onChain data
-  const balancer = new BalancerSDK({
-    network: chainId,
-    rpcUrl: infuraUrl
-  });
-
-  await balancer.sor.fetchPools();
-  const pools: Pool[] = balancer.sor.getPools().map((pool) => {
-    return Object.assign({totalLiquidity: '0'}, pool, {chainId});
-  });
-  return pools;
-}
-
-export async function removeKnownTokens(chainId: number, tokenAddresses: string[]): Promise<string[]> {
-  const addressesWithNoInfo = await Promise.all(tokenAddresses.map(async (tokenAddress) => {
-    const hasInfo = await getToken(chainId, tokenAddress)
-    if (hasInfo) return null;
-    return tokenAddress;
-  }));
-  return addressesWithNoInfo.filter((tokenAddress) => tokenAddress != null);
-}
-
-export async function fetchTokens(chainId: number, tokenAddresses: string[]): Promise<Token[]> {
-  const infuraUrl = getInfuraUrl(chainId);
-  const provider: any = new JsonRpcProvider(infuraUrl);
-
-  const tokens = await Promise.all(
-    tokenAddresses.map(
-      (tokenAddress) => getTokenInfo(provider, chainId, tokenAddress)
-    )
-  );
-
-  return tokens;
-}
 
 function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
   const serializedSwapInfo: SerializedSwapInfo = {
@@ -91,16 +52,19 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   const buyTokenDetails: Token = await getToken(chainId, buyToken);
   log(`Buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
 
+  const nativeAssetPriceSymbol = getNativeAssetPriceSymbol(chainId);
 
-  if (sellTokenDetails) {
-    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, sellTokenDetails.price);
+  if (sellTokenDetails && sellTokenDetails.price[nativeAssetPriceSymbol]) {
+    const priceOfNativeAssetInToken = BigNumber.from('1').div(sellTokenDetails.price[nativeAssetPriceSymbol]);
+    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, priceOfNativeAssetInToken.toString());
   } else {
     log(`No price found for token ${sellToken}. Defaulting to 0.`)
     balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, '0');
   }
 
-  if (buyTokenDetails) {
-    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, buyTokenDetails.price);
+  if (buyTokenDetails && buyTokenDetails.price[nativeAssetPriceSymbol]) {
+    const priceOfNativeAssetInToken = BigNumber.from('1').div(buyTokenDetails.price[nativeAssetPriceSymbol]);
+    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, priceOfNativeAssetInToken.toString());
   } else {
     log(`No price found for token ${buyToken}. Defaulting to 0.`)
     balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, '0');

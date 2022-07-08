@@ -1,7 +1,6 @@
-import { formatFixed, parseFixed } from '@ethersproject/bignumber';
 import { Token } from "./types";
 import PriceFetcher from './price-fetcher';
-import { updateTokens } from "./dynamodb";
+import { updateTokens } from "./data-providers/dynamodb";
 import { TokenPrices } from "@balancer-labs/sdk";
 
 const log = console.log;
@@ -24,16 +23,7 @@ export function tokensToTokenPrices(tokens: Token[]): TokenPrices {
   const tokenPrices: TokenPrices = {};
   tokens.forEach((token) => {
     if (token.price) {
-      // Strip price down to max 18 decimals.
-      const tokenPriceMatch = token.price.match(/[0-9]+\.[0-9]{0,18}/);
-      const tokenPrice = tokenPriceMatch ? tokenPriceMatch[0] : '0';
-      const priceInETH = tokenPrice !== '0' ? formatFixed(
-        parseFixed('1', 36).div(parseFixed(tokenPrice, 18)),
-        18
-      ) : '0';
-      tokenPrices[token.address] = {
-        eth: priceInETH,
-      };
+      tokenPrices[token.address] = token.price;
     }
   });
 

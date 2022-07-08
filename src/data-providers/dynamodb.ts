@@ -1,6 +1,6 @@
 /* Functions for writing and reading to DynamoDB database */
 import AWS from 'aws-sdk';
-import { Token, Pool } from './types';
+import { Token, Pool } from '../types';
 
 const log = console.log;
 

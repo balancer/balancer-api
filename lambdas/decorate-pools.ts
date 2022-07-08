@@ -3,7 +3,7 @@
  * This lambda runs after prices have been updated, it updates the liquidity of each pool
  * based on the latest token prices + pool token values.
  */
-import { getPools, getTokens, updatePools } from "../src/dynamodb";
+import { getPools, getTokens, updatePools } from "../src/data-providers/dynamodb";
 import { PoolDecorator } from "../src/pools/pool.decorator";
  
 export const handler = async (event: any = {}): Promise<any> => {

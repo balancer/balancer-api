@@ -1,8 +1,8 @@
 import { BigNumber, ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
 import { SwapTypes } from "@balancer-labs/sdk";
-import { getToken } from "./dynamodb";
-import { Network, Token, Pool, NativeAssetAddress } from "./types";
+import { getToken } from "./data-providers/dynamodb";
+import { Network, Token, Pool, NativeAssetAddress, NativeAssetPriceSymbol } from "./types";
 
 const { INFURA_PROJECT_ID } = process.env;
 
@@ -47,7 +47,7 @@ export async function getTokenInfo(provider, chainId: number, address: string): 
     address: tokenAddress,
     symbol,
     decimals,
-    price: ''
+    price: {}
   }
 
   return tokenInfo;
@@ -104,7 +104,7 @@ export function getTheGraphURL(chainId: number): string {
     case Network.POLYGON:
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2';
     case Network.ARBITRUM:
-      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2'
+      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2-beta'
     case Network.MAINNET:
     default:
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2';
@@ -135,6 +135,19 @@ export function getNativeAssetAddress(chainId: string | number): string {
       // TODO: convert through ETH as intermediary
       '137': NativeAssetAddress.MATIC,
       '42161': NativeAssetAddress.ETH,
+  };
+
+  return mapping[chainId.toString()] || 'eth';
+}
+
+export function getNativeAssetPriceSymbol(chainId: string | number): string {
+  const mapping = {
+      '1': NativeAssetPriceSymbol.ETH,
+      '42': NativeAssetPriceSymbol.ETH,
+      // CoinGecko does not provide prices in terms of MATIC
+      // TODO: convert through ETH as intermediary
+      '137': NativeAssetPriceSymbol.MATIC,
+      '42161': NativeAssetPriceSymbol.ETH,
   };
 
   return mapping[chainId.toString()] || 'eth';

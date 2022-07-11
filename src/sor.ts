@@ -60,7 +60,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
 
   let priceOfNativeAssetInSellToken = 0;
   if (sellTokenDetails && sellTokenDetails.price) {
-    if (typeof sellTokenDetails.price === "string") {
+    if (typeof sellTokenDetails.price !== "object") {
       priceOfNativeAssetInSellToken = sellTokenDetails.price;
     } else if (sellTokenDetails.price[nativeAssetPriceSymbol]) {
       priceOfNativeAssetInSellToken = Number(formatFixed(parseFixed('1', 72).div(parseFixed(sellTokenDetails.price[nativeAssetPriceSymbol], 36)), 36));
@@ -71,7 +71,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
 
   let priceOfNativeAssetInBuyToken = 0;
   if (buyTokenDetails && buyTokenDetails.price) {
-    if (typeof buyTokenDetails.price === "string") {
+    if (typeof buyTokenDetails.price !== "object") {
       priceOfNativeAssetInBuyToken = buyTokenDetails.price;
     } else if (buyTokenDetails.price[nativeAssetPriceSymbol]) {
       priceOfNativeAssetInBuyToken = Number(formatFixed(parseFixed('1', 72).div(parseFixed(buyTokenDetails.price[nativeAssetPriceSymbol], 36)), 36));

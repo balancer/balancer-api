@@ -59,7 +59,16 @@ describe("SOR", () => {
     it('Should call setNativeAssetPriceInToken with the price of the native asset in the token when the price is a string. For backwards compatability', async () => {
       require('./data-providers/dynamodb')._setToken('0xABC', {
         address: '0xABC',
-        price: '555' // price of ETH in token
+        price: '444'
+      });
+      await getSorSwap(chainId, order);
+      expect(mockSwapCostCalculator.setNativeAssetPriceInToken).toHaveBeenCalledWith('0xABC', '444');
+    });
+
+    it('Should call setNativeAssetPriceInToken with the price of the native asset in the token when the price is a string. For backwards compatability', async () => {
+      require('./data-providers/dynamodb')._setToken('0xABC', {
+        address: '0xABC',
+        price: 555
       });
       await getSorSwap(chainId, order);
       expect(mockSwapCostCalculator.setNativeAssetPriceInToken).toHaveBeenCalledWith('0xABC', '555');

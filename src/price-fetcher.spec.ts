@@ -36,17 +36,30 @@ TOKEN_ADDRESSES[Network.ARBITRUM] = {
   DAI: '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
 }
 
+const TOKEN_PRICE_BASEURL = COINGECKO_BASEURL + '/simple/token_price'
+
 describe("Price Fetcher", () => {
   let priceFetcher;
 
   beforeEach(() => {
     priceFetcher = new PriceFetcher();
 
-    nock(COINGECKO_BASEURL)
-      .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].MATIC}&vs_currencies=eth`)
+    nock(TOKEN_PRICE_BASEURL)
+      .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].MATIC}&vs_currencies=usd`)
       .reply(200, {
         [TOKEN_ADDRESSES[Network.MAINNET].MATIC]: {
-          "eth": 0.0008
+          "usd": 2
+        }
+      });
+
+      nock(COINGECKO_BASEURL)
+      .get(`/simple/price?ids=ethereum,matic-network&vs_currencies=usd`)
+      .reply(200, {
+        "ethereum": {
+          "usd": 2500
+        },
+        "matic-network": {
+          "usd": 2
         }
       });
   });
@@ -57,20 +70,19 @@ describe("Price Fetcher", () => {
         symbol: 'DAI',
         address: TOKEN_ADDRESSES[Network.MAINNET].DAI,
         chainId: Network.MAINNET,
-        decimals: 18,
-        price: null
+        decimals: 18
       }];
 
-      nock(COINGECKO_BASEURL)
-        .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].DAI}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].DAI}&vs_currencies=usd`)
         .reply(200, {
           [TOKEN_ADDRESSES[Network.MAINNET].DAI]: {
-            "eth": 0.0004
+            "usd": 1
           }
         });
 
       const tokensWithPrices = await priceFetcher.fetch(tokens);
-      expect(tokensWithPrices[0].price).toEqual('2500'); // ETH price in DAI
+      expect(tokensWithPrices[0].price).toEqual({usd: "1", eth: "0.0004"}); 
     });
 
     it("Should fetch two tokens from Ethereum", async () => {
@@ -78,30 +90,28 @@ describe("Price Fetcher", () => {
         symbol: 'BAL',
         address: TOKEN_ADDRESSES[Network.MAINNET].BAL,
         chainId: Network.MAINNET,
-        decimals: 18,
-        price: null
+        decimals: 18
       }, {
         symbol: 'USDC',
         address: TOKEN_ADDRESSES[Network.MAINNET].USDC,
         chainId: Network.MAINNET,
-        decimals: 6,
-        price: null
+        decimals: 6
       }];
 
-      nock(COINGECKO_BASEURL)
-        .get(`/ethereum?contract_addresses=${tokens.map(t => t.address).join(',')}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/ethereum?contract_addresses=${tokens.map(t => t.address).join(',')}&vs_currencies=usd`)
         .reply(200, {
           [TOKEN_ADDRESSES[Network.MAINNET].BAL]: {
-            "eth": 0.01
+            "usd": 25
           },
           [TOKEN_ADDRESSES[Network.MAINNET].USDC]: {
-            "eth": 0.0004
+            "usd":1
           }
         });
 
       const tokensWithPrices = await priceFetcher.fetch(tokens);
-      expect(tokensWithPrices[0].price).toEqual('100'); // ETH price in BAL
-      expect(tokensWithPrices[1].price).toEqual('2500'); // ETH price in USDC
+      expect(tokensWithPrices[0].price).toEqual({usd: "25", eth: "0.01"});
+      expect(tokensWithPrices[1].price).toEqual({usd: "1", eth: "0.0004"}); 
     });
 
     it("Should handle invalid tokens gracefully", async () => {
@@ -109,16 +119,15 @@ describe("Price Fetcher", () => {
         symbol: 'INVALID',
         address: TOKEN_ADDRESSES[Network.MAINNET].INVALID,
         chainId: Network.MAINNET,
-        decimals: 18,
-        price: null
+        decimals: 18
       }];
 
-      nock(COINGECKO_BASEURL)
-        .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].INVALID}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].INVALID}&vs_currencies=usd`)
         .reply(200, {});
 
       const tokensWithPrices = await priceFetcher.fetch(tokens);
-      expect(tokensWithPrices[0].price).toEqual(null);
+      expect(tokensWithPrices[0].price).toEqual(undefined);
       expect(tokensWithPrices[0].noPriceData).toEqual(true);
     });
 
@@ -127,16 +136,15 @@ describe("Price Fetcher", () => {
         symbol: 'MALFORMED',
         address: TOKEN_ADDRESSES[Network.MAINNET].MALFORMED,
         chainId: Network.MAINNET,
-        decimals: 18,
-        price: null
+        decimals: 18
       }];
 
-      nock(COINGECKO_BASEURL)
-        .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].MALFORMED}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].MALFORMED}&vs_currencies=usd`)
         .reply(200, {});
 
       const tokensWithPrices = await priceFetcher.fetch(tokens);
-      expect(tokensWithPrices[0].price).toEqual(null);
+      expect(tokensWithPrices[0].price).toEqual(undefined);
       expect(tokensWithPrices[0].noPriceData).toEqual(true);
     });
 
@@ -146,7 +154,9 @@ describe("Price Fetcher", () => {
         address: TOKEN_ADDRESSES[Network.MAINNET].DAI,
         chainId: Network.MAINNET,
         decimals: 18,
-        price: '2200',
+        price: {
+          usd: '2200'
+        },
         lastUpdate: Date.now() - 100
       }];
 
@@ -160,7 +170,7 @@ describe("Price Fetcher", () => {
         address: TOKEN_ADDRESSES[Network.MAINNET].INVALID,
         chainId: Network.MAINNET,
         decimals: 18,
-        price: null,
+        price: undefined,
         noPriceData: true,
         lastUpdate: Date.now() - (3 * 86400  * 1000)
       }];
@@ -177,19 +187,19 @@ describe("Price Fetcher", () => {
         address: TOKEN_ADDRESSES[Network.POLYGON].TEL,
         chainId: Network.POLYGON,
         decimals: 2,
-        price: null
+        price: undefined
       }];
 
-      nock(COINGECKO_BASEURL)
-        .get(`/polygon-pos?contract_addresses=${TOKEN_ADDRESSES[Network.POLYGON].TEL}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/polygon-pos?contract_addresses=${TOKEN_ADDRESSES[Network.POLYGON].TEL}&vs_currencies=usd`)
         .reply(200, {
           [TOKEN_ADDRESSES[Network.POLYGON].TEL.toLowerCase()]: {
-            "eth": 0.000002
+            "usd": 0.005
           }
         });
 
       const tokensWithPrices = await priceFetcher.fetch(tokens);
-      expect(tokensWithPrices[0].price).toEqual('400'); // MATIC price in TEL
+      expect(tokensWithPrices[0].price).toEqual({usd: "0.005", matic: "0.0025"});
     });
   });
 
@@ -199,83 +209,77 @@ describe("Price Fetcher", () => {
         symbol: 'BAL',
         address: TOKEN_ADDRESSES[Network.MAINNET].BAL,
         chainId: Network.MAINNET,
-        decimals: 18,
-        price: null
+        decimals: 18
       },{
         symbol: 'DAI',
         address: TOKEN_ADDRESSES[Network.MAINNET].DAI,
         chainId: Network.MAINNET,
-        decimals: 18,
-        price: null
+        decimals: 18
       }]
       const polygonTokens: Token[] = [{
         symbol: 'BAL',
         address: TOKEN_ADDRESSES[Network.POLYGON].BAL,
         chainId: Network.POLYGON,
-        decimals: 18,
-        price: null
+        decimals: 18
       },{
         symbol: 'DAI',
         address: TOKEN_ADDRESSES[Network.POLYGON].DAI,
         chainId: Network.POLYGON,
-        decimals: 18,
-        price: null
+        decimals: 18
       }]
       const arbitrumTokens: Token[] = [{
         symbol: 'BAL',
         address: TOKEN_ADDRESSES[Network.ARBITRUM].BAL,
         chainId: Network.ARBITRUM,
-        decimals: 18,
-        price: null
+        decimals: 18
       }, {
         symbol: 'DAI',
         address: TOKEN_ADDRESSES[Network.ARBITRUM].DAI,
         chainId: Network.ARBITRUM,
-        decimals: 18,
-        price: null
+        decimals: 18
       }];
 
-      nock(COINGECKO_BASEURL)
-        .get(`/ethereum?contract_addresses=${mainnetTokens.map(t => t.address).join(',')}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/ethereum?contract_addresses=${mainnetTokens.map(t => t.address).join(',')}&vs_currencies=usd`)
         .reply(200, {
           [TOKEN_ADDRESSES[Network.MAINNET].BAL]: {
-            "eth": 0.01
+            "usd": 25
           },
           [TOKEN_ADDRESSES[Network.MAINNET].DAI]: {
-            "eth": 0.0004
+            "usd": 1
           }
         });
 
-      nock(COINGECKO_BASEURL)
-        .get(`/polygon-pos?contract_addresses=${polygonTokens.map(t => t.address).join(',')}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/polygon-pos?contract_addresses=${polygonTokens.map(t => t.address).join(',')}&vs_currencies=usd`)
         .reply(200, {
           [TOKEN_ADDRESSES[Network.POLYGON].BAL]: {
-            "eth": 0.01
+            "usd": 25
           },
           [TOKEN_ADDRESSES[Network.POLYGON].DAI]: {
-            "eth": 0.0004
+            "usd": 1
           }
         });
 
-      nock(COINGECKO_BASEURL)
-        .get(`/arbitrum-one?contract_addresses=${arbitrumTokens.map(t => t.address).join(',')}&vs_currencies=eth`)
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/arbitrum-one?contract_addresses=${arbitrumTokens.map(t => t.address).join(',')}&vs_currencies=usd`)
         .reply(200, {
           [TOKEN_ADDRESSES[Network.ARBITRUM].BAL]: {
-            "eth": 0.01
+            "usd": 25
           },
           [TOKEN_ADDRESSES[Network.ARBITRUM].DAI]: {
-            "eth": 0.0004
+            "usd": 1
           }
         });
 
-      const tokens = [].concat(mainnetTokens).concat(polygonTokens).concat(arbitrumTokens);
+      const tokens = ([] as Token[]).concat(mainnetTokens).concat(polygonTokens).concat(arbitrumTokens);
       const tokensWithPrices = await priceFetcher.fetch(tokens);
-      expect(tokensWithPrices[0].price).toEqual('100'); // ETH price in BAL
-      expect(tokensWithPrices[1].price).toEqual('2500'); // ETH price in DAI
-      expect(tokensWithPrices[2].price).toEqual('0.08'); // MATIC price in BAL
-      expect(tokensWithPrices[3].price).toEqual('2'); // MATIC price in DAI
-      expect(tokensWithPrices[4].price).toEqual('100'); // ETH price in BAL
-      expect(tokensWithPrices[5].price).toEqual('2500'); // ETH price in DAI
+      expect(tokensWithPrices[0].price).toEqual({usd: "25", eth: "0.01"}); 
+      expect(tokensWithPrices[1].price).toEqual({usd: "1", eth: "0.0004"}); 
+      expect(tokensWithPrices[2].price).toEqual({usd: "25", matic: "12.5"}); 
+      expect(tokensWithPrices[3].price).toEqual({usd: "1", matic: "0.5"});
+      expect(tokensWithPrices[4].price).toEqual({usd: "25", eth: "0.01"}); 
+      expect(tokensWithPrices[5].price).toEqual({usd: "1", eth: "0.0004"});
     });
 
     it("Should handle tokens with an invalid chainID gracefully", async () => {
@@ -284,11 +288,10 @@ describe("Price Fetcher", () => {
         address: TOKEN_ADDRESSES[Network.MAINNET].INVALID,
         chainId: 111,
         decimals: 18,
-        price: null
       }];
 
       const tokensWithPrices = await priceFetcher.fetch(tokens);
-      expect(tokensWithPrices[0].price).toEqual(null);
+      expect(tokensWithPrices[0].price).toEqual(undefined);
     });
   });
 

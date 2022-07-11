@@ -1,7 +1,7 @@
 import { parseUnits } from 'ethers/lib/utils';
 import supertest from 'supertest';
 import { Network, SorRequest, SerializedSwapInfo, Token } from './types';
-import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive, updateToken } from './dynamodb';
+import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive, updateToken } from './data-providers/dynamodb';
 import TOKENS from '../test/mocks/tokens.json';
 import POOLS from '../test/mocks/pools.json';
 import server from './server';
@@ -9,6 +9,8 @@ import { localAWSConfig } from "./utils";
 
 const AWS = require("aws-sdk");
 AWS.config.update(localAWSConfig);
+
+jest.unmock('@balancer-labs/sdk');
 
 beforeAll(async () => {
   console.log("Checking DynamoDB is running...");
@@ -202,9 +204,10 @@ describe('server.ts', () => {
         const tokenWithoutDecimals: Token = {
           "chainId": 137,
           "symbol": "BAD",
-          "decimals": null,
           "address": badTokenAddress,
-          "price": "5",
+          "price": {
+            "usd": "5"
+          },
         }
         await updateToken(tokenWithoutDecimals);
 

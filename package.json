@@ -1,6 +1,6 @@
 {
   "name": "balancer-pools-api",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A service that acts as a caching layer for Balancer Pools information",
   "private": true,
   "repository": "balancer-labs/pools-api",

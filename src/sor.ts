@@ -9,7 +9,11 @@ import { getToken } from "./data-providers/dynamodb";
 import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './poolDataService';
 
-const log = console.log;
+let log = console.log;
+
+export function _setLogger(logger) {
+  log = logger;
+}
 
 function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
   const serializedSwapInfo: SerializedSwapInfo = {
@@ -54,21 +58,27 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
 
   const nativeAssetPriceSymbol = getNativeAssetPriceSymbol(chainId);
 
-  if (sellTokenDetails && sellTokenDetails.price[nativeAssetPriceSymbol]) {
-    const priceOfNativeAssetInToken = formatFixed(parseFixed('1', 72).div(parseFixed(sellTokenDetails.price[nativeAssetPriceSymbol], 36)), 36);
-    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, priceOfNativeAssetInToken.toString());
-  } else {
-    log(`No price found for token ${sellToken}. Defaulting to 0.`)
-    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, '0');
+  let priceOfNativeAssetInSellToken = 0;
+  if (sellTokenDetails && sellTokenDetails.price) {
+    if (typeof sellTokenDetails.price === "string") {
+      priceOfNativeAssetInSellToken = sellTokenDetails.price;
+    } else if (sellTokenDetails.price[nativeAssetPriceSymbol]) {
+      priceOfNativeAssetInSellToken = Number(formatFixed(parseFixed('1', 72).div(parseFixed(sellTokenDetails.price[nativeAssetPriceSymbol], 36)), 36));
+    }
   }
+  log(`Price of sell token ${sellToken}: `, priceOfNativeAssetInSellToken);
+  balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, priceOfNativeAssetInSellToken.toString());
 
-  if (buyTokenDetails && buyTokenDetails.price[nativeAssetPriceSymbol]) {
-    const priceOfNativeAssetInToken = formatFixed(parseFixed('1', 72).div(parseFixed(buyTokenDetails.price[nativeAssetPriceSymbol], 36)), 36);
-    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, priceOfNativeAssetInToken.toString());
-  } else {
-    log(`No price found for token ${buyToken}. Defaulting to 0.`)
-    balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, '0');
+  let priceOfNativeAssetInBuyToken = 0;
+  if (buyTokenDetails && buyTokenDetails.price) {
+    if (typeof buyTokenDetails.price === "string") {
+      priceOfNativeAssetInBuyToken = buyTokenDetails.price;
+    } else if (buyTokenDetails.price[nativeAssetPriceSymbol]) {
+      priceOfNativeAssetInBuyToken = Number(formatFixed(parseFixed('1', 72).div(parseFixed(buyTokenDetails.price[nativeAssetPriceSymbol], 36)), 36));
+    }
   }
+  log(`Price of buy token ${buyToken}: `, priceOfNativeAssetInBuyToken);
+  balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, priceOfNativeAssetInBuyToken.toString());
 
   const tokenIn = sellToken;
   const tokenOut = buyToken;

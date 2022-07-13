@@ -1,12 +1,12 @@
 import { Pool } from '../types';
-import { Pool as SDKPool, PoolProvider, TokenPriceProvider, Liquidity  } from "@balancer-labs/sdk";
+import { Pool as SDKPool, PoolRepository, TokenPriceProvider, Liquidity  } from "@balancer-labs/sdk";
 
 
 export class PoolService {
 
   constructor(
     public pool: Pool,
-    private poolProvider: PoolProvider,
+    private poolRepository: PoolRepository,
     private tokenPriceProvider: TokenPriceProvider,
   ) {}
 
@@ -14,7 +14,7 @@ export class PoolService {
    * @summary Calculates and sets total liquidity of pool.
    */
   public async setTotalLiquidity(): Promise<string> {
-    const liquidityProvider = new Liquidity(this.poolProvider, this.tokenPriceProvider);
+    const liquidityProvider = new Liquidity(this.poolRepository, this.tokenPriceProvider);
   
     if (this.pool.poolType === 'Element') return '0';
 

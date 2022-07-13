@@ -1,5 +1,5 @@
 import { Pool, Token } from '../types';
-import { StaticPoolProvider, StaticTokenPriceProvider, Pool as SDKPool } from '@balancer-labs/sdk';
+import { StaticPoolRepository, StaticTokenPriceProvider, Pool as SDKPool } from '@balancer-labs/sdk';
 import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
 
@@ -15,7 +15,7 @@ export class PoolDecorator {
     
     const tokenPrices = tokensToTokenPrices(tokens);
   
-    const poolProvider = new StaticPoolProvider(this.pools as SDKPool[]);
+    const poolProvider = new StaticPoolRepository(this.pools as SDKPool[]);
     const tokenPriceProvider = new StaticTokenPriceProvider(tokenPrices);
 
     const promises = this.pools.map(async pool => {

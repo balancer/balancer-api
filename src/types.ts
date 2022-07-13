@@ -55,6 +55,7 @@ export interface Pool extends SubgraphPoolBase {
   graphData?: {
     totalLiquidity?: string;
   }
+  lastUpdate?: number;
 }
 
 

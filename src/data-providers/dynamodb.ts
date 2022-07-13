@@ -4,8 +4,9 @@ import { Token, Pool } from '../types';
 
 const log = console.log;
 
+const dynamodb = new AWS.DynamoDB({maxRetries: 50, retryDelayOptions: {customBackoff: () => 1000} });
+
 export async function isAlive() {
-  const dynamodb = new AWS.DynamoDB();
   try {
     await Promise.race([
       dynamodb.listTables().promise(),
@@ -18,7 +19,7 @@ export async function isAlive() {
 }
 
 export async function updatePools(pools: Pool[]) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
   return Promise.all(pools.map(function(pool) {
     const params = {
         TableName: "pools",
@@ -33,15 +34,17 @@ export async function updatePools(pools: Pool[]) {
   }));
 }
 
-export async function getPools(chainId: number, lastResult?: any): Promise<Pool[]> {
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  const params = {
+export async function getPools(chainId?: number, lastResult?: any): Promise<Pool[]> {
+  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const params: AWS.DynamoDB.DocumentClient.ScanInput = {
     TableName: 'pools',
-    FilterExpression: 'chainId = :chainId',
-    ExpressionAttributeValues: {
-        ':chainId': chainId
-    },
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
+  }
+  if (chainId) {
+    params.FilterExpression = 'chainId = :chainId'
+    params.ExpressionAttributeValues = {
+        ':chainId': chainId
+    }
   }
   try {
     const pools = await docClient.scan(params).promise()
@@ -59,7 +62,7 @@ export async function getPools(chainId: number, lastResult?: any): Promise<Pool[
 }
 
 export async function getPool(chainId: number, id: string) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
   const params = {
     TableName: 'pools',
     Key: { id, chainId }
@@ -74,7 +77,7 @@ export async function getPool(chainId: number, id: string) {
 }
 
 export async function getToken(chainId: number, address: string): Promise<Token> {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
   address = address.toLowerCase();
   const params = {
     TableName: "tokens",
@@ -90,7 +93,7 @@ export async function getToken(chainId: number, address: string): Promise<Token>
 }
 
 export async function getTokens(chainId?: number, lastResult?: any): Promise<Token[]> {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
   const params: any = {
     TableName: 'tokens',
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
@@ -119,7 +122,7 @@ export async function getTokens(chainId?: number, lastResult?: any): Promise<Tok
 }
 
 export async function updateToken(tokenInfo: Token) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
   tokenInfo.address = tokenInfo.address.toLowerCase();
   tokenInfo.lastUpdate = Date.now();
   const params = {
@@ -137,7 +140,7 @@ export async function updateToken(tokenInfo: Token) {
 }
 
 export async function updateTokens(tokens: Token[]) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
   return Promise.all(tokens.map(function(token) {
     token.address = token.address.toLowerCase();
     token.lastUpdate = Date.now();
@@ -195,7 +198,6 @@ export async function createTokensTable() {
 }
 
 export async function createTable(params) {
-  const dynamodb = new AWS.DynamoDB();
   console.log("Creating table with params: ", params);
   try {
     await dynamodb.createTable(params).promise();
@@ -206,7 +208,6 @@ export async function createTable(params) {
 }
 
 export async function deleteTable(name) {
-  const dynamodb = new AWS.DynamoDB();
   try {
     await dynamodb.deleteTable({TableName: name}).promise();
   } catch(err) {

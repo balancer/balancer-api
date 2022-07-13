@@ -45,6 +45,10 @@ export class PoolService {
     console.log("Re-calculated liquidity: \t", poolLiquidity);
     console.log("---");
 
+    if (poolLiquidity !== this.pool.totalLiquidity) {
+      this.pool.lastUpdate = Date.now();
+    }
+
     return (this.pool.totalLiquidity = poolLiquidity);
   }
 

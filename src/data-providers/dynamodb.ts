@@ -1,5 +1,6 @@
 /* Functions for writing and reading to DynamoDB database */
 import AWS from 'aws-sdk';
+import { POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from '../constants';
 import { Token, Pool } from '../types';
 
 const log = console.log;
@@ -158,43 +159,31 @@ export async function updateTokens(tokens: Token[]) {
 }
 
 export async function createPoolsTable() {
-  const params = {
-    TableName : "pools",
-    KeySchema: [       
-        { AttributeName: "id", KeyType: "HASH"},
-        { AttributeName: "chainId", KeyType: "RANGE"},
-    ],
-    AttributeDefinitions: [       
-        { AttributeName: "id", AttributeType: "S" },
-        { AttributeName: "chainId", AttributeType: "N" },
-    ],
-    ProvisionedThroughput: {       
-        ReadCapacityUnits: 100, 
-        WriteCapacityUnits: 100
-    }
-  };
+  await createTable(POOLS_TABLE_SCHEMA);
+}
 
-  await createTable(params);
+export async function updatePoolsTable() {
+  const schema = POOLS_TABLE_SCHEMA;
+  delete schema.KeySchema;
+  await updateTable(schema);
 }
 
 export async function createTokensTable() {
-  const params = {
-    TableName : "tokens",
-    KeySchema: [       
-        { AttributeName: "address", KeyType: "HASH"},
-        { AttributeName: "chainId", KeyType: "RANGE"},
-    ],
-    AttributeDefinitions: [       
-        { AttributeName: "address", AttributeType: "S" },
-        { AttributeName: "chainId", AttributeType: "N" },
-    ],
-    ProvisionedThroughput: {       
-        ReadCapacityUnits: 100, 
-        WriteCapacityUnits: 100
-    }
+  await createTable(TOKENS_TABLE_SCHEMA);
+}
+
+export async function updateTokensTable() {
+  await updateTable(TOKENS_TABLE_SCHEMA);
+}
+
+export async function updateTable(params) {
+  console.log("Updating table with params: ", params);
+  try {
+    await dynamodb.updateTable(params).promise();
+  } catch (err) {
+    console.error("Unable to update table. Error JSON:", JSON.stringify(err, null, 2));
   }
-  
-  await createTable(params)
+  console.log("Updated table ", params.TableName);
 }
 
 export async function createTable(params) {
@@ -204,7 +193,7 @@ export async function createTable(params) {
   } catch (err) {
     console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
   }
-  console.log("Created table.");
+  console.log("Created table ", params.TableName);
 }
 
 export async function deleteTable(name) {

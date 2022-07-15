@@ -28,7 +28,7 @@ export function sanitizePools(pools: Pool[]): Pool[] {
   return pools.map((pool) => {
     /* Move totalLiquidity to graphData to save it for later comparison */
     pool.graphData = {
-      totalLiquidity: pool.totalLiquidity
+      totalLiquidity: pool.totalLiquidity.toString()
     };
     /* Delete totalLiquidity so that it doesn't overwrite calculated API calculated liquidity */
     delete pool.totalLiquidity

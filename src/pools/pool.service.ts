@@ -32,7 +32,7 @@ export class PoolService {
       return 0;
     }
 
-    if (this.pool.id === '0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb20000000000000000000000fe' || (Number(poolLiquidity) == 0 && Number(this.pool.totalLiquidity) > 0)) {
+    if (Number(poolLiquidity) == 0 && Number(this.pool.totalLiquidity) > 0) {
       console.log("Failed to calculate liquidity for pool: ", this.pool);
       console.log("Tokens are: ", await Promise.all(this.pool.tokens.map(async (token) => {
         const tokenPrice = await this.tokenPriceProvider.find(token.address)
@@ -40,11 +40,11 @@ export class PoolService {
       })));
     }
 
-    if (this.pool.graphData?.totalLiquidity || this.pool.totalLiquidity || poolLiquidity) {
-      console.log(`Updating Liquidity for Pool: ${this.pool.id} on chain: ${this.pool.chainId}
-      Graph Provided Liquidity: \t ${this.pool.graphData?.totalLiquidity}
-      Current Liquidity: \t\t\t", ${this.pool.totalLiquidity}
-      Re-calculated liquidity: \t", ${poolLiquidity}
+    if (this.pool.graphData?.totalLiquidity || this.pool.totalLiquidity || poolLiquidity && poolLiquidity !== this.pool.totalLiquidity) {
+      console.log(`Updating Liquidity for Pool: ${this.pool.id} on chain: ${this.pool.chainId}\n
+      Graph Provided Liquidity: \t ${this.pool.graphData?.totalLiquidity}\n
+      Current Liquidity: \t\t\t", ${this.pool.totalLiquidity}\n
+      Re-calculated liquidity: \t", ${poolLiquidity}\n
       ---`);
     }
 

@@ -78,7 +78,7 @@ async function decorateAndSavePools(chainId: number) {
   const poolDecorator = new PoolDecorator(pools);
   const decoratedPools = await poolDecorator.decorate(tokens);
   log(`Got ${decoratedPools.length} decorated pools`)
-  // await updatePools(decoratedPools);
+  await updatePools(decoratedPools);
   log(`Saved decorated pools`)
   setTimeout(decorateAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
 }

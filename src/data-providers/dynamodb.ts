@@ -5,9 +5,24 @@ import { Token, Pool } from '../types';
 
 const log = console.log;
 
-const dynamodb = new AWS.DynamoDB({maxRetries: 50, retryDelayOptions: {customBackoff: () => 1000} });
+
+function getDynamoDB() {
+  const dynamoDBConfig = {
+    maxRetries: 50, 
+    retryDelayOptions: {
+      customBackoff: () => 1000
+    } 
+  }
+  return new AWS.DynamoDB(dynamoDBConfig);
+}
+
+function getDocClient() {
+  const dynamodb = getDynamoDB();
+  return new AWS.DynamoDB.DocumentClient({service: dynamodb});
+}
 
 export async function isAlive() {
+  const dynamodb = getDynamoDB();
   try {
     await Promise.race([
       dynamodb.listTables().promise(),
@@ -20,7 +35,7 @@ export async function isAlive() {
 }
 
 export async function updatePools(pools: Pool[]) {
-  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const docClient = getDocClient();
   return Promise.all(pools.map(function(pool) {
     const params = {
         TableName: "pools",
@@ -36,7 +51,7 @@ export async function updatePools(pools: Pool[]) {
 }
 
 export async function getPools(chainId?: number, lastResult?: any): Promise<Pool[]> {
-  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const docClient = getDocClient();
   const params: AWS.DynamoDB.DocumentClient.ScanInput = {
     TableName: 'pools',
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
@@ -63,7 +78,7 @@ export async function getPools(chainId?: number, lastResult?: any): Promise<Pool
 }
 
 export async function getPool(chainId: number, id: string) {
-  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const docClient = getDocClient();
   const params = {
     TableName: 'pools',
     Key: { id, chainId }
@@ -78,7 +93,7 @@ export async function getPool(chainId: number, id: string) {
 }
 
 export async function getToken(chainId: number, address: string): Promise<Token> {
-  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const docClient = getDocClient();
   address = address.toLowerCase();
   const params = {
     TableName: "tokens",
@@ -94,7 +109,7 @@ export async function getToken(chainId: number, address: string): Promise<Token>
 }
 
 export async function getTokens(chainId?: number, lastResult?: any): Promise<Token[]> {
-  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const docClient = getDocClient();
   const params: any = {
     TableName: 'tokens',
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
@@ -123,7 +138,7 @@ export async function getTokens(chainId?: number, lastResult?: any): Promise<Tok
 }
 
 export async function updateToken(tokenInfo: Token) {
-  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const docClient = getDocClient();
   tokenInfo.address = tokenInfo.address.toLowerCase();
   tokenInfo.lastUpdate = Date.now();
   const params = {
@@ -141,7 +156,7 @@ export async function updateToken(tokenInfo: Token) {
 }
 
 export async function updateTokens(tokens: Token[]) {
-  const docClient = new AWS.DynamoDB.DocumentClient({service: dynamodb});
+  const docClient = getDocClient();
   return Promise.all(tokens.map(function(token) {
     token.address = token.address.toLowerCase();
     token.lastUpdate = Date.now();
@@ -177,6 +192,7 @@ export async function updateTokensTable() {
 }
 
 export async function updateTable(params) {
+  const dynamodb = getDynamoDB();
   console.log("Updating table with params: ", params);
   try {
     await dynamodb.updateTable(params).promise();
@@ -187,6 +203,7 @@ export async function updateTable(params) {
 }
 
 export async function createTable(params) {
+  const dynamodb = getDynamoDB();
   console.log("Creating table with params: ", params);
   try {
     await dynamodb.createTable(params).promise();
@@ -197,6 +214,7 @@ export async function createTable(params) {
 }
 
 export async function deleteTable(name) {
+  const dynamodb = getDynamoDB();
   try {
     await dynamodb.deleteTable({TableName: name}).promise();
   } catch(err) {

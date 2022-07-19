@@ -12,7 +12,6 @@ export const POOLS_TABLE_SCHEMA = {
   AttributeDefinitions: [       
       { AttributeName: "id", AttributeType: "S" },
       { AttributeName: "chainId", AttributeType: "N" },
-      { AttributeName: "totalLiquidity", AttributeType: "N" },
   ],
   ProvisionedThroughput: {       
       ReadCapacityUnits: 10, 

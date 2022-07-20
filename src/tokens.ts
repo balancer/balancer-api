@@ -9,11 +9,6 @@ export async function updateTokenPrices(tokens: Token[], abortOnRateLimit = fals
   const priceFetcher = new PriceFetcher(abortOnRateLimit)
   log(`fetching prics for ${tokens.length} tokens`)
   const tokensWithPrices = await priceFetcher.fetch(tokens);
-  tokensWithPrices.forEach((token) => {
-    if (token.address === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1') {
-      console.log("WETH on arbitrum: ", token);
-    }
-  })
   log('writing to DB');
   await updateTokens(tokensWithPrices);
   log('finished updating token prices');

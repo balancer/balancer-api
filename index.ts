@@ -1,6 +1,6 @@
 require("dotenv").config();
 import { DomainName, IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
-import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { App, Stack, RemovalPolicy, Duration } from 'aws-cdk-lib';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -11,13 +11,13 @@ import { join } from 'path'
 
 const { 
   INFURA_PROJECT_ID, 
-  POOLS_API_DDB_READ_CAPACITY, 
-  POOLS_API_DDB_WRITE_CAPACITY,
+  DYNAMODB_READ_CAPACITY, 
+  DYNAMODB_WRITE_CAPACITY,
   DOMAIN_NAME 
 } = process.env;
 
-const READ_CAPACITY = POOLS_API_DDB_READ_CAPACITY || '10';
-const WRITE_CAPACITY = POOLS_API_DDB_WRITE_CAPACITY || '10';
+const READ_CAPACITY = Number.parseInt(DYNAMODB_READ_CAPACITY || '10');
+const WRITE_CAPACITY = Number.parseInt(DYNAMODB_WRITE_CAPACITY || '10');
 
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
@@ -38,8 +38,23 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'pools',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: Number.parseInt(READ_CAPACITY),
-      writeCapacity: Number.parseInt(WRITE_CAPACITY)
+      readCapacity: READ_CAPACITY,
+      writeCapacity: WRITE_CAPACITY
+    });
+
+    poolsTable.addGlobalSecondaryIndex({
+      indexName: 'byTotalLiquidity',
+      partitionKey: {
+        name: 'chainId', 
+        type: AttributeType.NUMBER
+      },
+      sortKey: {
+        name: 'totalLiquidity', 
+        type: AttributeType.NUMBER
+      },
+      readCapacity: READ_CAPACITY,
+      writeCapacity: WRITE_CAPACITY,
+      projectionType: ProjectionType.ALL,
     });
 
     const tokensTable = new Table(this, 'tokens', {
@@ -53,8 +68,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: Number.parseInt(READ_CAPACITY),
-      writeCapacity: Number.parseInt(WRITE_CAPACITY)
+      readCapacity: READ_CAPACITY,
+      writeCapacity: WRITE_CAPACITY
     });
 
     /**

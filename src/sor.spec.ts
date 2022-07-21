@@ -1,25 +1,92 @@
-import { fetchTokens } from "./sor";
+import { Order } from './types';
+import { getSorSwap, _setLogger } from './sor';
+import { BalancerSDK, mockSwapCostCalculator } from '@balancer-labs/sdk';
 
 jest.mock('@balancer-labs/sdk');
 jest.mock('@ethersproject/providers');
 jest.mock('@ethersproject/contracts');
+jest.mock('./data-providers/dynamodb');
+
+
+const chainId = 1;
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+_setLogger(() => {});
 
 describe("SOR", () => {
-  describe("fetchTokens", () => {
-    it('Should return 6 decimals when fetching a token that has that many', async () => {
-      require('@ethersproject/contracts')._setDecimalsMethod(() => Promise.resolve(6));
-      const tokens = await fetchTokens(1, ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48']);
-      expect(tokens.length).toBe(1);
-      expect(tokens[0].decimals).toBe(6);
+
+
+  describe('getSorSwap', () => {
+    let order: Order;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+
+      order = {
+        amount: '1000000',
+        buyToken: '0xABC',
+        sellToken: '0xDEF',
+        orderKind: 'buy',
+        gasPrice: '100000'
+      }
+
+      require('./data-providers/dynamodb')._setToken('0xABC', {
+        address: '0xABC',
+        symbol: 'BAL',
+        price: {
+          usd: '5',
+          eth: '0.0025'
+        }
+      });
+
+      require('./data-providers/dynamodb')._setToken('0xDEF', {
+        address: '0xDEF',
+        symbol: 'WETH',
+        price: {
+          usd: '2000',
+          eth: '1'
+        }
+      });
+      
     });
 
-    it('Should default decimals to 18 when fetching a token that doesnt have decimals', async () => {
-      require('@ethersproject/contracts')._setDecimalsMethod(() => {
-        throw("Invalid Function")
+
+    it('Should call setNativeAssetPriceInToken with the price of the native asset in the token when the price is an object', async () => {
+      await getSorSwap(chainId, order);
+      expect(mockSwapCostCalculator.setNativeAssetPriceInToken).toHaveBeenCalledWith('0xABC', '400');
+    });
+    
+    it('Should call setNativeAssetPriceInToken with the price of the native asset in the token when the price is a string. For backwards compatability', async () => {
+      require('./data-providers/dynamodb')._setToken('0xABC', {
+        address: '0xABC',
+        price: '444'
       });
-      const tokens = await fetchTokens(137, ['0xa7fD7D83E2d63f093b71C5F3B84c27cFF66A7802']);
-      expect(tokens.length).toBe(1);
-      expect(tokens[0].decimals).toBe(18);
+      await getSorSwap(chainId, order);
+      expect(mockSwapCostCalculator.setNativeAssetPriceInToken).toHaveBeenCalledWith('0xABC', '444');
+    });
+
+    it('Should call setNativeAssetPriceInToken with the price of the native asset in the token when the price is a string. For backwards compatability', async () => {
+      require('./data-providers/dynamodb')._setToken('0xABC', {
+        address: '0xABC',
+        price: 555
+      });
+      await getSorSwap(chainId, order);
+      expect(mockSwapCostCalculator.setNativeAssetPriceInToken).toHaveBeenCalledWith('0xABC', '555');
+    });
+
+    it('Should call setNativeAssetPriceInToken with 0 if the token cannot be found', async () => {
+      order.buyToken = '0xFFF';
+      await getSorSwap(chainId, order);
+      expect(mockSwapCostCalculator.setNativeAssetPriceInToken).toHaveBeenCalledWith('0xFFF', '0');
+    });
+
+    it('Should call setNativeAssetPriceInToken with 0 if the token doesnt have a valid price', async () => {
+      require('./data-providers/dynamodb')._setToken('0xABC', {
+        address: '0xABC',
+        price: undefined
+      });
+      await getSorSwap(chainId, order);
+      expect(mockSwapCostCalculator.setNativeAssetPriceInToken).toHaveBeenCalledWith('0xABC', '0');
     });
 
   });

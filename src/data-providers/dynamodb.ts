@@ -1,11 +1,28 @@
 /* Functions for writing and reading to DynamoDB database */
 import AWS from 'aws-sdk';
-import { Token, Pool } from './types';
+import { POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from '../constants';
+import { Token, Pool } from '../types';
 
 const log = console.log;
 
+
+function getDynamoDB() {
+  const dynamoDBConfig = {
+    maxRetries: 50, 
+    retryDelayOptions: {
+      customBackoff: () => 1000
+    } 
+  }
+  return new AWS.DynamoDB(dynamoDBConfig);
+}
+
+function getDocClient() {
+  const dynamodb = getDynamoDB();
+  return new AWS.DynamoDB.DocumentClient({service: dynamodb});
+}
+
 export async function isAlive() {
-  const dynamodb = new AWS.DynamoDB();
+  const dynamodb = getDynamoDB();
   try {
     await Promise.race([
       dynamodb.listTables().promise(),
@@ -18,7 +35,7 @@ export async function isAlive() {
 }
 
 export async function updatePools(pools: Pool[]) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = getDocClient();
   return Promise.all(pools.map(function(pool) {
     const params = {
         TableName: "pools",
@@ -33,15 +50,17 @@ export async function updatePools(pools: Pool[]) {
   }));
 }
 
-export async function getPools(chainId: number, lastResult?: any): Promise<Pool[]> {
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  const params = {
+export async function getPools(chainId?: number, lastResult?: any): Promise<Pool[]> {
+  const docClient = getDocClient();
+  const params: AWS.DynamoDB.DocumentClient.ScanInput = {
     TableName: 'pools',
-    FilterExpression: 'chainId = :chainId',
-    ExpressionAttributeValues: {
-        ':chainId': chainId
-    },
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
+  }
+  if (chainId) {
+    params.FilterExpression = 'chainId = :chainId'
+    params.ExpressionAttributeValues = {
+        ':chainId': chainId
+    }
   }
   try {
     const pools = await docClient.scan(params).promise()
@@ -59,7 +78,7 @@ export async function getPools(chainId: number, lastResult?: any): Promise<Pool[
 }
 
 export async function getPool(chainId: number, id: string) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = getDocClient();
   const params = {
     TableName: 'pools',
     Key: { id, chainId }
@@ -74,7 +93,7 @@ export async function getPool(chainId: number, id: string) {
 }
 
 export async function getToken(chainId: number, address: string): Promise<Token> {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = getDocClient();
   address = address.toLowerCase();
   const params = {
     TableName: "tokens",
@@ -90,7 +109,7 @@ export async function getToken(chainId: number, address: string): Promise<Token>
 }
 
 export async function getTokens(chainId?: number, lastResult?: any): Promise<Token[]> {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = getDocClient();
   const params: any = {
     TableName: 'tokens',
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
@@ -119,7 +138,7 @@ export async function getTokens(chainId?: number, lastResult?: any): Promise<Tok
 }
 
 export async function updateToken(tokenInfo: Token) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = getDocClient();
   tokenInfo.address = tokenInfo.address.toLowerCase();
   tokenInfo.lastUpdate = Date.now();
   const params = {
@@ -137,7 +156,7 @@ export async function updateToken(tokenInfo: Token) {
 }
 
 export async function updateTokens(tokens: Token[]) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
+  const docClient = getDocClient();
   return Promise.all(tokens.map(function(token) {
     token.address = token.address.toLowerCase();
     token.lastUpdate = Date.now();
@@ -155,58 +174,47 @@ export async function updateTokens(tokens: Token[]) {
 }
 
 export async function createPoolsTable() {
-  const params = {
-    TableName : "pools",
-    KeySchema: [       
-        { AttributeName: "id", KeyType: "HASH"},
-        { AttributeName: "chainId", KeyType: "RANGE"},
-    ],
-    AttributeDefinitions: [       
-        { AttributeName: "id", AttributeType: "S" },
-        { AttributeName: "chainId", AttributeType: "N" },
-    ],
-    ProvisionedThroughput: {       
-        ReadCapacityUnits: 100, 
-        WriteCapacityUnits: 100
-    }
-  };
+  await createTable(POOLS_TABLE_SCHEMA);
+}
 
-  await createTable(params);
+export async function updatePoolsTable() {
+  const schema = POOLS_TABLE_SCHEMA;
+  delete schema.KeySchema;
+  await updateTable(schema);
 }
 
 export async function createTokensTable() {
-  const params = {
-    TableName : "tokens",
-    KeySchema: [       
-        { AttributeName: "address", KeyType: "HASH"},
-        { AttributeName: "chainId", KeyType: "RANGE"},
-    ],
-    AttributeDefinitions: [       
-        { AttributeName: "address", AttributeType: "S" },
-        { AttributeName: "chainId", AttributeType: "N" },
-    ],
-    ProvisionedThroughput: {       
-        ReadCapacityUnits: 100, 
-        WriteCapacityUnits: 100
-    }
+  await createTable(TOKENS_TABLE_SCHEMA);
+}
+
+export async function updateTokensTable() {
+  await updateTable(TOKENS_TABLE_SCHEMA);
+}
+
+export async function updateTable(params) {
+  const dynamodb = getDynamoDB();
+  console.log("Updating table with params: ", params);
+  try {
+    await dynamodb.updateTable(params).promise();
+  } catch (err) {
+    console.error("Unable to update table. Error JSON:", JSON.stringify(err, null, 2));
   }
-  
-  await createTable(params)
+  console.log("Updated table ", params.TableName);
 }
 
 export async function createTable(params) {
-  const dynamodb = new AWS.DynamoDB();
+  const dynamodb = getDynamoDB();
   console.log("Creating table with params: ", params);
   try {
     await dynamodb.createTable(params).promise();
   } catch (err) {
     console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
   }
-  console.log("Created table.");
+  console.log("Created table ", params.TableName);
 }
 
 export async function deleteTable(name) {
-  const dynamodb = new AWS.DynamoDB();
+  const dynamodb = getDynamoDB();
   try {
     await dynamodb.deleteTable({TableName: name}).promise();
   } catch(err) {

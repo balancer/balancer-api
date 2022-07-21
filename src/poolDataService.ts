@@ -1,6 +1,5 @@
-import { SubgraphPoolBase } from '@balancer-labs/sdk';
-import { PoolDataService } from '@balancer-labs/sor';
-import { getPools } from "./dynamodb";
+import { PoolDataService, SubgraphPoolBase } from '@balancer-labs/sdk';
+import { getPools } from "./data-providers/dynamodb";
 
 interface DatabasePoolDataServiceConfig {
     chainId: number;

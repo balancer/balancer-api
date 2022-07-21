@@ -1,4 +1,4 @@
-import { getPools } from '../src/dynamodb';
+import { getPools } from '../src/data-providers/dynamodb';
 import { isValidChainId } from 'utils';
 
 export const handler = async (event: any = {}): Promise<any> => {

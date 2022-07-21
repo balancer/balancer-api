@@ -1,22 +1,25 @@
-import { getPlatformId, getNativeAssetAddress } from "./utils";
-import { NativeAssetAddress, Network, Token } from "./types";
+import { Price } from "@balancer-labs/sdk";
+import { getPlatformId, getNativeAssetPriceSymbol } from "./utils";
+import { NativeAssetId, NativeAssetPriceSymbol, Network, Token } from "./types";
 import { BigNumber } from "bignumber.js";
 import { COINGECKO_BASEURL, COINGECKO_MAX_TOKENS_PER_PAGE, COINGECKO_MAX_TPS } from "./constants";
 import fetch from 'isomorphic-fetch';
+import debug from 'debug';
 
 const TOKEN_UPDATE_TIME = 60 * 15 * 1000; // 5 Minutes
 const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 60 * 7 * 1000; // 1 Week
 
 const HTTP_ERROR_RATELIMIT = 429;
 
-const log = console.log;
+// const log = console.log;
+const log = debug('balancer:price-fetcher');
 
-interface TokenData {
-  eth: number;
+interface PriceData {
+  [key: string]: number;
 }
 
 interface CoinGeckoData {
-  [key: string]: TokenData;
+  [key: string]: PriceData;
 } 
 
 class HTTPError extends Error {
@@ -29,7 +32,7 @@ class HTTPError extends Error {
 class PriceFetcher {
   queue: Token[];
   tokens: Token[];
-  nativeAssetPrices: string[];
+  nativeAssetPrices: Record<string, BigNumber>;
   maxTPS: number;
   lastRateLimit: number;
   rateLimitWaitTimeMS: number; 
@@ -38,11 +41,32 @@ class PriceFetcher {
   constructor(private abortOnRateLimit = false)  {
     this.queue = [];
     this.tokens = [];
-    this.nativeAssetPrices = [];
+    this.nativeAssetPrices = {};
     this.maxTPS = COINGECKO_MAX_TPS
     this.lastRateLimit = 0;
     this.rateLimitWaitTimeMS = 90 * 1000;
     this.onCompleteCallback = null;
+  }
+
+  private async queryCoingecko(endpoint: string): Promise<CoinGeckoData> {
+    const response = await fetch(COINGECKO_BASEURL + endpoint, {
+      method: 'GET',
+      headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+      },
+    });
+
+    log(`Received ${response.status} status code from CoinGecko`)
+
+    if (response.status >= 400) {
+      const err = new HTTPError(`Received ${response.status} status code from CoinGecko`);
+      err.code = response.status;
+      throw err;
+    }
+  
+    const data = await response.json();
+    return data;
   }
 
   private async processQueue(): Promise<void> {
@@ -91,62 +115,47 @@ class PriceFetcher {
     if (this.queue.length > 0) {
       return await this.processQueue();
     }
+  
   }
-
 
   private async fetchPrices(chainId, tokens: Token[]): Promise<CoinGeckoData> {
     const tokenAddresses = tokens.map(t => t.address)
     const endpoint = this.getEndpoint(chainId, tokenAddresses);
     console.log("Calling endpoint: ", endpoint);
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-      },
-    });
 
-    if (response.status >= 400) {
-      const err = new HTTPError(`Received ${response.status} status code from CoinGecko`);
-      err.code = response.status;
-      throw err;
-    }
-  
-    const data = await response.json();
-    return data;
+    return await this.queryCoingecko(endpoint);
   }
 
+  
+
   private getEndpoint(chainId: number, tokenAddresses: string[]) {
-    const endpointBase = COINGECKO_BASEURL;
     const platformId = getPlatformId(chainId);
     if (!platformId) {
       const err = new HTTPError(`Unknown chain id: ${chainId}`)
       err.code = 404;
       throw err;
     }
-    const endpoint = `${endpointBase}${platformId}?contract_addresses=${tokenAddresses.join(',')}&vs_currencies=eth`;
+    const endpoint = `/simple/token_price/${platformId}?contract_addresses=${tokenAddresses.join(',')}&vs_currencies=usd`;
 
     return endpoint;
   }
 
-  private fetchPrice(data: CoinGeckoData, token: Token): string {
-    const nativeAssetAddress = getNativeAssetAddress(token.chainId);
+  private fetchPrice(data: CoinGeckoData, token: Token): Price {
+    const nativeAssetSymbol = getNativeAssetPriceSymbol(token.chainId);
 
-    if (data[token.address.toLowerCase()] == null || data[token.address.toLowerCase()]["eth"] == null) {
+    if (data[token.address.toLowerCase()] == null || data[token.address.toLowerCase()]["usd"] == null) {
       const err = new HTTPError('No price returned from Coingecko');
       err.code = 404;
       throw err;
     }
   
-    const tokenPriceInEth = data[token.address.toLowerCase()]["eth"];
-    const ethPriceInToken = new BigNumber(1).div(tokenPriceInEth);
-    if (nativeAssetAddress === NativeAssetAddress.ETH) {
-      return ethPriceInToken.toString();
-    }
+    const tokenPriceInUSD = new BigNumber(data[token.address.toLowerCase()]["usd"]);
+    const tokenPriceInNativeAsset = tokenPriceInUSD.div(this.nativeAssetPrices[nativeAssetSymbol]);
 
-    const ethPriceInNativeAsset = this.nativeAssetPrices[nativeAssetAddress];
-    const nativeAssetPriceInToken = new BigNumber(ethPriceInToken).div(new BigNumber(ethPriceInNativeAsset));
-    return nativeAssetPriceInToken.toString();
+    return {
+      'usd': tokenPriceInUSD.toString(),
+      [nativeAssetSymbol]: tokenPriceInNativeAsset.toString()
+    }
   }
 
   private updateTokenPrice(coingeckoData, token: Token): void {
@@ -164,7 +173,7 @@ class PriceFetcher {
 
     try {
       this.tokens.push(token);
-      log(`Updated token ${token.symbol} to price ${token.price}`);
+      log(`Updated token ${token.symbol} to price ${JSON.stringify(token.price)}`);
     } catch (err) {
       console.error(`Encountered error calling updateToken on ${token.symbol}: ${err.message}`);
     }
@@ -175,24 +184,22 @@ class PriceFetcher {
    * token prices on their chain can be calculated accurately
    **/
   private async fetchNativeAssetPrices() {
-    await Promise.all(Object.entries(NativeAssetAddress).map(async ([key, address]) => {
-      if (address === NativeAssetAddress.ETH) return;
-      const token = {
-        chainId: 1,
-        symbol: key,
-        address: address,
-        decimals: 18,
-        price: null
-      }
-        
-      this.queue.push(token);
-    }));
+    const nativeAssetIds = Object.values(NativeAssetId).join(',');
+    const coinGeckoQuery = `/simple/price?ids=${nativeAssetIds}&vs_currencies=usd`
 
-    await this.processQueue();
-    this.tokens.forEach((token) => {
-      this.nativeAssetPrices[token.address] = token.price;
+    log('Fetching native prices with query: ', coinGeckoQuery);
+
+    const coingeckoResult = await this.queryCoingecko(coinGeckoQuery);
+
+    log('Coingecko result: ', coingeckoResult);
+
+    Object.entries(NativeAssetId).forEach(([asset, id]) => {
+      const nativeAssetSymbol = NativeAssetPriceSymbol[asset];
+      log('Asset: ', asset, ' id: ', id, ' symbol: ', nativeAssetSymbol);
+      this.nativeAssetPrices[nativeAssetSymbol] = new BigNumber(coingeckoResult[id]['usd']);
     });
-    this.tokens = [];
+
+    log("Fetched native asset prices. They are: ", JSON.stringify(this.nativeAssetPrices));
   }
 
   public async fetch(tokens: Token[]) {
@@ -200,7 +207,7 @@ class PriceFetcher {
 
     tokens.forEach((token) => {
       if (token.chainId == Network.KOVAN) return;
-      if (token.price && token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME) return;
+      if (token.price?.usd && token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME) return;
       if (token.noPriceData && token.lastUpdate > Date.now() - TOKEN_RETRY_PRICE_DATA_TIME) return;
 
       log(`Token: ${token.symbol} has price data: ${token.noPriceData}, was last updated ${(Date.now() - token.lastUpdate)/1000} seconds ago`)

@@ -1,4 +1,4 @@
-import { getPool } from '../src/dynamodb';
+import { getPool } from '../src/data-providers/dynamodb';
 
 export const handler = async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);

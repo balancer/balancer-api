@@ -1,6 +1,6 @@
 {
   "name": "balancer-pools-api",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A service that acts as a caching layer for Balancer Pools information",
   "private": true,
   "repository": "balancer-labs/pools-api",
@@ -10,7 +10,8 @@
     "build-cdk": "tsc --project ./tsconfig-cdk.json",
     "watch": "tsc -w",
     "dynamodb": "docker-compose up -d",
-    "init": "node dist/init.js",
+    "init": "node dist/scripts/init.js",
+    "update-schemas": "node dist/scripts/update-schemas.ts",
     "start": "node dist/server.js",
     "worker": "node dist/worker.js",
     "deploy": "npm run build-cdk && cdk deploy",

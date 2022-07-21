@@ -1,5 +1,5 @@
-import { createPoolsTable, createTokensTable } from "./dynamodb";
-import { localAWSConfig } from "./utils";
+import { createPoolsTable, createTokensTable } from "../data-providers/dynamodb";
+import { localAWSConfig } from "../utils";
 
 const AWS = require("aws-sdk");
 AWS.config.update(localAWSConfig);

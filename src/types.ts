@@ -1,4 +1,4 @@
-import { SubgraphPoolBase, SwapV2 } from '@balancer-labs/sdk';
+import { SubgraphPoolBase, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
 
 export const Network = {
     MAINNET: 1,
@@ -12,6 +12,16 @@ export const NativeAssetAddress = {
     MATIC: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0"
 }
 
+export const NativeAssetId = {
+    ETH: "ethereum",
+    MATIC: "matic-network"
+}
+
+export const NativeAssetPriceSymbol = {
+    ETH: "eth",
+    MATIC: "matic"
+}
+
 export interface Order {
     sellToken: string;
     buyToken: string;
@@ -20,16 +30,8 @@ export interface Order {
     gasPrice: string;
 }
 
-// price is the price of the native asset (ETH, MATIC, etc) 
-// with the token as the base 
-// e.g. with ETH at $20000, WBTC at $50000 
-// USDC would be 20000, WBTC would be 0.4
-export interface Token {
-    address: string;
+export interface Token extends SDKToken {
     chainId: number;
-    decimals: number;
-    symbol: string;
-    price: string; 
     lastUpdate?: number;
     noPriceData?: boolean;
 }
@@ -49,6 +51,11 @@ export interface SerializedSwapInfo {
 
 export interface Pool extends SubgraphPoolBase {
   chainId: number;
+  totalLiquidity?: string | number;
+  graphData?: {
+    totalLiquidity?: string;
+  }
+  lastUpdate?: number;
 }
 
 

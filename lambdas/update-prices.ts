@@ -1,4 +1,4 @@
-import { getTokens } from "../src/dynamodb";
+import { getTokens } from "../src/data-providers/dynamodb";
 import { updateTokenPrices } from "../src/tokens";
 
 export const handler = async (): Promise<any> => {

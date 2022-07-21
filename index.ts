@@ -1,12 +1,12 @@
 require("dotenv").config();
-import { DomainName, IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from '@aws-cdk/aws-apigateway';
-import { AttributeType, Table } from '@aws-cdk/aws-dynamodb';
-import { Runtime } from '@aws-cdk/aws-lambda';
-import { App, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
-import { NodejsFunction, NodejsFunctionProps } from '@aws-cdk/aws-lambda-nodejs';
-import { Rule, Schedule } from '@aws-cdk/aws-events';
-import { LambdaFunction } from '@aws-cdk/aws-events-targets';
-import { Certificate  } from '@aws-cdk/aws-certificatemanager';
+import { DomainName, IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { App, Stack, RemovalPolicy, Duration } from 'aws-cdk-lib';
+import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
+import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
 import { join } from 'path'
 
 const { 

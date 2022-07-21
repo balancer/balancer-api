@@ -39,6 +39,32 @@ export const TOKENS_TABLE_SCHEMA = {
 }
 
 export const POOL_SCHEMA = {
+    swapEnabled: { type: 'Boolean' },
+    swapFee: { type: 'Number' },
+
+    totalWeight: { type: 'Number' },
+    totalSwapVolume: { type: 'Number' },
+    totalSwapFee: { type: 'Number' },
     totalLiquidity: { type: 'Number' },
-    totalShares: { type: 'Number' }
+    totalShares: { type: 'Number' },
+
+    createTime: { type: 'Number' },
+    swapsCount: { type: 'Number' },
+    holdersCount: { type: 'Number' },
+
+    // StablePool Only
+    amp: { type: 'Number' },
+
+    // ConvergentCurvePool (Element) Only
+    expiryTime: { type: 'Number' },
+    unitSeconds: { type: 'Number' },
+
+    //InvestmentPool Only
+    managementFee: { type: 'Number' },
+
+    // LinearPool only
+    mainIndex: { type: 'Number' },
+    wrappedIndex: { type: 'Number' },
+    lowerTarget: { type: 'Number' },
+    upperTarget: { type: 'Number' },
 }

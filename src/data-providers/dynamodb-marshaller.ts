@@ -33,7 +33,9 @@ export function marshallPool(pool: Pool) {
   const customPoolItems = marshallItem(POOL_SCHEMA as any, pool);
   const sanitizedCustomPoolItems = {};
   for (const key of Object.keys(POOL_SCHEMA)) {
-    sanitizedCustomPoolItems[key] = sanitizeItem(customPoolItems[key])
+    if (customPoolItems[key] && Object.keys(customPoolItems[key]).length > 0) { 
+      sanitizedCustomPoolItems[key] = sanitizeItem(customPoolItems[key])
+    }
   }
   return {...autoMarshalledPool, ...sanitizedCustomPoolItems};
 }

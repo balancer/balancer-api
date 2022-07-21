@@ -8,8 +8,9 @@ import {
 import { getToken } from "./data-providers/dynamodb";
 import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './poolDataService';
+import debug from 'debug';
 
-let log = console.log;
+let log = debug('balancer:sor');
 
 export function _setLogger(logger) {
   log = logger;

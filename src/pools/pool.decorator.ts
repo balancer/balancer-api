@@ -2,8 +2,9 @@ import { Pool, Token } from '../types';
 import { StaticPoolRepository, StaticTokenPriceProvider, Pool as SDKPool } from '@balancer-labs/sdk';
 import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
+import debug from 'debug';
 
-
+const log = debug('balancer:pool-decorator');
 
 export class PoolDecorator {
   constructor(
@@ -11,7 +12,7 @@ export class PoolDecorator {
   ) {}
 
   public async decorate(tokens: Token[]): Promise<Pool[]> {
-    console.log("------- START Decorating pools --------")
+    log("------- START Decorating pools --------")
     
     const tokenPrices = tokensToTokenPrices(tokens);
   
@@ -27,7 +28,7 @@ export class PoolDecorator {
     });
 
     const pools = await Promise.all(promises);
-    console.log("------- END decorating pools --------")
+    log("------- END decorating pools --------")
 
     return pools;
   }

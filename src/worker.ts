@@ -85,9 +85,9 @@ async function decorateAndSavePools(chainId: number) {
 
 async function updatePrices() {
   const tokens = await getTokens();
-  console.log("Updating token prices");
+  log("Updating token prices");
   await updateTokenPrices(tokens, false);
-  console.log("Updated token prices");
+  log("Updated token prices");
   setTimeout(updatePrices, UPDATE_PRICES_INTERVAL);
 }
 

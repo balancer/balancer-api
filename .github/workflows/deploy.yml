@@ -15,7 +15,7 @@ jobs:
     - name: Install deps
       run: npm install -g npm@7 && npm ci
     - name: Install CDK
-      run: npm install -g aws-cdk@2.9.0
+      run: npm install -g aws-cdk@2.32.1
     - name: Build Project
       run: npm run build
     - name: Build CDK Templates

@@ -17,7 +17,7 @@ const {
 } = process.env;
 
 const READ_CAPACITY = Number.parseInt(DYNAMODB_READ_CAPACITY || '10');
-const WRITE_CAPACITY = Number.parseInt(DYNAMODB_WRITE_CAPACITY || '10');
+const WRITE_CAPACITY = Number.parseInt(DYNAMODB_WRITE_CAPACITY || '25');
 
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {

@@ -23,6 +23,27 @@ describe('DynamoDB Marshaller', () => {
       }
       const marshalledPool: any = marshallPool(poolData as Pool);
       expect(marshalledPool.totalLiquidity).toMatchObject({'N': '12345678901234567890.123456789012345679'})
-    })
+    });
+
+    it('Should not crash if one of the schema items is undefined', () => {
+      const poolData = {
+        totalShares: '58',
+        totalLiquidity: undefined
+      };
+
+      const marshalledPool: any = marshallPool(poolData as any);
+      expect(marshalledPool.totalShares).toMatchObject({'N': '58'});
+      expect(marshalledPool.totalLiquidity).toBeUndefined();
+    });
+
+    it('Should not crash if one of the schema items is null', () => {
+      const poolData = {
+        totalSwapFee: '32.9114',
+        holdersCount: null,
+      };
+      const marshalledPool: any = marshallPool(poolData as any);
+      expect(marshalledPool.totalSwapFee).toMatchObject({'N': '32.9114'});
+      expect(marshalledPool.holdersCount).toMatchObject({'NULL': true});
+    });
   });
 })

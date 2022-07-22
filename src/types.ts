@@ -66,3 +66,9 @@ export interface SorRequest {
     amount: string;
     gasPrice: string;
 }
+
+export interface Schema {
+    [key: string]: {
+        type: 'Boolean' | 'Number' | 'String'
+    }
+}

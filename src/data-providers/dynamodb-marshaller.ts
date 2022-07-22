@@ -1,8 +1,8 @@
-import { Pool } from '../types';
+import { Pool, Schema } from '../types';
 import { POOL_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
-import { marshallItem } from '@aws/dynamodb-data-marshaller';
 import { Marshaller} from '@aws/dynamodb-auto-marshaller';
 import BigNumber from 'bignumber.js';
+
 
 
 /** Modify item to ensure it meets DynamoDB specifications */
@@ -14,6 +14,25 @@ function sanitizeItem(marshalledItem) {
   }
 
   return sanitizedItem;
+}
+
+function marshallItem(schema: Schema, item) {
+  const marshalledItem = {};
+  Object.entries(schema).forEach(([key, keySchema]) => {
+    if (item[key]) {
+      switch (keySchema.type) {
+        case 'Boolean':
+          marshalledItem[key] = {'BOOL': item[key]};
+          break;
+        case 'Number':
+          marshalledItem[key] = {'N': item[key]};
+          break;
+        case 'String':
+          marshalledItem[key] = {'S': item[key]}
+      }
+    }
+  });
+  return marshalledItem;
 }
 
 /**
@@ -30,7 +49,7 @@ export function marshallPool(pool: Pool) {
   const autoMarshalledPool = autoMarshaller.marshallItem(pool);
 
   // These are JS strings that should be stored as numbers etc 
-  const customPoolItems = marshallItem(POOL_SCHEMA as any, pool);
+  const customPoolItems = marshallItem(POOL_SCHEMA, pool);
   const sanitizedCustomPoolItems = {};
   for (const key of Object.keys(POOL_SCHEMA)) {
     if (customPoolItems[key] && Object.keys(customPoolItems[key]).length > 0) { 

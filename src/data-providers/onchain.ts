@@ -1,6 +1,6 @@
 
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { BalancerSDK } from '@balancer-labs/sdk';
+import { BalancerSDK, PoolType } from '@balancer-labs/sdk';
 import { getToken } from './dynamodb';
 import { Pool, Token } from '../types';
 import { 
@@ -19,7 +19,7 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
 
   await balancer.sor.fetchPools();
   const pools: Pool[] = balancer.sor.getPools().map((sorPool) => {
-    return Object.assign({totalLiquidity: '0'}, sorPool, {chainId});
+    return Object.assign({totalLiquidity: '0'}, sorPool, {poolType: sorPool.poolType as PoolType, chainId});
   });
   return pools;
 }

@@ -46,10 +46,24 @@ describe('DynamoDB Marshaller', () => {
       expect(marshalledPool.totalSwapFee).toMatchObject({'N': '32.9114'});
       expect(marshalledPool.holdersCount).toMatchObject({'NULL': true});
     });
+
+    it('Should correctly parse schema number values that are 0', () => {
+      const poolData = {
+        totalLiquidity: '0',
+        totalShares: '0',
+        swapFee: '0.000001'
+      };
+      const marshalledPool: any = marshallPool(poolData as any);
+      expect(marshalledPool).toMatchObject({
+        totalLiquidity: { 'N': '0' },
+        totalShares: { 'N': '0' },
+        swapFee: { 'N': '0.000001' }
+      });
+    });
   });
 
   describe('Unmarshall Pool', () => {
-    it('Should convert an pool from the database back into a normal pool', () => {
+    it('Should convert a pool from the database back into a normal pool', () => {
       const dbPool = {
         totalSwapFee: {
           'N': '41.889'
@@ -69,6 +83,61 @@ describe('DynamoDB Marshaller', () => {
       const unmarshalledPool = unmarshallPool(dbPool);
       expect(unmarshalledPool).toMatchObject(expectedPool);
     });
+
+    it('Should be able to unmarshall deep objects', () => {
+      const dbPool = {
+        id: {
+          S: '0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5000200000000000000000025'
+        },
+        totalShares: { 
+          N: '39522955.298207500034572608' 
+        },
+        tokens: {
+          L: [
+            {
+              M: {
+                weight: { S: '0.5' },
+                address: { S: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
+                priceRate: { S: '1' },
+                balance: { S: '4318.529528' },
+                decimals: { N: '6' }
+              }
+            },
+            {
+              M: {
+                weight: { S: '0.5' },
+                address: { S: '0xba100000625a3754423978a60c9317c58a424e3d' },
+                priceRate: { S: '1' },
+                balance: { S: '250.958639102476791721' },
+                decimals: { N: '18' }
+              }
+            }
+          ]
+        },
+      };
+      const expectedPool = {
+        id: '0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5000200000000000000000025',
+        totalShares: '39522955.298207500034572608',
+        tokens: [
+          {
+            weight: '0.5',
+            address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+            priceRate: '1',
+            balance: '4318.529528',
+            decimals: 6
+          },
+          {
+            weight: '0.5',
+            address: '0xba100000625a3754423978a60c9317c58a424e3d',
+            priceRate: '1',
+            balance: '250.958639102476791721',
+            decimals: 18
+          }
+        ]
+      }
+      const unmarshalledPool = unmarshallPool(dbPool);
+      expect(unmarshalledPool).toMatchObject(expectedPool);
+    })
 
     it('Should be able to marshall then unmarshall and have the same object at the end', () => {
       const originalPool = POOLS[0];

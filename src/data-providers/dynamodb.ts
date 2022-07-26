@@ -1,5 +1,5 @@
 /* Functions for writing and reading to DynamoDB database */
-import AWS, { DocDB } from 'aws-sdk';
+import AWS from 'aws-sdk';
 import { MAX_BATCH_WRITE_SIZE, POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from '../constants';
 import { Token, Pool } from '../types';
 import { marshallPool, unmarshallPool } from './dynamodb-marshaller';
@@ -65,26 +65,26 @@ export async function updatePools(pools: Pool[]) {
 }
 
 export async function getPools(chainId?: number, lastResult?: any): Promise<Pool[]> {
-  const docClient = getDocClient();
-  const params: AWS.DynamoDB.DocumentClient.ScanInput = {
+  const dynamodb = getDynamoDB();
+  const params: AWS.DynamoDB.ScanInput = {
     TableName: 'pools',
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
   }
   if (chainId) {
     params.FilterExpression = 'chainId = :chainId'
     params.ExpressionAttributeValues = {
-        ':chainId': chainId
+        ':chainId': { 'N': chainId.toString() }
     }
   }
   try {
-    const pools = await docClient.scan(params).promise()
+    const pools = await dynamodb.scan(params).promise()
     if (lastResult) {
       pools.Items = lastResult.Items.concat(pools.Items);
     }
     if (pools.LastEvaluatedKey) {
       return await getPools(chainId, pools);
     }
-    return pools.Items as Pool[];
+    return pools.Items.map((ddbItem) => unmarshallPool(ddbItem)) as Pool[];
   } catch (e) {
       console.error("Failed to get pools, error is: ", e)
       return [];

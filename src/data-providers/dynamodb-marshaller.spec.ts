@@ -1,5 +1,6 @@
 import { Pool } from '../types';
-import { marshallPool } from './dynamodb-marshaller';
+import { marshallPool, unmarshallPool } from './dynamodb-marshaller';
+import POOLS from '../../test/mocks/pools';
 
 describe('DynamoDB Marshaller', () => {
   describe('Marshall Pool', () => {
@@ -46,4 +47,34 @@ describe('DynamoDB Marshaller', () => {
       expect(marshalledPool.holdersCount).toMatchObject({'NULL': true});
     });
   });
+
+  describe('Unmarshall Pool', () => {
+    it('Should convert an pool from the database back into a normal pool', () => {
+      const dbPool = {
+        totalSwapFee: {
+          'N': '41.889'
+        },
+        chainId: {
+          'N': '1'
+        },
+        address: {
+          'S': "0xc6a5032dc4bf638e15b4a66bc718ba7ba474ff73"
+        }
+      }
+      const expectedPool = {
+        totalSwapFee: '41.889',
+        chainId: 1,
+        address: '0xc6a5032dc4bf638e15b4a66bc718ba7ba474ff73'
+      };
+      const unmarshalledPool = unmarshallPool(dbPool);
+      expect(unmarshalledPool).toMatchObject(expectedPool);
+    });
+
+    it('Should be able to marshall then unmarshall and have the same object at the end', () => {
+      const originalPool = POOLS[0];
+      const marshalledPool = marshallPool(originalPool);
+      const unmarshalledPool = unmarshallPool(marshalledPool);
+      expect(unmarshalledPool).toMatchObject(originalPool);
+    });
+  })
 })

@@ -40,33 +40,39 @@ export const TOKENS_TABLE_SCHEMA = {
   }
 }
 
+/** 
+ * Used for marshalling / unmarshalling into DynamoDB
+ * 
+ * Number: Saved as a number in DynamoDB and JS
+ * BigNumber: Saved as a number in DynamoDB, but a String in JS
+*/
 export const POOL_SCHEMA: Schema = {
     swapEnabled: { type: 'Boolean' },
-    swapFee: { type: 'Number' },
+    swapFee: { type: 'BigNumber' },
 
-    totalWeight: { type: 'Number' },
-    totalSwapVolume: { type: 'Number' },
-    totalSwapFee: { type: 'Number' },
-    totalLiquidity: { type: 'Number' },
-    totalShares: { type: 'Number' },
+    totalWeight: { type: 'BigNumber' },
+    totalSwapVolume: { type: 'BigNumber' },
+    totalSwapFee: { type: 'BigNumber' },
+    totalLiquidity: { type: 'BigNumber' },
+    totalShares: { type: 'BigNumber' },
 
     createTime: { type: 'Number' },
-    swapsCount: { type: 'Number' },
-    holdersCount: { type: 'Number' },
+    swapsCount: { type: 'BigNumber' },
+    holdersCount: { type: 'BigNumber' },
 
     // StablePool Only
-    amp: { type: 'Number' },
+    amp: { type: 'BigNumber' },
 
     // ConvergentCurvePool (Element) Only
-    expiryTime: { type: 'Number' },
-    unitSeconds: { type: 'Number' },
+    expiryTime: { type: 'BigNumber' },
+    unitSeconds: { type: 'BigNumber' },
 
     //InvestmentPool Only
-    managementFee: { type: 'Number' },
+    managementFee: { type: 'BigNumber' },
 
     // LinearPool only
     mainIndex: { type: 'Number' },
     wrappedIndex: { type: 'Number' },
-    lowerTarget: { type: 'Number' },
-    upperTarget: { type: 'Number' },
+    lowerTarget: { type: 'BigNumber' },
+    upperTarget: { type: 'BigNumber' },
 }

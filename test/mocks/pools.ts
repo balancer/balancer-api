@@ -1,23 +1,20 @@
-[
+import { Pool } from '../../src/types';
+import { PoolType } from '@balancer-labs/sdk';
+
+const pools: Pool[] = [
   {
     "tokensList": [
       "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
       "0xba100000625a3754423978a60c9317c58a424e3d"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": "Weighted" as PoolType,
     "address": "0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5",
     "totalWeight": "1",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.0007",
-    "expiryTime": null,
     "id": "0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5000200000000000000000025",
     "tokens": [
       {
@@ -36,7 +33,6 @@
       }
     ],
     "totalShares": "2073.896351938041864782",
-    "unitSeconds": null
   },
   {
     "tokensList": [
@@ -44,20 +40,15 @@
       "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
       "0xdac17f958d2ee523a2206206994597c13d831ec7"
     ],
-    "baseToken": null,
     "amp": "1390.0",
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Stable",
+    "poolType": "Stable" as PoolType,
     "address": "0x06df3b2bbb68adc8b0e302443692037ed9f91b42",
     "totalWeight": "0",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.0001",
-    "expiryTime": null,
     "id": "0x06df3b2bbb68adc8b0e302443692037ed9f91b42000000000000000000000063",
     "tokens": [
       {
@@ -83,27 +74,20 @@
       }
     ],
     "totalShares": "138074688.719281476079175534",
-    "unitSeconds": null
   },
   {
     "tokensList": [
       "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": "Weighted" as PoolType,
     "address": "0x96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8",
     "totalWeight": "1",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.0007",
-    "expiryTime": null,
     "id": "0x96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8000200000000000000000019",
     "tokens": [
       {
@@ -122,27 +106,20 @@
       }
     ],
     "totalShares": "92602.285699995796203235",
-    "unitSeconds": null
   },
   {
     "tokensList": [
       "0x6b175474e89094c44da98b954eedeac495271d0f",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": "Weighted" as PoolType,
     "address": "0x0b09dea16768f0799065c475be02919503cb2a35",
     "totalWeight": "1",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.0011",
-    "expiryTime": null,
     "id": "0x0b09dea16768f0799065c475be02919503cb2a3500020000000000000000001a",
     "tokens": [
       {
@@ -161,27 +138,20 @@
       }
     ],
     "totalShares": "651487.54439719499081575",
-    "unitSeconds": null
   },
   {
     "tokensList": [
       "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": "Weighted" as PoolType,
     "address": "0xa6f548df93de924d73be7d25dc02554c6bd66db5",
     "totalWeight": "1",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.0006",
-    "expiryTime": null,
     "id": "0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e",
     "tokens": [
       {
@@ -200,27 +170,20 @@
       }
     ],
     "totalShares": "14743.443652304171762738",
-    "unitSeconds": null
   },
   {
     "tokensList": [
       "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
       "0xba100000625a3754423978a60c9317c58a424e3d"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": "Weighted" as PoolType,
     "address": "0x9f1f16b025f703ee985b58ced48daf93dad2f7ef",
     "totalWeight": "1",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.0006",
-    "expiryTime": null,
     "id": "0x9f1f16b025f703ee985b58ced48daf93dad2f7ef00020000000000000000001e",
     "tokens": [
       {
@@ -239,7 +202,6 @@
       }
     ],
     "totalShares": "391.207490113918570024",
-    "unitSeconds": null
   },
   {
     "tokensList": [
@@ -252,20 +214,14 @@
       "0xc00e94cb662c3520282e6f5717214004a7f26888",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": "Weighted" as PoolType,
     "address": "0x01abc00e86c7e258823b9a055fd62ca6cf61a163",
     "totalWeight": "1",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.0015",
-    "expiryTime": null,
     "id": "0x01abc00e86c7e258823b9a055fd62ca6cf61a16300010000000000000000003b",
     "tokens": [
       {
@@ -326,27 +282,20 @@
       }
     ],
     "totalShares": "4681.815284332409594302",
-    "unitSeconds": null
   },
   {
     "tokensList": [
       "0xba100000625a3754423978a60c9317c58a424e3d",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": "Weighted" as PoolType,
     "address": "0x3ebf48cd7586d7a4521ce59e53d9a907ebf1480f",
     "totalWeight": "1",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.001",
-    "expiryTime": null,
     "id": "0x3ebf48cd7586d7a4521ce59e53d9a907ebf1480f000200000000000000000028",
     "tokens": [
       {
@@ -365,7 +314,6 @@
       }
     ],
     "totalShares": "4232.650507545862316448",
-    "unitSeconds": null
   },
   {
     "tokensList": [
@@ -374,20 +322,15 @@
       "0x804cdb9116a10bb78768d3252355a1b18067bf8f",
       "0x9210f1204b5a24742eba12f710636d76240df3d0"
     ],
-    "baseToken": null,
     "amp": "1472.0",
     "mainIndex": 0,
-    "lowerTarget": null,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "StablePhantom",
+    "poolType": "StablePhantom" as PoolType,
     "address": "0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb2",
     "totalWeight": "0",
     "chainId": 1,
-    "principalToken": null,
-    "upperTarget": null,
     "swapFee": "0.00001",
-    "expiryTime": null,
     "id": "0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb20000000000000000000000fe",
     "tokens": [
       {
@@ -420,7 +363,6 @@
       }
     ],
     "totalShares": "186039355.455672401586266696",
-    "unitSeconds": null
   },
   {
     "tokensList": [
@@ -428,20 +370,16 @@
       "0xdac17f958d2ee523a2206206994597c13d831ec7",
       "0xf8fd466f12e236f4c96f7cce6c79eadb819abf58"
     ],
-    "baseToken": null,
-    "amp": null,
     "mainIndex": 1,
     "lowerTarget": "2900000.0",
     "wrappedIndex": 2,
     "swapEnabled": true,
-    "poolType": "AaveLinear",
+    "poolType": "AaveLinear" as PoolType,
     "address": "0x2bbf681cc4eb09218bee85ea2a5d3d13fa40fc0c",
     "totalWeight": "0",
     "chainId": 1,
-    "principalToken": null,
     "upperTarget": "3100000.0",
     "swapFee": "0.0002",
-    "expiryTime": null,
     "id": "0x2bbf681cc4eb09218bee85ea2a5d3d13fa40fc0c0000000000000000000000fd",
     "tokens": [
       {
@@ -467,6 +405,7 @@
       }
     ],
     "totalShares": "39522955.298207500034572608",
-    "unitSeconds": null
   }
 ]
+
+export default pools;

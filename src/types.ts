@@ -1,4 +1,4 @@
-import { SubgraphPoolBase, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
+import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
 
 export const Network = {
     MAINNET: 1,
@@ -49,9 +49,8 @@ export interface SerializedSwapInfo {
     marketSp: string;
 }
 
-export interface Pool extends SubgraphPoolBase {
+export interface Pool extends SDKPool {
   chainId: number;
-  totalLiquidity?: string;
   graphData?: {
     totalLiquidity?: string;
   }
@@ -69,6 +68,6 @@ export interface SorRequest {
 
 export interface Schema {
     [key: string]: {
-        type: 'Boolean' | 'Number' | 'String'
+        type: 'BigNumber' | 'Boolean' | 'Number' | 'String'
     }
 }

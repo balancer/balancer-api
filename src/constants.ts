@@ -64,8 +64,8 @@ export const POOL_SCHEMA: Schema = {
     amp: { type: 'BigNumber' },
 
     // ConvergentCurvePool (Element) Only
-    expiryTime: { type: 'BigNumber' },
-    unitSeconds: { type: 'BigNumber' },
+    expiryTime: { type: 'Number' },
+    unitSeconds: { type: 'Number' },
 
     //InvestmentPool Only
     managementFee: { type: 'BigNumber' },

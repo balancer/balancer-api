@@ -118,10 +118,7 @@ export function marshallPool(pool: Pool) {
  */
 export function unmarshallPool(dynamodbPool: AttributeMap): Pool {
   const autoMarshaller = new Marshaller();
-  console.log("Unmarshalling pool: ", dynamodbPool);
   const autoUnMarshalledPool = autoMarshaller.unmarshallItem(dynamodbPool);
-  console.log("Auto Unmarshalled: ", autoUnMarshalledPool);
   const unmarshalledPool = finalizeUnmarshalledItem(POOL_SCHEMA, autoUnMarshalledPool);
-  console.log("Fully unmarshalled: ", unmarshalledPool);
   return unmarshalledPool as any;
 }

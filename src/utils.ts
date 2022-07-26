@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
-import { SwapTypes } from "@balancer-labs/sdk";
+import { SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
 import { getToken } from "./data-providers/dynamodb";
 import { Network, Token, Pool, NativeAssetAddress, NativeAssetPriceSymbol } from "./types";
 
@@ -151,4 +151,27 @@ export function getNativeAssetPriceSymbol(chainId: string | number): string {
   };
 
   return mapping[chainId.toString()] || 'eth';
+}
+
+/**
+ * Used for converting a Balancer Pool type to a SubgraphPoolBase type which is what SOR expects  
+ * 
+ * Some parameters are optional in a Balancer Pool but required in SubgraphPoolBase so default values or null are set for them
+ */
+export function convertPoolToSubgraphPoolBase(pool: Pool): SubgraphPoolBase {
+  const tokens = pool.tokens.map((poolToken) => {
+      return {
+          ...poolToken, 
+          ...{
+              decimals: poolToken.decimals || 18,
+              priceRate: poolToken.priceRate || null,
+              weight: poolToken.weight || null
+          }
+      }
+  });
+  return {
+      ...pool, 
+      ...{tokens},
+      ...{swapEnabled: pool.swapEnabled || false}
+  } 
 }

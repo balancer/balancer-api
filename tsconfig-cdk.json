@@ -22,6 +22,6 @@
     "strictPropertyInitialization": false
   },
   "include": [
-    "*.ts"
+    "index.ts"
   ]
 }

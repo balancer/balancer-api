@@ -118,6 +118,8 @@ export function marshallPool(pool: Pool) {
  * is needed to convert them into either numbers or strings based on the schema. 
  */
 export function unmarshallPool(dynamodbPool: AttributeMap): Pool {
+  if (!dynamodbPool) return;
+
   const autoMarshaller = new Marshaller();
   const autoUnMarshalledPool = autoMarshaller.unmarshallItem(dynamodbPool);
   const unmarshalledPool = finalizeUnmarshalledItem(POOL_SCHEMA, autoUnMarshalledPool);

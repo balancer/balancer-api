@@ -92,15 +92,18 @@ export async function getPools(chainId?: number, lastResult?: any): Promise<Pool
 }
 
 export async function getPool(chainId: number, id: string) {
-  const docClient = getDocClient();
-  const params = {
+  const dynamodb = getDynamoDB();
+  const params : AWS.DynamoDB.GetItemInput = {
     TableName: 'pools',
-    Key: { id, chainId }
+    Key: { 
+      id: { 'S': id}, 
+      chainId: { 'N': chainId.toString() } }
   };
 
   try {
-    const pool = await docClient.get(params).promise();
-    return pool.Item;
+    const pool = await dynamodb.getItem(params).promise();
+    const unmarshalledPool = unmarshallPool(pool.Item);
+    return unmarshalledPool;
   } catch (e) {
     console.error(`Failed to get pool: ${chainId}, ${id}. Error is:`, e);
   }

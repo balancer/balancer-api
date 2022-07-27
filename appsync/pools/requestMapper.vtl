@@ -1,0 +1,53 @@
+#**
+    The value of 'payload' after the template has been evaluated
+    will be passed as the event to AWS Lambda.
+*#
+#**
+#set($expressionTerms = "")
+#set($expressionValues = {})
+#foreach($i in [1..$context.arguments.where.poolType.not_in.size()])
+    #set($expressionTerms = "${expressionTerms} :s${i}")
+    #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
+    #set($idx = $i - 1)
+    #set($ddbDescriber = {"S": $context.arguments.where.poolType.not_in.get($idx)})
+    $util.qr($expressionValues.put(":s${i}", $ddbDescriber))
+#end
+*#
+
+
+
+{
+    "version" : "2017-02-28",
+    "operation" : "Query",
+    "query" : {
+        ## Provide a query expression. **
+        "expression": "chainId = :chainId",
+        "expressionValues" : {
+            ":chainId" : $util.dynamodb.toDynamoDBJson($ctx.args.chainId)
+        }
+    },
+    "index": "byTotalLiquidity",
+    "scanIndexForward": false,
+    "limit": $util.defaultIfNull(${ctx.args.first}, 10),
+    #foreach($filter in $context.arguments.where)
+        #set($filterSettings = $context.arguments.where.get($filter))
+        #if($filterSettings.get("not_in")) {
+            #set($expressionTerms = "")
+            #set($expressionValues = {})
+            #foreach($i in [1..$filterSettings.not_in.size()])
+                #set($expressionTerms = "${expressionTerms} :s${i}")
+                #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
+                #set($idx = $i - 1)
+                #set($ddbDescriber = {"S": $filterSettings.not_in.get($idx)})
+                $util.qr($expressionValues.put(":s${i}", $ddbDescriber))
+            #end
+            "filter": {
+                "expression" : "NOT #${filter} in ($expressionTerms)",
+                "expressionNames" : {
+                    "#${filter}" : "${filter}"
+                },
+                "expressionValues" :  $util.toJson($expressionValues)
+            }
+        #end
+    #end
+}

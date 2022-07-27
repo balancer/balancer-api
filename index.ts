@@ -7,7 +7,8 @@ import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-node
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
-import { GraphqlApi, Schema, AuthorizationType, MappingTemplate } from '@aws-cdk/aws-appsync-alpha';
+import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { GraphqlApi, Schema, AuthorizationType, MappingTemplate, DynamoDbDataSource } from '@aws-cdk/aws-appsync-alpha';
 import { join } from 'path'
 
 const { 
@@ -232,7 +233,7 @@ export class BalancerPoolsAPI extends Stack {
      * AppSync API
      */
     const graphqlApi = new GraphqlApi(this, 'Api', {
-      name: 'demo',
+      name: 'poolsApi',
       schema: Schema.fromAsset(join(__dirname, 'appsync/pools/schema.graphql')),
       authorizationConfig: {
         defaultAuthorization: {
@@ -242,8 +243,18 @@ export class BalancerPoolsAPI extends Stack {
       xrayEnabled: true,
     });
 
-    const poolsApi = graphqlApi.addDynamoDbDataSource('poolsApiDataSource', poolsTable);
+    const poolsTableRole = new Role(this, 'PoolsDynamoDBRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com')
+    });
 
+    poolsTableRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'));
+
+    const poolsApi = new DynamoDbDataSource(this, 'poolsApiDataSource', {
+      api: graphqlApi,
+      table: poolsTable,
+      serviceRole: poolsTableRole
+    });
+    
     poolsApi.createResolver({
       typeName: 'Query',
       fieldName: 'pools',

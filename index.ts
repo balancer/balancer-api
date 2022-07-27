@@ -7,6 +7,7 @@ import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-node
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
+import { GraphqlApi, Schema, AuthorizationType, MappingTemplate } from '@aws-cdk/aws-appsync-alpha';
 import { join } from 'path'
 
 const { 
@@ -226,8 +227,31 @@ export class BalancerPoolsAPI extends Stack {
 
       domain.addBasePathMapping(api);
     }
+
+    /**
+     * AppSync API
+     */
+    const graphqlApi = new GraphqlApi(this, 'Api', {
+      name: 'demo',
+      schema: Schema.fromAsset(join(__dirname, 'appsync/pools/schema.graphql')),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: AuthorizationType.API_KEY,
+        },
+      },
+      xrayEnabled: true,
+    });
+
+    const poolsApi = graphqlApi.addDynamoDbDataSource('poolsApiDataSource', poolsTable);
+
+    poolsApi.createResolver({
+      typeName: 'Query',
+      fieldName: 'pools',
+      requestMappingTemplate: MappingTemplate.fromFile(join(__dirname, 'appsync/pools/requestMapper.vtl')),
+      responseMappingTemplate: MappingTemplate.fromFile(join(__dirname, 'appsync/pools/responseMapper.vtl'))
+    });
   }
-}
+ }
 
 export function addCorsOptions(apiResource: IResource) {
   apiResource.addMethod('OPTIONS', new MockIntegration({

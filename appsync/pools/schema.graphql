@@ -47,7 +47,14 @@ type PoolToken @entity {
 }
 
 type Query {
-	pools(first: Int, chainId: Int!, where: TablePoolsFilterInput): [Pool]
+	pools(
+		first: Int, 
+		chainId: Int!, 
+		where: TablePoolsFilterInput, 
+		orderBy: String, 
+		orderDirection: String
+		skip: Int
+	): [Pool]
 }
 
 input TableBooleanFilterInput {
@@ -129,7 +136,7 @@ input TableStringFilterInput {
 	lt: String
 	ge: String
 	gt: String
-	contains: String
+	contains: [String]
 	notContains: String
 	between: [String]
 	beginsWith: String

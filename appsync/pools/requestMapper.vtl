@@ -18,31 +18,31 @@
         #if($filterSettings.get("not_in"))
             #set($expressionTerms = "")
             #foreach($i in [1..$filterSettings.not_in.size()])
-                #set($expressionTerms = "${expressionTerms} :ni${i}")
+                #set($expressionTerms = "${expressionTerms} :${filter}_ni${i}")
                 #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
                 #set($idx = $i - 1)
                 #set($ddbDescriber = {"S": $filterSettings.not_in.get($idx)})
-                $util.qr($expressionValues.put(":ni${i}", $ddbDescriber))
+                $util.qr($expressionValues.put(":${filter}_ni${i}", $ddbDescriber))
             #end
             $util.qr($filterExpression.add("NOT ${filter} in (${expressionTerms})"))
         #elseif($filterSettings.get("in"))
             #set($expressionTerms = "")
             #foreach($i in [1..$filterSettings.in.size()])
-                #set($expressionTerms = "${expressionTerms} :i${i}")
+                #set($expressionTerms = "${expressionTerms} :${filter}_i${i}")
                 #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
                 #set($idx = $i - 1)
                 #set($ddbDescriber = {"S": $filterSettings.in.get($idx)})
-                $util.qr($expressionValues.put(":i${i}", $ddbDescriber))
+                $util.qr($expressionValues.put(":${filter}_i${i}", $ddbDescriber))
             #end
             $util.qr($filterExpression.add(" ${filter} in (${expressionTerms})"))
         #elseif($filterSettings.get("contains"))
             #set($expressionTerms = "")
             #foreach($i in [1..$filterSettings.contains.size()])
-                #set($expressionTerms = "${expressionTerms} :c${i}")
+                #set($expressionTerms = "${expressionTerms} :${filter}_c${i}")
                 #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
                 #set($idx = $i - 1)
                 #set($ddbDescriber = {"S": $filterSettings.contains.get($idx)})
-                $util.qr($expressionValues.put(":c${i}", $ddbDescriber))
+                $util.qr($expressionValues.put(":${filter}_c${i}", $ddbDescriber))
             #end
             $util.qr($filterExpression.add("contains(${filter}, ${expressionTerms})"))
         #else 

@@ -12,14 +12,21 @@
 	tokens: [PoolToken]
 	tokensList: [String]
 	totalWeight: String
-	totalLiquidity: Float
-	totalShares: Float
-	totalSwapFee: String
 	totalSwapVolume: String
+	totalSwapFee: String
+	totalLiquidity: String
+	totalShares: String
 	createTime: Int
-	amp: Int
-	holdersCount: Int
-	swapsCount: Int
+	swapsCount: String
+	holdersCount: String
+	amp: String
+	expiryTime: String
+	unitSeconds: String
+	managementFee: String
+	mainIndex: Int
+	wrappedIndex: Int
+	lowerTarget: String
+	upperTarget: String
 }
 
 type PoolConnection {
@@ -90,17 +97,27 @@ input TablePoolsFilterInput {
 	id: TableStringFilterInput
 	address: TableStringFilterInput
 	poolType: TableStringFilterInput
-	swapFee: TableStringFilterInput
+	swapFee: TableFloatFilterInput
 	owner: TableStringFilterInput
 	factory: TableStringFilterInput
 	tokensList: TableStringFilterInput
+	totalWeight: TableFloatFilterInput
+	totalSwapVolume: TableFloatFilterInput
+	totalSwapFee: TableFloatFilterInput
 	totalLiquidity: TableFloatFilterInput
 	totalShares: TableFloatFilterInput
-	totalSwapFee: TableStringFilterInput
-	totalSwapVolume: TableStringFilterInput
 	createTime: TableIntFilterInput
+	swapsCount: TableIntFilterInput
+	holdersCount: TableIntFilterInput
 	amp: TableIntFilterInput
 	swapEnabled: TableBooleanFilterInput
+	expiryTime: TableIntFilterInput
+	unitSeconds: TableIntFilterInput
+	managementFee: TableFloatFilterInput
+	mainIndex: TableIntFilterInput
+	wrappedIndex: TableIntFilterInput
+	lowerTarget: TableFloatFilterInput
+	upperTarget: TableFloatFilterInput
 }
 
 input TableStringFilterInput {

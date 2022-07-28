@@ -21,14 +21,13 @@ function marshallItem(schema: Schema, item) {
   Object.entries(schema).forEach(([key, keySchema]) => {
     if (item[key]) {
       switch (keySchema.type) {
-        case 'BigNumber':
+        case 'BigDecimal':
+        case 'BigInt':
+        case 'Int':
           marshalledItem[key] = {'N': item[key]};
           break;
         case 'Boolean':
           marshalledItem[key] = {'BOOL': item[key]};
-          break;
-        case 'Number':
-          marshalledItem[key] = {'N': item[key]};
           break;
         case 'String':
           marshalledItem[key] = {'S': item[key]}
@@ -56,10 +55,11 @@ function finalizeUnmarshalledItem(schema: Schema, item) {
     if (value instanceof NumberValue) {
       if (schema[key]) {
         switch (schema[key].type) {
-          case 'BigNumber':
+          case 'BigDecimal':
+          case 'BigInt':
             unmarshalledItem[key] = value.value
           break;
-          case 'Number':
+          case 'Int':
           default:
             unmarshalledItem[key] = Number(value.value)
           break;

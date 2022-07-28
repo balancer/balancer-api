@@ -48,31 +48,31 @@ export const TOKENS_TABLE_SCHEMA = {
 */
 export const POOL_SCHEMA: Schema = {
     swapEnabled: { type: 'Boolean' },
-    swapFee: { type: 'BigNumber' },
+    swapFee: { type: 'BigDecimal' },
 
-    totalWeight: { type: 'BigNumber' },
-    totalSwapVolume: { type: 'BigNumber' },
-    totalSwapFee: { type: 'BigNumber' },
-    totalLiquidity: { type: 'BigNumber' },
-    totalShares: { type: 'BigNumber' },
+    totalWeight: { type: 'BigDecimal' },
+    totalSwapVolume: { type: 'BigDecimal' },
+    totalSwapFee: { type: 'BigDecimal' },
+    totalLiquidity: { type: 'BigDecimal' },
+    totalShares: { type: 'BigDecimal' },
 
-    createTime: { type: 'Number' },
-    swapsCount: { type: 'BigNumber' },
-    holdersCount: { type: 'BigNumber' },
+    createTime: { type: 'Int' },
+    swapsCount: { type: 'BigInt' },
+    holdersCount: { type: 'BigInt' },
 
     // StablePool Only
-    amp: { type: 'BigNumber' },
+    amp: { type: 'BigInt' },
 
     // ConvergentCurvePool (Element) Only
-    expiryTime: { type: 'Number' },
-    unitSeconds: { type: 'Number' },
+    expiryTime: { type: 'BigInt' },
+    unitSeconds: { type: 'BigInt' },
 
     //InvestmentPool Only
-    managementFee: { type: 'BigNumber' },
+    managementFee: { type: 'BigDecimal' },
 
     // LinearPool only
-    mainIndex: { type: 'Number' },
-    wrappedIndex: { type: 'Number' },
-    lowerTarget: { type: 'BigNumber' },
-    upperTarget: { type: 'BigNumber' },
+    mainIndex: { type: 'Int' },
+    wrappedIndex: { type: 'Int' },
+    lowerTarget: { type: 'BigDecimal' },
+    upperTarget: { type: 'BigDecimal' },
 }

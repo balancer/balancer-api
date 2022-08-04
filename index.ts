@@ -2,7 +2,7 @@ require("dotenv").config();
 import { DomainName, IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { App, Stack, RemovalPolicy, Duration } from 'aws-cdk-lib';
+import { App, Stack, RemovalPolicy, Duration, Expiration } from 'aws-cdk-lib';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
@@ -20,6 +20,8 @@ const {
 
 const READ_CAPACITY = Number.parseInt(DYNAMODB_READ_CAPACITY || '10');
 const WRITE_CAPACITY = Number.parseInt(DYNAMODB_WRITE_CAPACITY || '25');
+
+const BALANCER_API_KEY_EXPIRATION = Date.now() + (365 * 24 * 60 * 60 * 1000); // For GraphQL API - Maximum expiry time is 1 year
 
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
@@ -238,6 +240,10 @@ export class BalancerPoolsAPI extends Stack {
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: AuthorizationType.API_KEY,
+          apiKeyConfig: {
+            name: 'BalancerAPIKey',
+            expires: Expiration.atTimestamp(BALANCER_API_KEY_EXPIRATION)
+          }
         },
       },
       xrayEnabled: true,

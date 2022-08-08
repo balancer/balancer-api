@@ -1,5 +1,10 @@
 import { PoolDataService, SubgraphPoolBase } from '@balancer-labs/sdk';
 import { getPools } from "./data-providers/dynamodb";
+import debug from 'debug';
+import util from 'util';
+import { convertPoolToSubgraphPoolBase } from './utils';
+
+const log = debug('balancer:pool-data-service');
 
 interface DatabasePoolDataServiceConfig {
     chainId: number;
@@ -14,9 +19,10 @@ export class DatabasePoolDataService implements PoolDataService {
     }
 
     public async getPools(): Promise<SubgraphPoolBase[]> {
-        console.log(`Retrieving pools for chain ${this.chainId} from the database`);
+        log(`Retrieving pools for chain ${this.chainId} from the database`);
         const pools = await getPools(this.chainId);
-        console.log(`Retrieved ${pools.length} pools`);
-        return pools ?? [];
+        log(`Retrieved pools:`, util.inspect(pools, false, null));
+        const subgraphPools = pools.map((pool) => convertPoolToSubgraphPoolBase(pool))
+        return subgraphPools ?? [];
     }
 }

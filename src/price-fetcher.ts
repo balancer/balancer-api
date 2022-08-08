@@ -11,7 +11,6 @@ const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 60 * 7 * 1000; // 1 Week
 
 const HTTP_ERROR_RATELIMIT = 429;
 
-// const log = console.log;
 const log = debug('balancer:price-fetcher');
 
 interface PriceData {
@@ -121,7 +120,6 @@ class PriceFetcher {
   private async fetchPrices(chainId, tokens: Token[]): Promise<CoinGeckoData> {
     const tokenAddresses = tokens.map(t => t.address)
     const endpoint = this.getEndpoint(chainId, tokenAddresses);
-    console.log("Calling endpoint: ", endpoint);
 
     return await this.queryCoingecko(endpoint);
   }

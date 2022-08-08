@@ -1,9 +1,12 @@
 /* Functions for writing and reading to DynamoDB database */
 import AWS from 'aws-sdk';
-import { POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from '../constants';
+import { MAX_BATCH_WRITE_SIZE, POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from '../constants';
 import { Token, Pool } from '../types';
+import { marshallPool, unmarshallPool } from './dynamodb-marshaller';
+import { chunk } from 'lodash';
+import debug from 'debug'
 
-const log = console.log;
+const log = debug('balancer:dynamodb');
 
 
 function getDynamoDB() {
@@ -35,42 +38,53 @@ export async function isAlive() {
 }
 
 export async function updatePools(pools: Pool[]) {
-  const docClient = getDocClient();
-  return Promise.all(pools.map(function(pool) {
+  const dynamodb = getDynamoDB();
+
+  const allPoolPutRequests = pools.map(function(pool) {
+    return {
+      PutRequest: {
+        Item: marshallPool(pool)
+      } 
+    }
+  });
+
+  const poolPutRequestChunks = chunk(allPoolPutRequests, MAX_BATCH_WRITE_SIZE);
+  return Promise.all(poolPutRequestChunks.map((poolPutRequests) => {
     const params = {
-        TableName: "pools",
-        Item: pool
+      RequestItems: {
+        pools: poolPutRequests
+      }
     };
 
-    return docClient.put(params, (err) => {
+    return dynamodb.batchWriteItem(params, (err) => {
       if (err) {
-        log(`Unable to add pool ${pool.id}. Error JSON: ${JSON.stringify(err, null, 2)}`);
+        console.error(`Unable to update pools ${JSON.stringify(poolPutRequests)} Error JSON: ${JSON.stringify(err, null, 2)}`);
       }
     }).promise();
   }));
 }
 
 export async function getPools(chainId?: number, lastResult?: any): Promise<Pool[]> {
-  const docClient = getDocClient();
-  const params: AWS.DynamoDB.DocumentClient.ScanInput = {
+  const dynamodb = getDynamoDB();
+  const params: AWS.DynamoDB.ScanInput = {
     TableName: 'pools',
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
   }
   if (chainId) {
     params.FilterExpression = 'chainId = :chainId'
     params.ExpressionAttributeValues = {
-        ':chainId': chainId
+        ':chainId': { 'N': chainId.toString() }
     }
   }
   try {
-    const pools = await docClient.scan(params).promise()
+    const pools = await dynamodb.scan(params).promise()
     if (lastResult) {
       pools.Items = lastResult.Items.concat(pools.Items);
     }
     if (pools.LastEvaluatedKey) {
       return await getPools(chainId, pools);
     }
-    return pools.Items as Pool[];
+    return pools.Items.map((ddbItem) => unmarshallPool(ddbItem)) as Pool[];
   } catch (e) {
       console.error("Failed to get pools, error is: ", e)
       return [];
@@ -78,15 +92,18 @@ export async function getPools(chainId?: number, lastResult?: any): Promise<Pool
 }
 
 export async function getPool(chainId: number, id: string) {
-  const docClient = getDocClient();
-  const params = {
+  const dynamodb = getDynamoDB();
+  const params : AWS.DynamoDB.GetItemInput = {
     TableName: 'pools',
-    Key: { id, chainId }
+    Key: { 
+      id: { 'S': id}, 
+      chainId: { 'N': chainId.toString() } }
   };
 
   try {
-    const pool = await docClient.get(params).promise();
-    return pool.Item;
+    const pool = await dynamodb.getItem(params).promise();
+    const unmarshalledPool = unmarshallPool(pool.Item);
+    return unmarshalledPool;
   } catch (e) {
     console.error(`Failed to get pool: ${chainId}, ${id}. Error is:`, e);
   }
@@ -193,24 +210,24 @@ export async function updateTokensTable() {
 
 export async function updateTable(params) {
   const dynamodb = getDynamoDB();
-  console.log("Updating table with params: ", params);
+  log("Updating table with params: ", params);
   try {
     await dynamodb.updateTable(params).promise();
   } catch (err) {
     console.error("Unable to update table. Error JSON:", JSON.stringify(err, null, 2));
   }
-  console.log("Updated table ", params.TableName);
+  log("Updated table ", params.TableName);
 }
 
 export async function createTable(params) {
   const dynamodb = getDynamoDB();
-  console.log("Creating table with params: ", params);
+  log("Creating table with params: ", params);
   try {
     await dynamodb.createTable(params).promise();
   } catch (err) {
     console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
   }
-  console.log("Created table ", params.TableName);
+  log("Created table ", params.TableName);
 }
 
 export async function deleteTable(name) {
@@ -220,5 +237,5 @@ export async function deleteTable(name) {
   } catch(err) {
     console.error("Unable to delete table ", name, " error: ", err);
   }
-  console.log("Deleted table ", name);
+  log("Deleted table ", name);
 }

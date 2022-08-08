@@ -16,7 +16,7 @@ const port = PORT || 8090;
 const app = express();
 
 app.get("/pools/:chainId", async (req, res, next) => {
-  console.log("Geting pools");
+  log("Geting pools");
   try {
     const chainId = Number(req.params['chainId']);
     if (!isValidChainId(chainId)) return res.sendStatus(404);
@@ -52,7 +52,7 @@ app.post("/sor/:chainId", express.json(), async (req, res, next) => {
 });
 
 app.get("/tokens/:chainId", async (req, res, next) => {
-  console.log("Getting tokens");
+  log("Getting tokens");
   try {
     const chainId = Number(req.params['chainId']);
     if (!isValidChainId(chainId)) return res.sendStatus(404);

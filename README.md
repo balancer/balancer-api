@@ -72,6 +72,12 @@ npm install -g aws-cdk
 
 You may also need to install the [AWS CLI](https://aws.amazon.com/cli/) and [configure your credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) if you have not already done so.
 
+#### (Optional) Creating a scoped-down deployer user
+
+If you wish to create an AWS user with the bare minimum permissions required to deploy this stack, see the [deployer permissions json file](./config/deployer-permissions.json). Copy this into a new policy, then create a new user and attach that policy to them, and use their credentials for deploying.
+
+#### Bootstraping + Deploying CDK
+
 If you've never used CDK before in your account you need to run the following bootstrap command with your account id and region.
 
 ```sh

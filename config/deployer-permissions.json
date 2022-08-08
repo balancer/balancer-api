@@ -1,0 +1,53 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+      {
+          "Sid": "EventsPermissions",
+          "Effect": "Allow",
+          "Action": [
+              "events:DescribeRule",
+              "events:EnableRule",
+              "events:PutRule",
+              "events:DeleteRule",
+              "events:PutTargets",
+              "events:RemoveTargets",
+              "events:DisableRule",
+              "events:ListRules"
+          ],
+          "Resource": [
+              "arn:aws:events:*:*:rule/*"
+          ]
+      },
+      {
+          "Sid": "IAMPermissions",
+          "Effect": "Allow",
+          "Action": [
+              "iam:CreateRole",
+              "iam:DeleteRole",
+              "iam:AttachRolePolicy",
+              "iam:PutRolePolicy",
+              "iam:CreatePolicy",
+              "iam:PassRole",
+              "iam:DetachRolePolicy",
+              "iam:CreateServiceLinkedRole",
+              "iam:DeleteRolePolicy"
+          ],
+          "Resource": [
+              "arn:aws:iam::*:role/*",
+              "arn:aws:iam::*:policy/*"
+          ]
+      },
+      {
+          "Sid": "SSMPermissions",
+          "Effect": "Allow",
+          "Action": [
+              "ssm:GetParameters",
+              "ssm:GetParameter",
+              "ssm:DescribeParameters"
+          ],
+          "Resource": [
+              "arn:aws:ssm:*:*:parameter/*"
+          ]
+      }
+  ]
+}

@@ -13,7 +13,8 @@ const {
   INFURA_PROJECT_ID, 
   DYNAMODB_READ_CAPACITY, 
   DYNAMODB_WRITE_CAPACITY,
-  DOMAIN_NAME 
+  DOMAIN_NAME,
+  SANCTIONS_API_KEY
 } = process.env;
 
 const READ_CAPACITY = Number.parseInt(DYNAMODB_READ_CAPACITY || '10');
@@ -131,6 +132,9 @@ export class BalancerPoolsAPI extends Stack {
 
     const sanctionsCheckLambda = new NodejsFunction(this, 'sanctionsCheckFunction', {
         entry: join(__dirname, 'lambdas', 'sanctions-check.ts'),
+        environment: {
+          SANCTIONS_API_KEY: SANCTIONS_API_KEY || ''
+        },
         runtime: Runtime.NODEJS_14_X,
         timeout: Duration.seconds(15)
     });

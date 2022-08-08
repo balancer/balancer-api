@@ -3,7 +3,6 @@ import { POOL_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
 import { Marshaller, NumberValue} from '@aws/dynamodb-auto-marshaller';
 import BigNumber from 'bignumber.js';
 import { AttributeMap } from 'aws-sdk/clients/dynamodb';
-import util from 'util';
 
 /** Modify item to ensure it meets DynamoDB specifications */
 function sanitizeField(marshalledItem) {

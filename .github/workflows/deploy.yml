@@ -28,6 +28,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }} 
+        SANCTIONS_API_KEY: ${{ secrets.SANCTIONS_API_KEY }} 
         DOMAIN_NAME: 'api.balancer.fi'
         DYNAMODB_READ_CAPACITY: 100
         DYNAMODB_WRITE_CAPACITY: 100

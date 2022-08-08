@@ -1,6 +1,7 @@
 import fetch from 'isomorphic-fetch';
 
 const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v1/sanctions/screening';
+const { SANCTIONS_API_KEY } = process.env;
 
 function formatResponse(statusCode, body) {
   return { 
@@ -35,7 +36,8 @@ export const handler = async (event: any = {}): Promise<any> => {
     const response = await fetch(SANCTIONS_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + Buffer.from(`${SANCTIONS_API_KEY}:${SANCTIONS_API_KEY}`).toString('base64')
       },
       body: JSON.stringify(sanctionChecks)
     });

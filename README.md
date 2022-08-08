@@ -82,7 +82,7 @@ Deploy / Redeploy all AWS Services to your account.
 
 ```sh
 npm run build # Compile the CDK index.ts to javascript, must be run after changes are made 
-cdk deploy # Run CDK to create/update your infrastructure
+npm run deploy # Run CDK to create/update your infrastructure
 ```
 
 After the deployment you will get an API URL that looks similar to `https://gtrabwaex9.execute-api.ap-southeast-2.amazonaws.com/prod/` this is
@@ -195,5 +195,3 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13C
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
  ```
-
-

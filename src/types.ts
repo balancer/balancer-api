@@ -69,6 +69,6 @@ export interface SorRequest {
 
 export interface Schema {
     [key: string]: {
-        type: 'BigNumber' | 'Boolean' | 'Number' | 'String'
+        type: 'BigDecimal' | 'BigInt' | 'Boolean' | 'Int' | 'String'
     }
 }

@@ -2,11 +2,13 @@ require("dotenv").config();
 import { DomainName, IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { App, Stack, RemovalPolicy, Duration } from 'aws-cdk-lib';
+import { App, Stack, RemovalPolicy, Duration, Expiration } from 'aws-cdk-lib';
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
+import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { GraphqlApi, Schema, AuthorizationType, MappingTemplate, DynamoDbDataSource } from '@aws-cdk/aws-appsync-alpha';
 import { join } from 'path'
 
 const { 
@@ -19,6 +21,8 @@ const {
 
 const READ_CAPACITY = Number.parseInt(DYNAMODB_READ_CAPACITY || '10');
 const WRITE_CAPACITY = Number.parseInt(DYNAMODB_WRITE_CAPACITY || '25');
+
+const BALANCER_API_KEY_EXPIRATION = Date.now() + (365 * 24 * 60 * 60 * 1000); // For GraphQL API - Maximum expiry time is 1 year
 
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
@@ -230,8 +234,45 @@ export class BalancerPoolsAPI extends Stack {
 
       domain.addBasePathMapping(api);
     }
+
+    /**
+     * AppSync API
+     */
+    const graphqlApi = new GraphqlApi(this, 'Api', {
+      name: 'poolsApi',
+      schema: Schema.fromAsset(join(__dirname, 'appsync/pools/schema.graphql')),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: AuthorizationType.API_KEY,
+          apiKeyConfig: {
+            name: 'BalancerAPIKey',
+            expires: Expiration.atTimestamp(BALANCER_API_KEY_EXPIRATION)
+          }
+        },
+      },
+      xrayEnabled: true,
+    });
+
+    const poolsTableRole = new Role(this, 'PoolsDynamoDBRole', {
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com')
+    });
+
+    poolsTableRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'));
+
+    const poolsApi = new DynamoDbDataSource(this, 'poolsApiDataSource', {
+      api: graphqlApi,
+      table: poolsTable,
+      serviceRole: poolsTableRole
+    });
+    
+    poolsApi.createResolver({
+      typeName: 'Query',
+      fieldName: 'pools',
+      requestMappingTemplate: MappingTemplate.fromFile(join(__dirname, 'appsync/pools/requestMapper.vtl')),
+      responseMappingTemplate: MappingTemplate.fromFile(join(__dirname, 'appsync/pools/responseMapper.vtl'))
+    });
   }
-}
+ }
 
 export function addCorsOptions(apiResource: IResource) {
   apiResource.addMethod('OPTIONS', new MockIntegration({

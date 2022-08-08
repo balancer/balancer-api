@@ -1,0 +1,105 @@
+{
+    "version" : "2017-02-28",
+    "operation" : "Query",
+    "query" : {
+        "expression": "chainId = :chainId",
+        "expressionValues" : {
+            ":chainId" : $util.dynamodb.toDynamoDBJson($ctx.args.chainId)
+        }
+    },
+    "index": "byTotalLiquidity",
+    "scanIndexForward": false,
+    "limit": $util.defaultIfNull(${ctx.args.first}, 10),
+
+    #** This entire section is for generating DynamoDB filters based on the where object in the query *#
+    #** These three objects store all the filters to be assembled into one large filter query at the end *#
+    #set($filterExpressions = [])
+    #set($expressionValues = {})
+    #set($expressionNames = {})
+    #** Loop through keys of `where` object to find custom filters that aren't auto converted to the format DynamoDB requires *#
+    #foreach($filter in $context.arguments.where.keySet())
+        #set($filterSettings = $context.arguments.where.get($filter))
+        #** The not_in filter allows passing an array of strings to match a string parameter,
+            if any of those array items match the string then the pool will not be included
+                input: `{ where: { poolType: { not_in: ['a', 'b', 'c'] }}}`
+                generates: `NOT poolType in ('a', 'b', 'c')`
+        *#
+        #if($filterSettings.get("not_in"))
+            #set($expressionTerms = "")
+            #foreach($filterSetting in $filterSettings.not_in)
+                #set($expressionTerms = "${expressionTerms} :${filter}_ni${velocityCount}")
+                #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
+                #set($ddbDescriber = {"S": $filterSetting})
+                $util.qr($expressionValues.put(":${filter}_ni${velocityCount}", $ddbDescriber))
+            #end
+            #if ($expressionTerms != "")
+            	$util.qr($filterExpressions.add("NOT ${filter} in (${expressionTerms})"))
+            #end
+        #** The in filter allows passing an array of strings to match a string parameter,
+            if any of those array items match the string then the pool will be included
+                input: `{ where: { address: { in: ['a', 'b', 'c'] }}}`
+                generates: `address in ('a', 'b', 'c')`
+        *#
+        #elseif($filterSettings.get("in"))
+            #set($expressionTerms = "")
+            #foreach($filterSetting in $filterSettings.in)
+                #set($expressionTerms = "${expressionTerms} :${filter}_i${velocityCount}")
+                #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
+                #set($ddbDescriber = {"S": $filterSetting})
+                $util.qr($expressionValues.put(":${filter}_i${velocityCount}", $ddbDescriber))
+            #end
+            #if ($expressionTerms != "")
+            	$util.qr($filterExpressions.add(" ${filter} in (${expressionTerms})"))
+            #end
+        #** The contains filter allows passing an array of strings to match an array of strings parameter,
+            if any of those array items are in the pool array then the pool will be included
+                input: `{ where: { tokenList: { contains: ['a', 'b', 'c'] }}}`
+                generates: `contains(tokenList, 'a') AND contains(tokenList, 'b') AND contains(tokenList, 'c')`
+        *#
+        #elseif($filterSettings.get("contains"))
+            #set($expressionTerms = "")
+            #foreach($filterSetting in $filterSettings.contains)
+                #set($expressionTerms = "${expressionTerms} :${filter}_c${velocityCount}")
+                #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
+                #set($ddbDescriber = {"S": $filterSetting})
+                $util.qr($expressionValues.put(":${filter}_c${velocityCount}", $ddbDescriber))
+            #end
+            #if ($expressionTerms != "")
+            	$util.qr($filterExpressions.add("contains(${filter}, ${expressionTerms})"))
+            #end
+        #** The general filter runs the built-in function toDynamoDBFilterExpression on any other options in the 
+            `where` object. It then converts these to filters and stores them to be combined with all filters later.
+            It handles basic filters like gt, lt, eq. 
+                input: `{ where: { totalShares: { gt: 0.05 }}}
+                generates: `totalShares > 0.05`
+        *#
+        #else 
+            #set($generalFilterInput = {})
+            $util.qr($generalFilterInput.put("${filter}", $filterSettings))
+            #set($generalFilter = "${util.transform.toDynamoDBFilterExpression($generalFilterInput)}")
+            #set($generalFilterMap = $util.parseJson($generalFilter))
+            #set($generalExpression = $generalFilterMap.get('expression'))
+            $util.qr($filterExpressions.add($generalExpression))
+            #foreach($exName in $generalFilterMap.expressionNames.keySet())
+                $util.qr($expressionNames.put($exName, $generalFilterMap.get('expressionNames').get($exName)))
+            #end
+            #foreach($exValue in $generalFilterMap.expressionValues.keySet())
+                $util.qr($expressionValues.put($exValue, $generalFilterMap.get('expressionValues').get($exValue)))
+            #end
+        #end
+    #end
+    #** This takes all the filters and combines them into one string with an AND between each expression *#
+    #set($filterExpressionString = "")
+    #foreach($filterExpression in $filterExpressions)
+        #set($filterExpressionString = "${filterExpressionString} ${filterExpression}")
+        #if( $foreach.hasNext ) #set($filterExpressionString = "${filterExpressionString} AND") #end
+    #end
+    #if ($filterExpressionString != "")
+    #** Write the filter to the template with the large string, and a map of the values used in the filter *#
+    "filter": { 
+        "expression": "${filterExpressionString}",
+        "expressionNames" : $util.toJson($expressionNames),
+        "expressionValues" :  $util.toJson($expressionValues)
+    }
+    #end
+}

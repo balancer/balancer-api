@@ -107,7 +107,7 @@ input TablePoolsFilterInput {
 	swapFee: TableFloatFilterInput
 	owner: TableStringFilterInput
 	factory: TableStringFilterInput
-	tokensList: TableStringFilterInput
+	tokensList: TableStringArrayFilterInput
 	totalWeight: TableFloatFilterInput
 	totalSwapVolume: TableFloatFilterInput
 	totalSwapFee: TableFloatFilterInput
@@ -125,6 +125,12 @@ input TablePoolsFilterInput {
 	wrappedIndex: TableIntFilterInput
 	lowerTarget: TableFloatFilterInput
 	upperTarget: TableFloatFilterInput
+}
+
+input TableStringArrayFilterInput {
+	ne: [String]
+	eq: [String]
+	contains: [String]
 }
 
 input TableStringFilterInput {

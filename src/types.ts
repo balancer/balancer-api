@@ -77,6 +77,7 @@ export interface UpdateExpression {
     ExpressionAttributeNames: {[key: string]: string},
     ExpressionAttributeValues: {[key: string]: string},
 }
+
 export interface TRMAccountDetails {
     accountExternalId: string | null;
     address: string;

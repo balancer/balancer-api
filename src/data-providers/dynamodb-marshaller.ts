@@ -1,4 +1,4 @@
-import { Pool, Schema } from '../types';
+import { Pool, Schema, UpdateExpression } from '../types';
 import { POOL_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
 import { Marshaller, NumberValue} from '@aws/dynamodb-auto-marshaller';
 import BigNumber from 'bignumber.js';
@@ -95,7 +95,7 @@ function finalizeUnmarshalledItem(schema: Schema, item) {
  * but numbers in DynamoDB. 
  * e.g. totalLiquidity: '123.456' -> totalLiquidity: {'N': '123.456'}
 */
-export function marshallPool(pool: Pool) {
+export function marshallPool(pool: Pool): Record<string, any> {
   const autoMarshaller = new Marshaller();
   const autoMarshalledPool = autoMarshaller.marshallItem(pool);
 
@@ -123,4 +123,22 @@ export function unmarshallPool(dynamodbPool: AttributeMap): Pool {
   const autoUnMarshalledPool = autoMarshaller.unmarshallItem(dynamodbPool);
   const unmarshalledPool = finalizeUnmarshalledItem(POOL_SCHEMA, autoUnMarshalledPool);
   return unmarshalledPool as any;
+}
+
+export function generateUpdateExpression(pool: Pool): UpdateExpression {
+  const primaryKeyAttributes = ['id', 'chainId'];
+  const exp: UpdateExpression = {
+    UpdateExpression: 'SET',
+    ExpressionAttributeNames: {},
+    ExpressionAttributeValues: {}
+  }
+  const marshalledPool = marshallPool(pool);
+  Object.entries(marshalledPool).forEach(([key, item]) => {
+      if (primaryKeyAttributes.includes(key)) return;
+      exp.UpdateExpression += ` #${key} = :${key},`;
+      exp.ExpressionAttributeNames[`#${key}`] = key;
+      exp.ExpressionAttributeValues[`:${key}`] = item
+  })
+  exp.UpdateExpression = exp.UpdateExpression.slice(0, -1);
+  return exp;
 }

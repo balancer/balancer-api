@@ -2,7 +2,7 @@ import AWS from 'aws-sdk';
 import { Pool } from '../types';
 import POOLS from '../../test/mocks/pools';
 import { updatePools } from './dynamodb';
-import { marshallPool } from './dynamodb-marshaller';
+import { generateUpdateExpression, marshallPool } from './dynamodb-marshaller';
 
 
 jest.mock('aws-sdk', () => {
@@ -26,15 +26,27 @@ describe('DynamoDB', () => {
 
       const expectedRequest = {
         TransactItems: [{
-          Update: {
-            Key: marshallPool(pools[0]),
-            TableName: 'pools'
-          }
+          Update: Object.assign(
+            {
+              Key: {
+                id: { 'S': pools[0].id },
+                chainId: { 'N': pools[0].chainId.toString() }
+              },
+              TableName: 'pools'
+            }, 
+            generateUpdateExpression(pools[0])
+          )
         }, {
-          Update: {
-            Key: marshallPool(pools[1]),
-            TableName: 'pools'
-          }
+          Update: Object.assign(
+            {
+              Key: {
+                id: { 'S': pools[1].id },
+                chainId: { 'N': pools[1].chainId.toString() }
+              },
+              TableName: 'pools'
+            }, 
+            generateUpdateExpression(pools[1])
+          )
         }]
       }
 

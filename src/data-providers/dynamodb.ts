@@ -2,7 +2,7 @@
 import AWS from 'aws-sdk';
 import { MAX_BATCH_WRITE_SIZE, POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from '../constants';
 import { Token, Pool } from '../types';
-import { marshallPool, unmarshallPool } from './dynamodb-marshaller';
+import { generateUpdateExpression, marshallPool, unmarshallPool } from './dynamodb-marshaller';
 import { chunk } from 'lodash';
 import debug from 'debug'
 
@@ -42,10 +42,16 @@ export async function updatePools(pools: Pool[]) {
 
   const allPoolUpdateRequests = pools.map(function(pool) {
     return {
-      Update: {
-        Key: marshallPool(pool),
-        TableName: 'pools'
-      } 
+      Update: Object.assign(
+        {
+          Key: { 
+            id: { 'S': pool.id }, 
+            chainId: { 'N': pool.chainId.toString() } 
+          },
+          TableName: 'pools'
+        }, 
+        generateUpdateExpression(pool)
+      )
     }
   });
 
@@ -96,7 +102,8 @@ export async function getPool(chainId: number, id: string) {
     TableName: 'pools',
     Key: { 
       id: { 'S': id}, 
-      chainId: { 'N': chainId.toString() } }
+      chainId: { 'N': chainId.toString() } 
+    }
   };
 
   try {

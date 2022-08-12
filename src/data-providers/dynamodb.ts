@@ -40,25 +40,24 @@ export async function isAlive() {
 export async function updatePools(pools: Pool[]) {
   const dynamodb = getDynamoDB();
 
-  const allPoolPutRequests = pools.map(function(pool) {
+  const allPoolUpdateRequests = pools.map(function(pool) {
     return {
-      PutRequest: {
-        Item: marshallPool(pool)
+      Update: {
+        Key: marshallPool(pool),
+        TableName: 'pools'
       } 
     }
   });
 
-  const poolPutRequestChunks = chunk(allPoolPutRequests, MAX_BATCH_WRITE_SIZE);
-  return Promise.all(poolPutRequestChunks.map((poolPutRequests) => {
+  const poolUpdateRequestChunks = chunk(allPoolUpdateRequests, MAX_BATCH_WRITE_SIZE);
+  return Promise.all(poolUpdateRequestChunks.map((poolUpdateRequests) => {
     const params = {
-      RequestItems: {
-        pools: poolPutRequests
-      }
+      TransactItems: poolUpdateRequests 
     };
-
-    return dynamodb.batchWriteItem(params, (err) => {
+    console.log("Calling with params: ", params);
+    return dynamodb.transactWriteItems(params, (err) => {
       if (err) {
-        console.error(`Unable to update pools ${JSON.stringify(poolPutRequests)} Error JSON: ${JSON.stringify(err, null, 2)}`);
+        console.error(`Unable to update pools ${JSON.stringify(poolUpdateRequests)} Error JSON: ${JSON.stringify(err, null, 2)}`);
       }
     }).promise();
   }));

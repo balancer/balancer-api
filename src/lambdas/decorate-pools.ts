@@ -13,10 +13,10 @@ export const handler = async (): Promise<any> => {
     log("Loading Tokens")
     const tokens = await getTokens();
     log(`Loaded ${tokens.length} tokens. Loading Pools`) 
-    const pools = await getPools();
+    const pools = await getPools(1);
     log(`Decoracting ${pools.length} Pools`)
     const decorateStartTime = Date.now();
-    const poolDecorator = new PoolDecorator(pools);
+    const poolDecorator = new PoolDecorator(pools, 1);
     const decoratedPools = await poolDecorator.decorate(tokens);
     log(`Decorated ${decoratedPools.length} pools`);
     const modifiedPools = decoratedPools.filter((pool) => pool.lastUpdate >= decorateStartTime);

@@ -1,4 +1,4 @@
-import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
+import { AprBreakdown, Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
 
 export const Network = {
     MAINNET: 1,
@@ -55,6 +55,7 @@ export interface Pool extends SDKPool {
     totalLiquidity?: string;
   }
   lastUpdate?: number;
+  apr?: AprBreakdown;
 }
 
 

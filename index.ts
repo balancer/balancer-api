@@ -126,6 +126,11 @@ export class BalancerPoolsAPI extends Stack {
     const decoratePoolsLambda = new NodejsFunction(this, 'decoratePoolsFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
       ...nodeJsFunctionProps,
+      ...{
+        environment: {
+          DEBUG: 'balancer:*'
+        }
+      },
       memorySize: 2048,
       timeout: Duration.seconds(60),
       reservedConcurrentExecutions: 1

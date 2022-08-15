@@ -1,14 +1,16 @@
 import { Pool, Token } from '../types';
-import { StaticPoolRepository, StaticTokenPriceProvider, Pool as SDKPool } from '@balancer-labs/sdk';
+import { BalancerDataRepositories, PoolsStaticRepository, StaticTokenPriceProvider, Pool as SDKPool, Pools, StaticTokenProvider, BalancerNetworkConfig, BalancerSdkConfig, BalancerSDK } from '@balancer-labs/sdk';
 import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
 import debug from 'debug';
+import { getInfuraUrl } from 'utils';
 
 const log = debug('balancer:pool-decorator');
 
 export class PoolDecorator {
   constructor(
-    public pools: Pool[]
+    public pools: Pool[],
+    private chainId: number = 1
   ) {}
 
   public async decorate(tokens: Token[]): Promise<Pool[]> {
@@ -16,13 +18,32 @@ export class PoolDecorator {
     
     const tokenPrices = tokensToTokenPrices(tokens);
   
-    const poolProvider = new StaticPoolRepository(this.pools as SDKPool[]);
+    const poolProvider = new PoolsStaticRepository(this.pools as SDKPool[]);
     const tokenPriceProvider = new StaticTokenPriceProvider(tokenPrices);
+    const tokenProvider = new StaticTokenProvider(tokens);
+
+    const balancerConfig: BalancerSdkConfig = {
+      network: this.chainId,
+      rpcUrl: getInfuraUrl(this.chainId),
+    }
+    const balancerSdk = new BalancerSDK(balancerConfig);
+    const networkConfig = balancerSdk.networkConfig;
+    const dataRepositories = balancerSdk.dataRepositories;
+
+    const poolsRepositories: BalancerDataRepositories = {
+      ...dataRepositories,
+      ...{
+        pools: poolProvider,
+        tokenPrices: tokenPriceProvider,
+        tokenMeta: tokenProvider,
+      }
+    }
 
     const promises = this.pools.map(async pool => {
-      const poolService = new PoolService(pool, poolProvider, tokenPriceProvider);
+      const poolService = new PoolService(pool, networkConfig, poolsRepositories);
 
       await poolService.setTotalLiquidity();
+      await poolService.setApr();
 
       return poolService.pool;
     });

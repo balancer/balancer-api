@@ -3,7 +3,9 @@ import { BalancerDataRepositories, PoolsStaticRepository, StaticTokenPriceProvid
 import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
 import debug from 'debug';
-import { getInfuraUrl } from 'utils';
+import { getInfuraUrl } from '../utils';
+import { chunk, flatten } from 'lodash';
+import util from 'util';
 
 const log = debug('balancer:pool-decorator');
 
@@ -21,6 +23,8 @@ export class PoolDecorator {
     const poolProvider = new PoolsStaticRepository(this.pools as SDKPool[]);
     const tokenPriceProvider = new StaticTokenPriceProvider(tokenPrices);
     const tokenProvider = new StaticTokenProvider(tokens);
+
+    console.log("Infura URL: ", getInfuraUrl(this.chainId));
 
     const balancerConfig: BalancerSdkConfig = {
       network: this.chainId,
@@ -40,15 +44,22 @@ export class PoolDecorator {
     }
 
     const promises = this.pools.map(async pool => {
-      const poolService = new PoolService(pool, networkConfig, poolsRepositories);
+      let poolService;
+      try {
+        poolService = new PoolService(pool, networkConfig, poolsRepositories);
+      } catch (e) {
+        console.log(`Failed to initialize pool service. Error is: ${e}. Pool is:  ${util.inspect(pool, false, null)}`);
+        return;
+      }
 
       await poolService.setTotalLiquidity();
       await poolService.setApr();
 
       return poolService.pool;
     });
-
+  
     const pools = await Promise.all(promises);
+
     log("------- END decorating pools --------")
 
     return pools;

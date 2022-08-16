@@ -128,7 +128,8 @@ export class BalancerPoolsAPI extends Stack {
       ...nodeJsFunctionProps,
       ...{
         environment: {
-          DEBUG: 'balancer:*'
+          // DEBUG: 'balancer:*',
+          INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
         }
       },
       memorySize: 2048,

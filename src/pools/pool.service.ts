@@ -2,6 +2,7 @@ import { Pool } from '../../src/types';
 import { Pools, PoolModel, PoolRepository, TokenPriceProvider, Liquidity, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
 import util from 'util';
 import debug from 'debug';
+import { isEqual } from 'lodash';
 
 const log = debug('balancer:pools')
 
@@ -55,13 +56,44 @@ export class PoolService {
       this.pool.lastUpdate = Date.now();
     }
 
+
     return (this.pool.totalLiquidity = poolLiquidity);
   }
 
   public async setApr(): Promise<AprBreakdown> {
-    log("Calculating APR for pool: ", this.poolModel.id);
-    const apr = await this.poolModel.apr();
-    log("APR is: ", apr);
-    return (this.pool.apr = apr);
+    log("Calculating APR for pool: ", this.pool.id);
+
+    let poolApr: AprBreakdown = {
+      swapFees: 0,
+      tokenAprs: 0,
+      stakingApr: {
+        min: 0,
+        max: 0,
+      },
+      rewardsApr: 0,
+      protocolApr: 0,
+      min: 0,
+      max: 0,
+    }
+
+    this.poolModel.totalLiquidity = this.pool.totalLiquidity; // Need to sync calculated liquidity for APR calculations
+
+    try {
+      const apr = await this.poolModel.apr();
+      poolApr = apr;
+    } catch (e) {
+      console.error(
+        `Failed to calculate APR. Error is:  ${e}\n
+        Pool is:  ${util.inspect(this.pool, false, null)}\n`
+      );
+      return poolApr;
+    }
+
+    if (!isEqual(poolApr, this.pool.apr)) {
+      console.log(`Updated pool ${this.pool.id} to APR: `, poolApr);
+      this.pool.lastUpdate = Date.now();
+    }
+
+    return (this.pool.apr = poolApr);
   }
 }

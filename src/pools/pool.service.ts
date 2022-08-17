@@ -3,6 +3,7 @@ import { Pools, PoolModel, PoolRepository, TokenPriceProvider, Liquidity, Balanc
 import util from 'util';
 import debug from 'debug';
 import { isEqual } from 'lodash';
+import { isValidApr } from '../utils';
 
 const log = debug('balancer:pools')
 
@@ -60,6 +61,8 @@ export class PoolService {
     return (this.pool.totalLiquidity = poolLiquidity);
   }
 
+  
+
   public async setApr(): Promise<AprBreakdown> {
     log("Calculating APR for pool: ", this.pool.id);
 
@@ -76,10 +79,18 @@ export class PoolService {
       max: 0,
     }
 
+    if (Number(this.pool.totalLiquidity) < 100) {
+      log(`Pool only has ${this.pool.totalLiquidity} liquidity. Not processing`);
+      return (this.pool.apr = poolApr); // Don't bother calculating APR for pools with super low liquidity
+    } 
+
     this.poolModel.totalLiquidity = this.pool.totalLiquidity; // Need to sync calculated liquidity for APR calculations
 
     try {
       const apr = await this.poolModel.apr();
+      if (!isValidApr(apr)) {
+        throw new Error('APR is invalid - contains NaN');
+      }
       poolApr = apr;
     } catch (e) {
       console.error(

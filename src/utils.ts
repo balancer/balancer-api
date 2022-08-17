@@ -1,6 +1,6 @@
 import { BigNumber, ethers } from "ethers";
 import { Contract } from '@ethersproject/contracts';
-import { SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
+import { AprBreakdown, SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
 import { getToken } from "./data-providers/dynamodb";
 import { Network, Token, Pool, NativeAssetAddress, NativeAssetPriceSymbol } from "./types";
 
@@ -173,4 +173,15 @@ export function convertPoolToSubgraphPoolBase(pool: Pool): SubgraphPoolBase {
       ...pool, 
       ...{tokens},
   } 
+}
+
+export function isValidApr(apr: AprBreakdown) {
+  for (const value of Object.values(apr)) {
+    if (typeof value === 'object') {
+      if (!isValidApr(value)) return false;
+    }
+    else if (isNaN(value)) return false;
+  }
+
+  return true;
 }

@@ -128,7 +128,7 @@ export class BalancerPoolsAPI extends Stack {
       ...nodeJsFunctionProps,
       ...{
         environment: {
-          // DEBUG: 'balancer:*',
+          // DEBUG: 'balancer:pool*',
           INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
         }
       },

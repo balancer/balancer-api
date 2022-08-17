@@ -1,5 +1,5 @@
 import { Pool, Token } from '../types';
-import { BalancerDataRepositories, PoolsStaticRepository, StaticTokenPriceProvider, Pool as SDKPool, Pools, StaticTokenProvider, BalancerNetworkConfig, BalancerSdkConfig, BalancerSDK } from '@balancer-labs/sdk';
+import { BalancerDataRepositories, PoolsStaticRepository, StaticTokenPriceProvider, Pool as SDKPool, Pools, StaticTokenProvider, BalancerNetworkConfig, BalancerSdkConfig, BalancerSDK, PoolType } from '@balancer-labs/sdk';
 import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
 import debug from 'debug';
@@ -24,8 +24,6 @@ export class PoolDecorator {
     const tokenPriceProvider = new StaticTokenPriceProvider(tokenPrices);
     const tokenProvider = new StaticTokenProvider(tokens);
 
-    console.log("Infura URL: ", getInfuraUrl(this.chainId));
-
     const balancerConfig: BalancerSdkConfig = {
       network: this.chainId,
       rpcUrl: getInfuraUrl(this.chainId),
@@ -43,25 +41,36 @@ export class PoolDecorator {
       }
     }
 
-    const promises = this.pools.map(async pool => {
+    async function decoratePool(pool) {
+      if (pool.poolType === PoolType.Element) return pool;
+
       let poolService;
       try {
         poolService = new PoolService(pool, networkConfig, poolsRepositories);
       } catch (e) {
         console.log(`Failed to initialize pool service. Error is: ${e}. Pool is:  ${util.inspect(pool, false, null)}`);
-        return;
+        return pool;
       }
 
       await poolService.setTotalLiquidity();
       await poolService.setApr();
 
       return poolService.pool;
-    });
-  
-    const pools = await Promise.all(promises);
+    }
+
+    let processedPools = [];
+    const batchSize = 10;
+
+    log(`Processing ${this.pools.length} pools`);
+    
+    for (let i = 0; i < this.pools.length; i += batchSize) {
+      log(`Processing pools ${i} -> ${i+batchSize}`);
+      const batch = await Promise.all(this.pools.slice(i, i + batchSize).map((pool) => decoratePool(pool)));
+      processedPools = processedPools.concat(batch);
+    }
 
     log("------- END decorating pools --------")
 
-    return pools;
+    return processedPools;
   }
 }

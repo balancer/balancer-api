@@ -92,7 +92,7 @@ export class PoolService {
     this.poolModel.totalLiquidity = this.pool.totalLiquidity; // Need to sync calculated liquidity for APR calculations
 
     try {
-      const apr = await this.poolModel.fetchApr();
+      const apr = await this.poolModel.calcApr();
       if (!isValidApr(apr)) {
         throw new Error('APR is invalid - contains NaN');
       }

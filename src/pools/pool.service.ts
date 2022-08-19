@@ -1,5 +1,5 @@
 import { Pool } from '../../src/types';
-import { Pools, PoolModel, PoolRepository, TokenPriceProvider, Liquidity, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
+import { Pools, PoolModel, ModelProvider, PoolRepository, TokenPriceProvider, Liquidity, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
 import util from 'util';
 import debug from 'debug';
 import { isEqual } from 'lodash';
@@ -12,10 +12,9 @@ export class PoolService {
 
   constructor(
     public pool: Pool,
-    private networkConfig: BalancerNetworkConfig,
     private repositories: BalancerDataRepositories
   ) {
-    this.poolModel = Pools.wrap(pool, networkConfig, repositories)
+    this.poolModel = ModelProvider.wrap(pool, repositories)
   }
 
   /**
@@ -26,7 +25,7 @@ export class PoolService {
 
     let poolLiquidity = '0';
     try {
-      const calculatedLiquidity = await this.poolModel.liquidity();
+      const calculatedLiquidity = await this.poolModel.calcLiquidity();
       poolLiquidity = calculatedLiquidity;
     } catch (e) {
       console.error(
@@ -68,12 +67,18 @@ export class PoolService {
 
     let poolApr: AprBreakdown = {
       swapFees: 0,
-      tokenAprs: 0,
+      tokenAprs: {
+        total: 0,
+        breakdown: {},
+      },
       stakingApr: {
         min: 0,
         max: 0,
       },
-      rewardsApr: 0,
+      rewardAprs: {
+        total: 0,
+        breakdown: {},
+      },
       protocolApr: 0,
       min: 0,
       max: 0,
@@ -87,7 +92,7 @@ export class PoolService {
     this.poolModel.totalLiquidity = this.pool.totalLiquidity; // Need to sync calculated liquidity for APR calculations
 
     try {
-      const apr = await this.poolModel.apr();
+      const apr = await this.poolModel.fetchApr();
       if (!isValidApr(apr)) {
         throw new Error('APR is invalid - contains NaN');
       }
@@ -106,5 +111,32 @@ export class PoolService {
     }
 
     return (this.pool.apr = poolApr);
+  }
+
+  public async setVolumeSnapshot(): Promise<string> {
+    let volumeSnapshot = '0';
+
+    if (Number(this.pool.totalSwapVolume) < 100) {
+      log(`Pool only has ${this.pool.totalSwapVolume} volume. Not processing`);
+      return (this.pool.volumeSnapshot = volumeSnapshot); // Don't bother calculating Volume snapshots for pools with super low volume
+    } 
+
+    try {
+      const volume = await this.poolModel.calcVolume();
+      volumeSnapshot = volume.toString();
+    } catch (e) {
+      console.error(
+        `Failed to calculate Volume. Error is:  ${e}\n
+        Pool is:  ${util.inspect(this.pool, false, null)}\n`
+      );
+      return volumeSnapshot;
+    }
+
+    if (volumeSnapshot !== this.pool.volumeSnapshot) {
+      console.log(`Updated pool ${this.pool.id} to Volume:  `, volumeSnapshot);
+      this.pool.lastUpdate = Date.now();
+    }
+
+    return (this.pool.volumeSnapshot = volumeSnapshot);
   }
 }

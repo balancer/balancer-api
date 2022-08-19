@@ -19,7 +19,7 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
 
   await balancer.sor.fetchPools();
   const pools: Pool[] = balancer.sor.getPools().map((sorPool) => {
-    return Object.assign({totalLiquidity: '0'}, sorPool, {poolType: sorPool.poolType as PoolType, chainId});
+    return Object.assign({totalLiquidity: '0', name: ''}, sorPool, {poolType: sorPool.poolType as PoolType, chainId});
   });
   return pools;
 }

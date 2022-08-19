@@ -29,8 +29,7 @@ export class PoolDecorator {
       rpcUrl: getInfuraUrl(this.chainId),
     }
     const balancerSdk = new BalancerSDK(balancerConfig);
-    const networkConfig = balancerSdk.networkConfig;
-    const dataRepositories = balancerSdk.dataRepositories;
+    const dataRepositories = balancerSdk.data;
 
     const poolsRepositories: BalancerDataRepositories = {
       ...dataRepositories,
@@ -46,7 +45,7 @@ export class PoolDecorator {
 
       let poolService;
       try {
-        poolService = new PoolService(pool, networkConfig, poolsRepositories);
+        poolService = new PoolService(pool, poolsRepositories);
       } catch (e) {
         console.log(`Failed to initialize pool service. Error is: ${e}. Pool is:  ${util.inspect(pool, false, null)}`);
         return pool;
@@ -54,6 +53,7 @@ export class PoolDecorator {
 
       await poolService.setTotalLiquidity();
       await poolService.setApr();
+      await poolService.setVolumeSnapshot();
 
       return poolService.pool;
     }

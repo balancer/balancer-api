@@ -32,8 +32,8 @@
 }
 
 type PoolConnection {
-	items: [Pool]
-	nextToken: String
+	pools: [Pool]
+	skip: String
 }
 
 type PoolToken @entity {
@@ -80,8 +80,8 @@ type Query {
 		where: TablePoolsFilterInput, 
 		orderBy: String, 
 		orderDirection: String
-		skip: Int
-	): [Pool]
+		skip: String
+	): PoolConnection
 }
 
 input TableBooleanFilterInput {

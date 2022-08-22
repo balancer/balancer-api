@@ -10,6 +10,9 @@
     "index": "byTotalLiquidity",
     "scanIndexForward": false,
     "limit": $util.defaultIfNull(${ctx.args.first}, 10),
+    #if( ${context.arguments.skip} )
+        "nextToken": $util.toJson($context.arguments.skip),
+    #end
 
     #** This entire section is for generating DynamoDB filters based on the where object in the query *#
     #** These three objects store all the filters to be assembled into one large filter query at the end *#

@@ -1,6 +1,6 @@
 import fetch from 'isomorphic-fetch';
 
-const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v1/sanctions/screening';
+const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;
 
 function formatResponse(statusCode, body) {

@@ -23,15 +23,12 @@ export const handler = async (event: any = {}): Promise<any> => {
 
   const request = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
 
-  const sanctionChecks = Array.isArray(request) ? request : [request];
-
-  for (const check of sanctionChecks) {
-    const address = check.address;
-    if (!address) {
-      return formatResponse(400, 'Error: You are missing the address in one of your sanction checks');
-    }
+  if (!request.address) {
+    return formatResponse(400, 'Error: You are missing the address in the request.');
   }
 
+  const address = request.address;
+  
   try {
     const response = await fetch(SANCTIONS_ENDPOINT, {
       method: 'POST',
@@ -39,14 +36,34 @@ export const handler = async (event: any = {}): Promise<any> => {
         'Content-Type': 'application/json',
         'Authorization': 'Basic ' + Buffer.from(`${SANCTIONS_API_KEY}:${SANCTIONS_API_KEY}`).toString('base64')
       },
-      body: JSON.stringify(sanctionChecks)
+      body: JSON.stringify([
+        {
+          address: address.toLowerCase(),
+          chain: 'ethereum',
+        },
+      ])
     });
-
+    
     const result = await response.json();
-    return formatResponse(200, JSON.stringify(result));
+
+    const riskIndicators: any[] = result.data[0]?.addressRiskIndicators || [];
+    const entities: any[] = result.data[0]?.entities || [];
+  
+    const hasSevereRisk = riskIndicators.some(
+      indicator => indicator.categoryRiskScoreLevelLabel === 'Severe'
+    );
+    const hasSevereEntity = entities.some(
+      entity => entity.riskScoreLevelLabel === 'Severe'
+    );
+  
+    const isBlocked = hasSevereEntity || hasSevereRisk;
+  
+    return formatResponse(200, JSON.stringify({
+      is_blocked: isBlocked
+    }));
    
   } catch (e) {
-    console.log(`Received error performing sanctions check on addresses ${sanctionChecks}: ${e}`)
+    console.log(`Received error performing sanctions check on address ${address}: ${e}`)
     return formatResponse(500, 'Unable to perform sanctions check');
   }
 };

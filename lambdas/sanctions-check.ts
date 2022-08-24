@@ -1,5 +1,7 @@
 import fetch from 'isomorphic-fetch';
 
+// const fetchit = require('isomorphic-fetch');
+
 const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;
 
@@ -46,11 +48,15 @@ export const handler = async (event: any = {}): Promise<any> => {
     
     const result = await response.json();
 
-    const riskIndicators: any[] = result.data[0]?.addressRiskIndicators || [];
-    const entities: any[] = result.data[0]?.entities || [];
+    const riskIndicators: any[] = result[0]?.addressRiskIndicators || [];
+    const entities: any[] = result[0]?.entities || [];
   
     const hasSevereRisk = riskIndicators.some(
-      indicator => indicator.categoryRiskScoreLevelLabel === 'Severe'
+      indicator =>  {
+        indicator.categoryRiskScoreLevelLabel === 'Severe' && 
+        indicator.riskType !== "COUNTERPARTY"
+
+      }
     );
     const hasSevereEntity = entities.some(
       entity => entity.riskScoreLevelLabel === 'Severe'
@@ -67,3 +73,10 @@ export const handler = async (event: any = {}): Promise<any> => {
     return formatResponse(500, 'Unable to perform sanctions check');
   }
 };
+
+// async function check() {
+//   const result = await handler({body: {address: '0xad66946538e4b03b1910dade713febb8b59cff60'}})
+//   console.log("result: ", result);
+// }
+
+// check();

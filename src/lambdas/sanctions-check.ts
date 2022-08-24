@@ -1,7 +1,5 @@
 import fetch from 'isomorphic-fetch';
 
-// const fetchit = require('isomorphic-fetch');
-
 const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;
 
@@ -73,10 +71,3 @@ export const handler = async (event: any = {}): Promise<any> => {
     return formatResponse(500, 'Unable to perform sanctions check');
   }
 };
-
-// async function check() {
-//   const result = await handler({body: {address: '0xad66946538e4b03b1910dade713febb8b59cff60'}})
-//   console.log("result: ", result);
-// }
-
-// check();

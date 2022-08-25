@@ -13,14 +13,18 @@ import { join } from 'path'
 
 const { 
   INFURA_PROJECT_ID, 
-  DYNAMODB_READ_CAPACITY, 
-  DYNAMODB_WRITE_CAPACITY,
+  DYNAMODB_POOLS_READ_CAPACITY, 
+  DYNAMODB_POOLS_WRITE_CAPACITY,
+  DYNAMODB_TOKENS_READ_CAPACITY, 
+  DYNAMODB_TOKENS_WRITE_CAPACITY,
   DOMAIN_NAME,
   SANCTIONS_API_KEY
 } = process.env;
 
-const READ_CAPACITY = Number.parseInt(DYNAMODB_READ_CAPACITY || '10');
-const WRITE_CAPACITY = Number.parseInt(DYNAMODB_WRITE_CAPACITY || '25');
+const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25');
+const POOLS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_WRITE_CAPACITY || '25');
+const TOKENS_READ_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_READ_CAPACITY || '10');
+const TOKENS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_WRITE_CAPACITY || '10');
 
 const BALANCER_API_KEY_EXPIRATION = Date.now() + (365 * 24 * 60 * 60 * 1000); // For GraphQL API - Maximum expiry time is 1 year
 
@@ -43,8 +47,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'pools',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: READ_CAPACITY,
-      writeCapacity: WRITE_CAPACITY
+      readCapacity: POOLS_READ_CAPACITY,
+      writeCapacity: POOLS_WRITE_CAPACITY
     });
 
     poolsTable.addGlobalSecondaryIndex({
@@ -57,8 +61,8 @@ export class BalancerPoolsAPI extends Stack {
         name: 'totalLiquidity', 
         type: AttributeType.NUMBER
       },
-      readCapacity: READ_CAPACITY,
-      writeCapacity: WRITE_CAPACITY,
+      readCapacity: POOLS_READ_CAPACITY,
+      writeCapacity: POOLS_WRITE_CAPACITY,
       projectionType: ProjectionType.ALL,
     });
 
@@ -73,8 +77,8 @@ export class BalancerPoolsAPI extends Stack {
       },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: READ_CAPACITY,
-      writeCapacity: WRITE_CAPACITY
+      readCapacity: TOKENS_READ_CAPACITY,
+      writeCapacity: TOKENS_WRITE_CAPACITY
     });
 
     /**

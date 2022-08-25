@@ -1,4 +1,4 @@
-import { Price } from "@balancer-labs/sdk";
+import { Price, CoingeckoPriceRepository } from "@balancer-labs/sdk";
 import { getPlatformId, getNativeAssetPriceSymbol } from "./utils";
 import { NativeAssetId, NativeAssetPriceSymbol, Network, Token } from "./types";
 import { BigNumber } from "bignumber.js";
@@ -156,14 +156,21 @@ class PriceFetcher {
     }
   }
 
-  private updateTokenPrice(coingeckoData, token: Token): void {
+  private async updateTokenPrice(coingeckoData, token: Token): Promise<void> {
     try {
       const price = this.fetchPrice(coingeckoData, token)
       token.price = price;
     } catch (err)  {
       if ((err as HTTPError).code != null) {
-        console.error(`Unable to fetch price data for token ${token.symbol}. ChainID: ${token.chainId}, address ${token.address} Error code is: ${err.code}`);
-        token.noPriceData = true;
+        console.error(`Unable to fetch price data for token ${token.symbol}. ChainID: ${token.chainId}, address ${token.address} Error code is: ${err.code}. Falling back to Balancer SDK`);
+        const coingeckoPriceRepository = new CoingeckoPriceRepository([], token.chainId);
+        const tokenPrice = await coingeckoPriceRepository.find(token.address);
+        if (tokenPrice) {
+          log(`Found price for token ${token.symbol} via the SDK! Price is: ${tokenPrice}`);
+          token.price = tokenPrice;
+        } else {
+          token.noPriceData = true;
+        }
       } else {
         console.error(`Encountered an error without a status code: ${err.message}`)
       }

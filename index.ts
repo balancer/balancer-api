@@ -134,8 +134,8 @@ export class BalancerPoolsAPI extends Stack {
       timeout: Duration.seconds(60)
     });
 
-    const sanctionsCheckLambda = new NodejsFunction(this, 'sanctionsCheckFunction', {
-        entry: join(__dirname, 'src', 'lambdas', 'sanctions-check.ts'),
+    const walletCheckLambda = new NodejsFunction(this, 'walletCheckFunction', {
+        entry: join(__dirname, 'src', 'lambdas', 'wallet-check.ts'),
         environment: {
           SANCTIONS_API_KEY: SANCTIONS_API_KEY || ''
         },
@@ -180,7 +180,7 @@ export class BalancerPoolsAPI extends Stack {
     const runSORIntegration = new LambdaIntegration(runSORLambda);
     const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
     const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
-    const sanctionsCheckIntegration = new LambdaIntegration(sanctionsCheckLambda);
+    const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
 
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service'
@@ -218,9 +218,9 @@ export class BalancerPoolsAPI extends Stack {
     gnosisOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
 
-    const sanctionsCheck = api.root.addResource('sanctions-check');
-    sanctionsCheck.addMethod('POST', sanctionsCheckIntegration);
-    addCorsOptions(sanctionsCheck);
+    const walletCheck = api.root.addResource('wallet-check');
+    walletCheck.addMethod('POST', walletCheckIntegration);
+    addCorsOptions(walletCheck);
 
     /**
      * Subdomain

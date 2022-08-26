@@ -1,4 +1,5 @@
 import fetch from 'isomorphic-fetch';
+import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from 'types';
 
 const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;
@@ -44,10 +45,10 @@ export const handler = async (event: any = {}): Promise<any> => {
       ])
     });
     
-    const result = await response.json();
+    const result: TRMAccountDetails[] = await response.json();
 
-    const riskIndicators: any[] = result[0]?.addressRiskIndicators || [];
-    const entities: any[] = result[0]?.entities || [];
+    const riskIndicators: TRMRiskIndicator[] = result[0]?.addressRiskIndicators || [];
+    const entities: TRMEntity[] = result[0]?.entities || [];
   
     const hasSevereRisk = riskIndicators.some(
       indicator =>  {
@@ -67,7 +68,7 @@ export const handler = async (event: any = {}): Promise<any> => {
     }));
    
   } catch (e) {
-    console.log(`Received error performing sanctions check on address ${address}: ${e}`)
+    console.log(`Received error performing wallet check on address ${address}: ${e}`)
     return formatResponse(500, 'Unable to perform sanctions check');
   }
 };

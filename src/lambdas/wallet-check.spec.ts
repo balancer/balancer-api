@@ -1,9 +1,10 @@
 import nock from 'nock';
-import { handler } from './sanctions-check';
+import { handler } from './wallet-check';
+import { TRMAccountDetails } from '../types';
 
 nock.disableNetConnect();
 
-let trmResponse = [];
+let trmResponse: TRMAccountDetails[] = [];
 
 
 

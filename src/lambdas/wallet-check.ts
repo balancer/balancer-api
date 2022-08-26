@@ -1,5 +1,15 @@
 import fetch from 'isomorphic-fetch';
+<<<<<<< HEAD
 import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '../types';
+=======
+<<<<<<<< HEAD:src/lambdas/wallet-check.ts
+import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from 'types';
+
+// const fetchit = require('isomorphic-fetch');
+========
+import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '../types';
+>>>>>>>> Rename sanctions-check to wallet-check. Add TRM types:src/lambdas/sanctions-check.ts
+>>>>>>> Rename sanctions-check to wallet-check. Add TRM types
 
 const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;

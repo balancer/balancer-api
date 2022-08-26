@@ -1,5 +1,5 @@
 import fetch from 'isomorphic-fetch';
-import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from 'types';
+import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '../types';
 
 const SANCTIONS_ENDPOINT = 'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;

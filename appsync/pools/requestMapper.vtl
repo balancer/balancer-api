@@ -9,7 +9,9 @@
     },
     "index": "byTotalLiquidity",
     "scanIndexForward": false,
-    "limit": $util.defaultIfNull(${ctx.args.first}, 10),
+    #if( ${context.arguments.first} )
+        "limit": ${ctx.args.first},
+    #end
     #if( ${context.arguments.skip} )
         "nextToken": $util.toJson($context.arguments.skip),
     #end

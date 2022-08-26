@@ -1,5 +1,5 @@
-import { getPools } from '../src/data-providers/dynamodb';
-import { isValidChainId } from 'utils';
+import { getPools } from '../data-providers/dynamodb';
+import { isValidChainId } from '../utils';
 
 export const handler = async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);

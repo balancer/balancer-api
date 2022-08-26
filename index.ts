@@ -99,24 +99,24 @@ export class BalancerPoolsAPI extends Stack {
     }
 
     const getPoolLambda = new NodejsFunction(this, 'getPoolFunction', {
-      entry: join(__dirname, 'lambdas', 'get-pool.ts'),
+      entry: join(__dirname, 'src', 'lambdas', 'get-pool.ts'),
       ...nodeJsFunctionProps,
     });
     const getPoolsLambda = new NodejsFunction(this, 'getPoolsFunction', {
-      entry: join(__dirname, 'lambdas', 'get-pools.ts'),
+      entry: join(__dirname, 'src', 'lambdas', 'get-pools.ts'),
       ...nodeJsFunctionProps,
     });
     const getTokensLambda = new NodejsFunction(this, 'getTokensFunction', {
-      entry: join(__dirname, 'lambdas', 'get-tokens.ts'),
+      entry: join(__dirname, 'src', 'lambdas', 'get-tokens.ts'),
       ...nodeJsFunctionProps,
     });
     const runSORLambda = new NodejsFunction(this, 'runSORFunction', {
-      entry: join(__dirname, 'lambdas', 'run-sor.ts'),
+      entry: join(__dirname, 'src', 'lambdas', 'run-sor.ts'),
       ...nodeJsFunctionProps,
       memorySize: 2048
     });
     const updatePoolsLambda = new NodejsFunction(this, 'updatePoolsFunction', {
-      entry: join(__dirname, 'lambdas', 'update-pools.ts'),
+      entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
       ...nodeJsFunctionProps,
       memorySize: 2048,
       timeout: Duration.seconds(60),
@@ -124,7 +124,7 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     const decoratePoolsLambda = new NodejsFunction(this, 'decoratePoolsFunction', {
-      entry: join(__dirname, 'lambdas', 'decorate-pools.ts'),
+      entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
       ...nodeJsFunctionProps,
       memorySize: 2048,
       timeout: Duration.seconds(60),
@@ -132,14 +132,14 @@ export class BalancerPoolsAPI extends Stack {
     });
     
     const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {
-      entry: join(__dirname, 'lambdas', 'update-prices.ts'),
+      entry: join(__dirname, 'src', 'lambdas', 'update-prices.ts'),
       ...nodeJsFunctionProps,
       memorySize: 512,
       timeout: Duration.seconds(60)
     });
 
-    const sanctionsCheckLambda = new NodejsFunction(this, 'sanctionsCheckFunction', {
-        entry: join(__dirname, 'lambdas', 'sanctions-check.ts'),
+    const walletCheckLambda = new NodejsFunction(this, 'walletCheckFunction', {
+        entry: join(__dirname, 'src', 'lambdas', 'wallet-check.ts'),
         environment: {
           SANCTIONS_API_KEY: SANCTIONS_API_KEY || ''
         },
@@ -184,7 +184,7 @@ export class BalancerPoolsAPI extends Stack {
     const runSORIntegration = new LambdaIntegration(runSORLambda);
     const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
     const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
-    const sanctionsCheckIntegration = new LambdaIntegration(sanctionsCheckLambda);
+    const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
 
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service'
@@ -222,9 +222,9 @@ export class BalancerPoolsAPI extends Stack {
     gnosisOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
 
-    const sanctionsCheck = api.root.addResource('sanctions-check');
-    sanctionsCheck.addMethod('POST', sanctionsCheckIntegration);
-    addCorsOptions(sanctionsCheck);
+    const walletCheck = api.root.addResource('wallet-check');
+    walletCheck.addMethod('POST', walletCheckIntegration);
+    addCorsOptions(walletCheck);
 
     /**
      * Subdomain

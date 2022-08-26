@@ -1,4 +1,4 @@
-import { getSorSwap } from "../src/sor";
+import { getSorSwap } from "../sor";
 
 export const handler = async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);

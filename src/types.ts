@@ -51,7 +51,6 @@ export interface SerializedSwapInfo {
 
 export interface Pool extends SDKPool {
   chainId: number;
-  swapEnabled?: boolean;
   graphData?: {
     totalLiquidity?: string;
   }

@@ -1,6 +1,6 @@
 import { Order } from './types';
 import { getSorSwap, _setLogger } from './sor';
-import { BalancerSDK, mockSwapCostCalculator } from '@balancer-labs/sdk';
+import { mockSwapCostCalculator } from '@balancer-labs/sdk';
 
 jest.mock('@balancer-labs/sdk');
 jest.mock('@ethersproject/providers');

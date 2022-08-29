@@ -21,8 +21,11 @@ export class DatabasePoolDataService implements PoolDataService {
     public async getPools(): Promise<SubgraphPoolBase[]> {
         log(`Retrieving pools for chain ${this.chainId} from the database`);
         const pools = await getPools(this.chainId);
-        log(`Retrieved pools:`, util.inspect(pools, false, null));
+        log(`Retrieved ${pools.length} pools`);
         const subgraphPools = pools.map((pool) => convertPoolToSubgraphPoolBase(pool))
-        return subgraphPools ?? [];
+        log(`Found ${subgraphPools.length} subgraph pools total`);
+        const enabledPools = subgraphPools.filter((pool) => pool.swapEnabled);
+        log(`Found ${enabledPools.length} enabled pools`)
+        return enabledPools ?? [];
     }
 }

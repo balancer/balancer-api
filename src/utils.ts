@@ -172,6 +172,5 @@ export function convertPoolToSubgraphPoolBase(pool: Pool): SubgraphPoolBase {
   return {
       ...pool, 
       ...{tokens},
-      ...{swapEnabled: pool.swapEnabled || true}
   } 
 }

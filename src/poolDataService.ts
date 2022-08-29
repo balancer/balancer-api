@@ -1,7 +1,6 @@
 import { PoolDataService, SubgraphPoolBase } from '@balancer-labs/sdk';
 import { getPools } from "./data-providers/dynamodb";
 import debug from 'debug';
-import util from 'util';
 import { convertPoolToSubgraphPoolBase } from './utils';
 
 const log = debug('balancer:pool-data-service');

@@ -59,12 +59,9 @@
         #elseif($filterSettings.get("contains"))
             #set($expressionTerms = "")
             #foreach($filterSetting in $filterSettings.contains)
-                #set($expressionTerms = "${expressionTerms} :${filter}_c${velocityCount}")
-                #if( $foreach.hasNext ) #set($expressionTerms = "${expressionTerms},")  #end
+                #set($expressionTerms = ":${filter}_c${velocityCount}")
                 #set($ddbDescriber = {"S": $filterSetting})
                 $util.qr($expressionValues.put(":${filter}_c${velocityCount}", $ddbDescriber))
-            #end
-            #if ($expressionTerms != "")
             	$util.qr($filterExpressions.add("contains(${filter}, ${expressionTerms})"))
             #end
         #** The general filter runs the built-in function toDynamoDBFilterExpression on any other options in the 

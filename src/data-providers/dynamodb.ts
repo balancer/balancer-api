@@ -60,7 +60,6 @@ export async function updatePools(pools: Pool[]) {
     const params = {
       TransactItems: poolUpdateRequests 
     };
-    console.log("Calling with params: ", params);
     return dynamodb.transactWriteItems(params, (err) => {
       if (err) {
         console.error(`Unable to update pools ${JSON.stringify(poolUpdateRequests)} Error JSON: ${JSON.stringify(err, null, 2)}`);

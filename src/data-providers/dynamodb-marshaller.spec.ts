@@ -1,5 +1,5 @@
 import { Pool } from '../types';
-import { marshallPool, unmarshallPool } from './dynamodb-marshaller';
+import { generateUpdateExpression, marshallPool, unmarshallPool } from './dynamodb-marshaller';
 import POOLS from '../../test/mocks/pools';
 
 describe('DynamoDB Marshaller', () => {
@@ -145,5 +145,82 @@ describe('DynamoDB Marshaller', () => {
       const unmarshalledPool = unmarshallPool(marshalledPool);
       expect(unmarshalledPool).toMatchObject(originalPool);
     });
-  })
+  });
+
+  describe('generateUpdateExpression', () => {
+    const pool = {
+      id: '0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5000200000000000000000025',
+      totalShares: '39522955.298207500034572608',
+      swapEnabled: true,
+      poolType: "Weighted",
+      address: "0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5",
+      chainId: 1,
+      tokens: [
+        {
+          weight: '0.5',
+          address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+          priceRate: '1',
+          balance: '4318.529528',
+          decimals: 6
+        },
+        {
+          weight: '0.5',
+          address: '0xba100000625a3754423978a60c9317c58a424e3d',
+          priceRate: '1',
+          balance: '250.958639102476791721',
+          decimals: 18
+        }
+      ]
+    }
+
+    const expectedUpdateExpression: UpdateExpression = {
+      UpdateExpression: 'SET #totalShares = :totalShares, #swapEnabled = :swapEnabled, #poolType = :poolType, #address = :address, #tokens = :tokens',
+      ExpressionAttributeNames: {
+        '#totalShares': 'totalShares',
+        '#swapEnabled': 'swapEnabled',
+        '#poolType': 'poolType',
+        '#address': 'address',
+        '#tokens': 'tokens'
+      },
+      ExpressionAttributeValues: {
+        ':totalShares': { 
+          N: '39522955.298207500034572608' 
+        },
+        ':swapEnabled': {
+          BOOL: true
+        },
+        ':poolType': {
+          S: 'Weighted' 
+        },
+        ':address': {
+          S: '0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5'
+        },
+        ':tokens': {
+          L: [
+            {
+              M: {
+                weight: { S: '0.5' },
+                address: { S: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
+                priceRate: { S: '1' },
+                balance: { S: '4318.529528' },
+                decimals: { N: '6' }
+              }
+            },
+            {
+              M: {
+                weight: { S: '0.5' },
+                address: { S: '0xba100000625a3754423978a60c9317c58a424e3d' },
+                priceRate: { S: '1' },
+                balance: { S: '250.958639102476791721' },
+                decimals: { N: '18' }
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const updateExpression = generateUpdateExpression(pool as Pool);
+    expect(updateExpression).toEqual(expectedUpdateExpression);
+  });
 })

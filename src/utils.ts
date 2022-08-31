@@ -112,14 +112,7 @@ export function getSubgraphURL(chainId: number): string {
   
 }
 
-export const testNetworks = [
-    Network.GOERLI,
-    Network.KOVAN
-];
 
-export const productionNetworks = Object.values(Network).filter((networkId) => {
-  return testNetworks.indexOf(networkId) === -1;
-})
 
 export function isValidChainId(chainId: number): boolean {
   return Object.values(Network).includes(chainId)

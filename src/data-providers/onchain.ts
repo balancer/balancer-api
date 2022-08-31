@@ -6,6 +6,7 @@ import { Pool, Token } from '../types';
 import { 
   getTokenInfo, 
   getSubgraphURL,
+  getInfuraUrl
 } from "../utils";
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {

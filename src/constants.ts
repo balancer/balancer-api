@@ -1,4 +1,4 @@
-import { Schema } from "types";
+import { Schema, Network } from "./types";
 
 export const COINGECKO_BASEURL = 'https://api.coingecko.com/api/v3';
 export const COINGECKO_MAX_TOKENS_PER_PAGE = 100;
@@ -7,6 +7,14 @@ export const COINGECKO_MAX_TPS = 10;
 export const MAX_BATCH_WRITE_SIZE = 25;
 export const MAX_DYNAMODB_PRECISION = 38;
 
+export const TEST_NETWORKS: number[] = [
+    Network.GOERLI,
+    Network.KOVAN
+];
+
+export const PRODUCTION_NETWORKS: number[] = Object.values(Network).filter((networkId) => {
+  return TEST_NETWORKS.indexOf(networkId) === -1;
+})
 
 export const POOLS_TABLE_SCHEMA = {
   TableName : "pools",

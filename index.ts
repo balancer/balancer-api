@@ -22,6 +22,8 @@ const {
   SANCTIONS_API_KEY
 } = process.env;
 
+const PRODUCTION_NETWORKS: number[] = [1, 137, 42161];
+
 const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25');
 const POOLS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_WRITE_CAPACITY || '25');
 const TOKENS_READ_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_READ_CAPACITY || '10');
@@ -118,26 +120,37 @@ export class BalancerPoolsAPI extends Stack {
       ...nodeJsFunctionProps,
       memorySize: 2048
     });
-    const updatePoolsLambda = new NodejsFunction(this, 'updatePoolsFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
-      ...nodeJsFunctionProps,
-      memorySize: 2048,
-      timeout: Duration.seconds(60),
-      reservedConcurrentExecutions: 1
-    });
 
-    const decoratePoolsLambda = new NodejsFunction(this, 'decoratePoolsFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
-      ...nodeJsFunctionProps,
-      ...{
-        environment: {
-          // DEBUG: 'balancer:pool*',
-          INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
-        }
-      },
-      memorySize: 2048,
-      timeout: Duration.seconds(60),
-      reservedConcurrentExecutions: 1
+    const updatePoolsLambdas: Record<number, NodejsFunction> = {};
+    PRODUCTION_NETWORKS.forEach((chainId) => {
+      const functionProps = {...nodeJsFunctionProps};
+      functionProps.environment = {
+        ...functionProps.environment,
+        'CHAIN_ID':chainId.toString()
+      };
+      updatePoolsLambdas[chainId] = new NodejsFunction(this, `updatePoolsFunction-${chainId}`, {
+        entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
+        ...functionProps,
+        memorySize: 2048,
+        timeout: Duration.seconds(60),
+        reservedConcurrentExecutions: 1
+      });
+    });
+    
+    const decoratePoolsLambdas: Record<number, NodejsFunction> = {};
+    PRODUCTION_NETWORKS.forEach((chainId) => {
+      const functionProps = {...nodeJsFunctionProps};
+      functionProps.environment = {
+        ...functionProps.environment,
+        'CHAIN_ID':chainId.toString()
+      };
+      decoratePoolsLambdas[chainId] = new NodejsFunction(this, `decoratePoolsFunction-${chainId}`, {
+        entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
+        ...functionProps,
+        memorySize: 2048,
+        timeout: Duration.seconds(60),
+        reservedConcurrentExecutions: 1
+      });
     });
     
     const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {
@@ -169,7 +182,10 @@ export class BalancerPoolsAPI extends Stack {
     const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
       schedule: Schedule.expression(`rate(${DECORATE_POOLS_INTERVAL} ${periodWord})`)
     });
-    decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda))
+
+    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+      decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda))
+    })
 
     /**
      * Access Rules
@@ -178,14 +194,22 @@ export class BalancerPoolsAPI extends Stack {
     poolsTable.grantReadData(getPoolsLambda);
     poolsTable.grantReadData(getPoolLambda);
     poolsTable.grantReadWriteData(runSORLambda);
-    poolsTable.grantReadWriteData(updatePoolsLambda);
-    poolsTable.grantReadWriteData(decoratePoolsLambda);
+    Object.values(updatePoolsLambdas).forEach((updatePoolsLambda) => {
+      poolsTable.grantReadWriteData(updatePoolsLambda);
+    });
+    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+      poolsTable.grantReadWriteData(decoratePoolsLambda);
+    });
 
     tokensTable.grantReadData(getTokensLambda);
-    tokensTable.grantReadData(decoratePoolsLambda);
     tokensTable.grantReadWriteData(runSORLambda);
-    tokensTable.grantReadWriteData(updatePoolsLambda);
     tokensTable.grantReadWriteData(updateTokenPricesLambda);
+    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+      tokensTable.grantReadData(decoratePoolsLambda);
+    });
+    Object.values(updatePoolsLambdas).forEach((updatePoolsLambda) => {
+      tokensTable.grantReadWriteData(updatePoolsLambda);
+    });
 
     /**
      * API Gateway
@@ -195,7 +219,6 @@ export class BalancerPoolsAPI extends Stack {
     const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
     const getTokensIntegration = new LambdaIntegration(getTokensLambda);
     const runSORIntegration = new LambdaIntegration(runSORLambda);
-    const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
     const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
     const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
 
@@ -204,17 +227,23 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     const pools = api.root.addResource('pools');
-    const poolsOnChain = pools.addResource('{chainId}')
-    poolsOnChain.addMethod('GET', getPoolsIntegration);
     addCorsOptions(pools);
 
-    const updatePools = pools.addResource('update');
-    updatePools.addMethod('POST', updatePoolsIntegration);
-    addCorsOptions(updatePools);
+    PRODUCTION_NETWORKS.forEach((chainId) => {
+      const poolsOnChain = pools.addResource(chainId.toString());
 
-    const singlePool = poolsOnChain.addResource('{id}');
-    singlePool.addMethod('GET', getPoolIntegration);
-    addCorsOptions(singlePool);
+      const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambdas[chainId], {timeout: Duration.seconds(29)});
+      const updatePools = poolsOnChain.addResource('update');
+      updatePools.addMethod('POST', updatePoolsIntegration);
+      addCorsOptions(updatePools);
+
+      poolsOnChain.addMethod('GET', getPoolsIntegration);
+
+      const singlePool = poolsOnChain.addResource('{id}');
+      singlePool.addMethod('GET', getPoolIntegration);
+      addCorsOptions(singlePool);
+    });
+
 
     const tokens = api.root.addResource('tokens');
     const tokensOnChain = tokens.addResource('{chainId}');

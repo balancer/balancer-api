@@ -229,19 +229,20 @@ export class BalancerPoolsAPI extends Stack {
     const pools = api.root.addResource('pools');
     addCorsOptions(pools);
 
+    const updatePools = pools.addResource('update');
+    addCorsOptions(updatePools);
+
+    const poolsOnChain = pools.addResource('{chainId}');
+    poolsOnChain.addMethod('GET', getPoolsIntegration);
+
+    const singlePool = poolsOnChain.addResource('{id}');
+    singlePool.addMethod('GET', getPoolIntegration);
+    addCorsOptions(singlePool);
+
     PRODUCTION_NETWORKS.forEach((chainId) => {
-      const poolsOnChain = pools.addResource(chainId.toString());
-
       const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambdas[chainId], {timeout: Duration.seconds(29)});
-      const updatePools = poolsOnChain.addResource('update');
-      updatePools.addMethod('POST', updatePoolsIntegration);
-      addCorsOptions(updatePools);
-
-      poolsOnChain.addMethod('GET', getPoolsIntegration);
-
-      const singlePool = poolsOnChain.addResource('{id}');
-      singlePool.addMethod('GET', getPoolIntegration);
-      addCorsOptions(singlePool);
+      const updatePoolsWithChainId = updatePools.addResource(chainId.toString());
+      updatePoolsWithChainId.addMethod('POST', updatePoolsIntegration);
     });
 
 

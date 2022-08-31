@@ -6,7 +6,6 @@
 import { productionNetworks } from "utils";
 import { getPools, getTokens, updatePools } from "../data-providers/dynamodb";
 import { PoolDecorator } from "../pools/pool.decorator";
-import { Network } from '../types';
  
 export const handler = async (): Promise<any> => {
   const log = console.log;

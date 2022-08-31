@@ -17,6 +17,7 @@ const {
   DYNAMODB_POOLS_WRITE_CAPACITY,
   DYNAMODB_TOKENS_READ_CAPACITY, 
   DYNAMODB_TOKENS_WRITE_CAPACITY,
+  DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
   SANCTIONS_API_KEY
 } = process.env;
@@ -25,6 +26,8 @@ const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25'
 const POOLS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_WRITE_CAPACITY || '25');
 const TOKENS_READ_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_READ_CAPACITY || '10');
 const TOKENS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_WRITE_CAPACITY || '10');
+
+const DECORATE_POOLS_INTERVAL = Number.parseInt(DECORATE_POOLS_INTERVAL_IN_MINUTES || '5');
 
 const BALANCER_API_KEY_EXPIRATION = Date.now() + (365 * 24 * 60 * 60 * 1000); // For GraphQL API - Maximum expiry time is 1 year
 
@@ -157,12 +160,15 @@ export class BalancerPoolsAPI extends Stack {
      * Lambda Schedules
      */
 
-    const rule = new Rule(this, 'updateEachMinute', {
+    const updateTokenPricesRule = new Rule(this, 'updateEachMinute', {
       schedule: Schedule.expression('rate(1 minute)')
     });
+    updateTokenPricesRule.addTarget(new LambdaFunction(updateTokenPricesLambda))
 
-    rule.addTarget(new LambdaFunction(updateTokenPricesLambda))
-    rule.addTarget(new LambdaFunction(decoratePoolsLambda))
+    const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
+      schedule: Schedule.expression(`rate(${DECORATE_POOLS_INTERVAL} minute)`)
+    });
+    decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda))
 
     /**
      * Access Rules

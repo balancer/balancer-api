@@ -4,7 +4,6 @@ import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
 import debug from 'debug';
 import { getInfuraUrl } from '../utils';
-import { chunk, flatten } from 'lodash';
 import util from 'util';
 
 const log = debug('balancer:pool-decorator');

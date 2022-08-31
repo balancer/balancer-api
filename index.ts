@@ -201,7 +201,7 @@ export class BalancerPoolsAPI extends Stack {
     poolsOnChain.addMethod('GET', getPoolsIntegration);
     addCorsOptions(pools);
 
-    const updatePools = poolsOnChain.addResource('update');
+    const updatePools = pools.addResource('update');
     updatePools.addMethod('POST', updatePoolsIntegration);
     addCorsOptions(updatePools);
 

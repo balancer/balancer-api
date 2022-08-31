@@ -7,7 +7,7 @@ export const handler = async (event: any = {}): Promise<any> => {
 
   try {
     for (const chainId of productionNetworks) {
-      log(`Fetching pools from chain ${chainId}`)
+      log(`Fetching pools for chain ${chainId}`)
       const poolsFromChain = await fetchPoolsFromChain(chainId);
       log(`Sanitizing ${poolsFromChain.length} pools`);
       const pools = sanitizePools(poolsFromChain);

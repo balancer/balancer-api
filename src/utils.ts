@@ -97,7 +97,7 @@ export function getInfuraUrl(chainId: number): string {
   }
 }
 
-export function getTheGraphURL(chainId: number): string {
+export function getSubgraphURL(chainId: number): string {
   switch (chainId) {
     case Network.KOVAN:
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-kovan-v2';

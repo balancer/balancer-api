@@ -165,8 +165,9 @@ export class BalancerPoolsAPI extends Stack {
     });
     updateTokenPricesRule.addTarget(new LambdaFunction(updateTokenPricesLambda))
 
+    const periodWord = DECORATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
     const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
-      schedule: Schedule.expression(`rate(${DECORATE_POOLS_INTERVAL} minute)`)
+      schedule: Schedule.expression(`rate(${DECORATE_POOLS_INTERVAL} ${periodWord})`)
     });
     decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda))
 

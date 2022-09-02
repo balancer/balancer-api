@@ -1,5 +1,5 @@
 import { Pool } from '../../src/types';
-import { Pools, PoolModel, ModelProvider, PoolRepository, TokenPriceProvider, Liquidity, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
+import { Pools, PoolRepository, TokenPriceProvider, Liquidity, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
 import util from 'util';
 import debug from 'debug';
 import { isEqual } from 'lodash';
@@ -8,13 +8,14 @@ import { isValidApr } from '../utils';
 const log = debug('balancer:pools')
 
 export class PoolService {
-  poolModel: PoolModel;
+  pools: Pools;
 
   constructor(
     public pool: Pool,
+    private networkConfig: BalancerNetworkConfig,
     private repositories: BalancerDataRepositories
   ) {
-    this.poolModel = ModelProvider.wrap(pool, repositories)
+    this.pools = new Pools(networkConfig, repositories)
   }
 
   /**
@@ -25,7 +26,7 @@ export class PoolService {
 
     let poolLiquidity = '0';
     try {
-      const calculatedLiquidity = await this.poolModel.calcLiquidity();
+      const calculatedLiquidity = await this.pools.liquidity(this.pool);
       poolLiquidity = calculatedLiquidity;
     } catch (e) {
       console.error(
@@ -89,10 +90,8 @@ export class PoolService {
       return (this.pool.apr = poolApr); // Don't bother calculating APR for pools with super low liquidity
     } 
 
-    this.poolModel.totalLiquidity = this.pool.totalLiquidity; // Need to sync calculated liquidity for APR calculations
-
     try {
-      const apr = await this.poolModel.calcApr();
+      const apr = await this.pools.apr(this.pool);
       if (!isValidApr(apr)) {
         throw new Error('APR is invalid - contains NaN');
       }
@@ -122,7 +121,7 @@ export class PoolService {
     } 
 
     try {
-      const volume = await this.poolModel.calcVolume();
+      const volume = await this.pools.volume(this.pool);
       volumeSnapshot = volume.toString();
     } catch (e) {
       console.error(

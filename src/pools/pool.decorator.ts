@@ -39,12 +39,14 @@ export class PoolDecorator {
       }
     }
 
+    const networkConfig = balancerSdk.networkConfig;
+
     async function decoratePool(pool) {
       if (pool.poolType === PoolType.Element) return pool;
 
       let poolService;
       try {
-        poolService = new PoolService(pool, poolsRepositories);
+        poolService = new PoolService(pool, networkConfig, poolsRepositories);
       } catch (e) {
         console.log(`Failed to initialize pool service. Error is: ${e}. Pool is:  ${util.inspect(pool, false, null)}`);
         return pool;

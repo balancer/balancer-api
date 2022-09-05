@@ -1,7 +1,7 @@
 import { getSorSwap } from "../sor";
 
 export const handler = async (event: any = {}): Promise<any> => {
-  const networkId = parseInt(event.pathParameters.networkId);
+  const networkId = parseInt(event.pathParameters.chainId);
   if (!networkId) {
     return { statusCode: 400, body: `Error: You are missing the networkId` };
   }

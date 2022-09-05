@@ -237,7 +237,7 @@ export class BalancerPoolsAPI extends Stack {
     const pools = api.root.addResource('pools');
     addCorsOptions(pools);
 
-    const poolsOnNetwork = pools.addResource('{networkId}');
+    const poolsOnNetwork = pools.addResource('{chainId}');
     poolsOnNetwork.addMethod('GET', getPoolsIntegration);
 
     const singlePool = poolsOnNetwork.addResource('{id}');
@@ -254,7 +254,7 @@ export class BalancerPoolsAPI extends Stack {
 
 
     const tokens = api.root.addResource('tokens');
-    const tokensOnNetwork = tokens.addResource('{networkId}');
+    const tokensOnNetwork = tokens.addResource('{chainId}');
     tokensOnNetwork.addMethod('GET', getTokensIntegration);
     addCorsOptions(tokens);
 
@@ -263,12 +263,12 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(updatePrices);
 
     const sor = api.root.addResource('sor');
-    const sorOnNetwork = sor.addResource('{networkId}')
+    const sorOnNetwork = sor.addResource('{chainId}')
     sorOnNetwork.addMethod('POST', runSORIntegration);
     addCorsOptions(sor);
 
     const gnosis = api.root.addResource('gnosis');
-    const gnosisOnNetwork = gnosis.addResource('{networkId}')
+    const gnosisOnNetwork = gnosis.addResource('{chainId}')
     gnosisOnNetwork.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
 

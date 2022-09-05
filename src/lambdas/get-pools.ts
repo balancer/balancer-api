@@ -2,7 +2,7 @@ import { getPools } from '../data-providers/dynamodb';
 import { isValidNetworkId } from '../utils';
 
 export const handler = async (event: any = {}): Promise<any> => {
-  const networkId = parseInt(event.pathParameters.networkId);
+  const networkId = parseInt(event.pathParameters.chainId);
   if (!networkId) {
     return { statusCode: 400, body: `Error: You are missing the networkId` };
   }

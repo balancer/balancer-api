@@ -1,9 +1,9 @@
 import { getSorSwap } from "../sor";
 
 export const handler = async (event: any = {}): Promise<any> => {
-  const chainId = parseInt(event.pathParameters.chainId);
-  if (!chainId) {
-    return { statusCode: 400, body: `Error: You are missing the chainId` };
+  const networkId = parseInt(event.pathParameters.networkId);
+  if (!networkId) {
+    return { statusCode: 400, body: `Error: You are missing the networkId` };
   }
 
   if (!event.body) {
@@ -12,7 +12,7 @@ export const handler = async (event: any = {}): Promise<any> => {
   const sorRequest = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
 
   try {
-    const swapInfo = await getSorSwap(chainId, sorRequest);
+    const swapInfo = await getSorSwap(networkId, sorRequest);
     return { statusCode: 200, body: JSON.stringify(swapInfo) };
   } catch (dbError) {
     return { statusCode: 500, body: JSON.stringify(dbError) };

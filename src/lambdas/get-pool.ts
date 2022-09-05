@@ -1,9 +1,9 @@
 import { getPool } from '../data-providers/dynamodb';
 
 export const handler = async (event: any = {}): Promise<any> => {
-  const chainId = parseInt(event.pathParameters.chainId);
-  if (!chainId) {
-    return { statusCode: 400, body: `Error: You are missing the chainId` };
+  const networkId = parseInt(event.pathParameters.networkId);
+  if (!networkId) {
+    return { statusCode: 400, body: `Error: You are missing the networkId` };
   }
 
   const poolId = event.pathParameters.id;
@@ -12,7 +12,7 @@ export const handler = async (event: any = {}): Promise<any> => {
   }
 
   try {
-    const pool = await getPool(chainId, poolId);
+    const pool = await getPool(networkId, poolId);
     if (pool) {
       return { statusCode: 200, body: JSON.stringify(pool) };
     } else {

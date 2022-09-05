@@ -1,13 +1,13 @@
 import { getPools } from '../data-providers/dynamodb';
-import { isValidChainId } from '../utils';
+import { isValidNetworkId } from '../utils';
 
 export const handler = async (event: any = {}): Promise<any> => {
-  const chainId = parseInt(event.pathParameters.chainId);
-  if (!chainId) {
-    return { statusCode: 400, body: `Error: You are missing the chainId` };
+  const networkId = parseInt(event.pathParameters.networkId);
+  if (!networkId) {
+    return { statusCode: 400, body: `Error: You are missing the networkId` };
   }
-  if (!isValidChainId(chainId)) {
-    return { statusCode: 404, body: `Error: ChainId ${chainId} does not exist`}
+  if (!isValidNetworkId(networkId)) {
+    return { statusCode: 404, body: `Error: Network ID ${networkId} does not exist`}
   } 
 
   const corsHeaders = {
@@ -17,7 +17,7 @@ export const handler = async (event: any = {}): Promise<any> => {
   }
 
   try {
-    const pools = await getPools(chainId);
+    const pools = await getPools(networkId);
     return { statusCode: 200, headers: corsHeaders, body: JSON.stringify(pools) };
   } catch (dbError) {
     return { statusCode: 500, headers: corsHeaders, body: JSON.stringify(dbError) };

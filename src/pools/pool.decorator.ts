@@ -11,7 +11,7 @@ const log = debug('balancer:pool-decorator');
 export class PoolDecorator {
   constructor(
     public pools: Pool[],
-    private chainId: number = 1
+    private networkId: number = 1
   ) {}
 
   public async decorate(tokens: Token[]): Promise<Pool[]> {
@@ -24,8 +24,8 @@ export class PoolDecorator {
     const tokenProvider = new StaticTokenProvider(tokens);
 
     const balancerConfig: BalancerSdkConfig = {
-      network: this.chainId,
-      rpcUrl: getInfuraUrl(this.chainId),
+      network: this.networkId,
+      rpcUrl: getInfuraUrl(this.networkId),
     }
     const balancerSdk = new BalancerSDK(balancerConfig);
     const dataRepositories = balancerSdk.data;

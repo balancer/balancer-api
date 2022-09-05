@@ -114,8 +114,8 @@ export function getSubgraphURL(chainId: number): string {
 
 
 
-export function isValidChainId(chainId: number): boolean {
-  return Object.values(Network).includes(chainId)
+export function isValidNetworkId(networkId: number): boolean {
+  return Object.values(Network).includes(networkId)
 }
 
 export function getPlatformId(chainId: string | number): string | undefined {

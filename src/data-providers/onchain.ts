@@ -10,15 +10,18 @@ import {
 } from "../utils";
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
-  const subgraphPoolFetcher = new PoolsSubgraphRepository(getSubgraphURL(chainId));
-  const subgraphPools = await subgraphPoolFetcher.fetch({
-    args: {
-      where: {
-        totalShares: Op.GreaterThan(0)
-      }
-    },
-    attrs: {}
+  const subgraphPoolFetcher = new PoolsSubgraphRepository({
+    url: getSubgraphURL(chainId),
+    query: {
+      args: {
+        where: {
+          totalShares: Op.GreaterThan(0)
+        }
+      },
+      attrs: {}
+    }
   });
+  const subgraphPools = await subgraphPoolFetcher.fetch();
 
   const pools: Pool[] = subgraphPools.map((subgraphPool) => {
     return Object.assign({totalLiquidity: '0', name: ''}, subgraphPool, {poolType: subgraphPool.poolType as PoolType, chainId});

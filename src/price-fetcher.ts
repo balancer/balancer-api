@@ -1,5 +1,5 @@
 import { Price, CoingeckoPriceRepository } from "@balancer-labs/sdk";
-import { getPlatformId, getNativeAssetPriceSymbol } from "./utils";
+import { getPlatformId, getNativeAssetPriceSymbol, formatPrice } from "./utils";
 import { NativeAssetId, NativeAssetPriceSymbol, Network, Token } from "./types";
 import { BigNumber } from "bignumber.js";
 import { COINGECKO_BASEURL, COINGECKO_MAX_TOKENS_PER_PAGE, COINGECKO_MAX_TPS } from "./constants";
@@ -159,7 +159,7 @@ class PriceFetcher {
   private async updateTokenPrice(coingeckoData, token: Token): Promise<void> {
     try {
       const price = this.fetchPrice(coingeckoData, token)
-      token.price = price;
+      token.price = formatPrice(price);
     } catch (err)  {
       if ((err as HTTPError).code != null) {
         console.error(`Unable to fetch price data for token ${token.symbol}. ChainID: ${token.chainId}, address ${token.address} Error code is: ${err.code}. Falling back to Balancer SDK`);
@@ -167,7 +167,7 @@ class PriceFetcher {
         const tokenPrice = await coingeckoPriceRepository.find(token.address);
         if (tokenPrice) {
           log(`Found price for token ${token.symbol} via the SDK! Price is: ${tokenPrice}`);
-          token.price = tokenPrice;
+          token.price = formatPrice(tokenPrice);
         } else {
           token.noPriceData = true;
         }

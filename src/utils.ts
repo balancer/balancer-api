@@ -1,6 +1,7 @@
 import { BigNumber, ethers } from "ethers";
+import { BigNumber as OldBigNumber } from "bignumber.js";
 import { Contract } from '@ethersproject/contracts';
-import { AprBreakdown, SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
+import { AprBreakdown, Price, SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
 import { getToken } from "./data-providers/dynamodb";
 import { Network, Token, Pool, NativeAssetAddress, NativeAssetPriceSymbol } from "./types";
 
@@ -186,4 +187,17 @@ export function isValidApr(apr: AprBreakdown) {
   }
 
   return true;
+}
+
+/** Formats a price correctly for storage. Does the following:
+ *  - Converts prices in scientific notation to decimal (e.g. 1.63e-7 => 0.000000163)
+ * 
+ */
+export function formatPrice(price: Price): Price {
+  const formattedPrice: Price = {};
+  Object.entries(price).forEach(([currency, value]) => {
+    formattedPrice[currency] = new OldBigNumber(value).toFixed()
+  });
+
+  return formattedPrice;
 }

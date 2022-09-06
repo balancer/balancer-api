@@ -16,8 +16,14 @@ export const BalancerSDK = jest.fn().mockImplementation(() => {
       fetchPools: jest.fn().mockImplementation(),
       getSwaps: jest.fn().mockImplementation(() => { return mockSwapInfo }),
       swapCostCalculator: mockSwapCostCalculator
-    }
+    },
   };
+});
+
+export const CoingeckoPriceRepository = jest.fn().mockImplementation(() => {
+  return {
+    find: jest.fn().mockImplementation()
+  }
 });
 
 export enum SwapTypes {

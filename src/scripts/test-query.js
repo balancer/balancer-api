@@ -34,7 +34,6 @@ const complexQuery = `query {
       first: 10, 
       orderBy: "totalLiquidity", 
       orderDirection: "desc", 
-      skip: 0, 
       where: {
         tokensList: {
           contains: []

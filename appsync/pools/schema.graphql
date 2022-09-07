@@ -33,7 +33,7 @@
 
 type PoolConnection {
 	pools: [Pool]
-	skip: String
+	nextToken: String
 }
 
 type PoolToken @entity {
@@ -80,7 +80,7 @@ type Query {
 		where: TablePoolsFilterInput, 
 		orderBy: String, 
 		orderDirection: String
-		skip: String
+		nextToken: String
 	): PoolConnection
 }
 

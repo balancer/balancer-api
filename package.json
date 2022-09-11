@@ -28,7 +28,7 @@
     "aws-cdk-lib": "^2.32.1",
     "aws-sdk": "^2.1181.0",
     "bignumber.js": "^9.0.1",
-    "constructs": "^10.1.50",
+    "constructs": "^10.1.82",
     "debug": "^4.3.1",
     "dotenv": "^10.0.0",
     "ethers": "^5.3.0",

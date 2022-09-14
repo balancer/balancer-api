@@ -68,20 +68,29 @@ export async function updatePools(pools: Pool[]) {
   }));
 }
 
-export async function getPools(chainId?: number, lastResult?: any): Promise<Pool[]> {
+export async function getPools(chainId?: number, lastResult?: any, additionalParams?: any, useQuery = false): Promise<Pool[]> {
   const dynamodb = getDynamoDB();
-  const params: AWS.DynamoDB.ScanInput = {
+  const params = {
     TableName: 'pools',
-    ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined
+    ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined,
+    ...(additionalParams || {})
   }
+
   if (chainId) {
     params.FilterExpression = 'chainId = :chainId'
     params.ExpressionAttributeValues = {
         ':chainId': { 'N': chainId.toString() }
-    }
+    }  
   }
+
   try {
-    const pools = await dynamodb.scan(params).promise()
+    let pools;
+    if (useQuery) {
+      pools = await dynamodb.query(params).promise();
+    } else {
+      pools = await dynamodb.scan(params).promise();
+    }
+
     if (lastResult) {
       pools.Items = lastResult.Items.concat(pools.Items);
     }

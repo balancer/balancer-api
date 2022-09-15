@@ -51,11 +51,7 @@ export const handler = async (event: any = {}): Promise<any> => {
     const entities: TRMEntity[] = result[0]?.entities || [];
   
     const hasSevereRisk = riskIndicators.some(
-      indicator =>  {
-        indicator.categoryRiskScoreLevelLabel === 'Severe' && 
-        indicator.riskType !== "COUNTERPARTY"
-
-      }
+      indicator => indicator.categoryRiskScoreLevelLabel === 'Severe'
     );
     const hasSevereEntity = entities.some(
       entity => entity.riskScoreLevelLabel === 'Severe'

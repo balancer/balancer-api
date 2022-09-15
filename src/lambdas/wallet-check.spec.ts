@@ -33,36 +33,7 @@ describe('Wallet Check Lambda', () => {
     expect(body.is_blocked).toBe(false);
   });
 
-  it('Should return false for an address that has a severe warning but it is type of counterparty', async () => {
-    trmResponse = [{
-      "accountExternalId": null,
-      "address": "0x0000000000000000000000000000000000000000",
-      "addressRiskIndicators": [
-        {
-          "category": "Sanctions",
-          "categoryId": "69",
-          "categoryRiskScoreLevel": 15,
-          "categoryRiskScoreLevelLabel": "Severe",
-          "incomingVolumeUsd": "100",
-          "outgoingVolumeUsd": "0",
-          "riskType": "COUNTERPARTY",
-          "totalVolumeUsd": "100"
-        }
-      ],
-      "addressSubmitted": "0x0000000000000000000000000000000000000000",
-      "chain": "ethereum",
-      "entities": [],
-      "trmAppUrl": "https://my.trmlabs.com/address/0x0000000000000000000000000000000000000000/eth"
-    }];
-    nock('https://api.trmlabs.com')
-      .post('/public/v2/screening/addresses')
-      .reply(200, trmResponse);
-    const response = await handler(request);
-    const body = JSON.parse(response.body);
-    expect(body.is_blocked).toBe(false);
-  });
-
-  it('Should return blocked for an address that has a Severe risk which is not counterparty', async () => {
+  it('Should return blocked for an address that has a Severe risk', async () => {
     trmResponse = [{
         "accountExternalId": null,
         "address": "0x0000000000000000000000000000000000000000",

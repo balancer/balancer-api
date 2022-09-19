@@ -4,6 +4,10 @@ import express from "express";
 import { getSorSwap } from "./sor";
 import { getPool, getPools, getToken, getTokens } from "./data-providers/dynamodb";
 import { isValidChainId, localAWSConfig } from "./utils";
+import { handler as getPoolsHandler } from "./lambdas/get-pools";
+import { handler as getPoolHandler } from "./lambdas/get-pool";
+import { handler as sorHandler } from "./lambdas/run-sor";
+import { handler as getTokensHandler } from './lambdas/get-tokens';
 
 const log = debug("balancer");
 
@@ -15,53 +19,33 @@ AWS.config.update(localAWSConfig);
 const port = PORT || 8090;
 const app = express();
 
-app.get("/pools/:chainId", async (req, res, next) => {
-  log("Geting pools");
-  try {
-    const chainId = Number(req.params['chainId']);
-    if (!isValidChainId(chainId)) return res.sendStatus(404);
-    const pools = await getPools(chainId);
-    res.json(pools);
-  } catch (error) {
-    log(`Error: ${error.message}`);
-    return next(error);
-  }
+app.get("/pools/:chainId", async (req, res) => {
+  const result = await getPoolsHandler({
+      pathParameters: req.params
+  });
+  res.status(result.statusCode).send(result.body);
 });
 
 app.get("/pools/:chainId/:id", async (req, res) => {
-  const chainId = Number(req.params['chainId']);
-  const poolId = req.params['id'];
-  log(`Retrieving pool of id ${poolId}`);
-  const pool = await getPool(chainId, poolId);
-  if (pool) {
-    return res.json(pool)
-  } else {
-    return res.sendStatus(404);
-  }
+  const result = await getPoolHandler({
+    pathParameters: req.params
+  });
+  res.status(result.statusCode).send(result.body);
 });
 
-app.post("/sor/:chainId", express.json(), async (req, res, next) => {
-  try{
-    const chainId = Number(req.params['chainId']);
-    const swapInfo = await getSorSwap(chainId, req.body);
-    res.json(swapInfo);
-  } catch(error){
-    log(`Error: ${error.message}`);
-    return next(error);
-  }
+app.post("/sor/:chainId", express.json(), async (req, res) => {
+  const result = await sorHandler({
+    pathParameters: req.params,
+    body: req.body
+  });
+  res.status(result.statusCode).send(result.body);
 });
 
-app.get("/tokens/:chainId", async (req, res, next) => {
-  log("Getting tokens");
-  try {
-    const chainId = Number(req.params['chainId']);
-    if (!isValidChainId(chainId)) return res.sendStatus(404);
-    const tokens = await getTokens(chainId);
-    res.json(tokens);
-  } catch (error) {
-    log(`Error: ${error.message}`);
-    return next(error);
-  }
+app.get("/tokens/:chainId", async (req, res) => {
+  const result = await getTokensHandler({
+    pathParameters: req.params
+  });
+  res.status(result.statusCode).send(result.body);
 });
 
 app.get("/tokens/:chainId/:id", async (req, res) => {

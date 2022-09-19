@@ -1,6 +1,6 @@
 
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { BalancerSDK, Op, PoolsSubgraphRepository, PoolType } from '@balancer-labs/sdk';
+import { Op, PoolsSubgraphRepository, PoolType } from '@balancer-labs/sdk';
 import { getToken } from './dynamodb';
 import { Pool, Token } from '../types';
 import { 

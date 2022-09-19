@@ -1,4 +1,4 @@
-import { AprBreakdown, Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
+import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
 
 export const Network = {
     MAINNET: 1,

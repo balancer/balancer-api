@@ -2,7 +2,7 @@
 import AWS from 'aws-sdk';
 import { MAX_BATCH_WRITE_SIZE, POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from '../constants';
 import { Token, Pool } from '../types';
-import { generateUpdateExpression, marshallPool, unmarshallPool } from './dynamodb-marshaller';
+import { generateUpdateExpression, unmarshallPool } from './dynamodb-marshaller';
 import { chunk } from 'lodash';
 import debug from 'debug'
 

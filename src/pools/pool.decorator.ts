@@ -1,5 +1,5 @@
 import { Pool, Token } from '../types';
-import { BalancerDataRepositories, PoolsStaticRepository, StaticTokenPriceProvider, Pool as SDKPool, Pools, StaticTokenProvider, BalancerNetworkConfig, BalancerSdkConfig, BalancerSDK, PoolType } from '@balancer-labs/sdk';
+import { BalancerDataRepositories, PoolsStaticRepository, StaticTokenPriceProvider, Pool as SDKPool, StaticTokenProvider, BalancerSdkConfig, BalancerSDK, PoolType } from '@balancer-labs/sdk';
 import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
 import debug from 'debug';

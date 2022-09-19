@@ -1,5 +1,5 @@
 import { Pool } from '../../src/types';
-import { Pools, PoolRepository, TokenPriceProvider, Liquidity, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
+import { Pools, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
 import util from 'util';
 import debug from 'debug';
 import { isEqual } from 'lodash';
@@ -12,8 +12,8 @@ export class PoolService {
 
   constructor(
     public pool: Pool,
-    private networkConfig: BalancerNetworkConfig,
-    private repositories: BalancerDataRepositories
+    networkConfig: BalancerNetworkConfig,
+    repositories: BalancerDataRepositories
   ) {
     this.pools = new Pools(networkConfig, repositories)
   }

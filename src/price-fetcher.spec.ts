@@ -3,8 +3,6 @@ import nock from 'nock';
 import { Network, Token } from './types';
 import PriceFetcher from './price-fetcher';
 import { COINGECKO_BASEURL } from './constants';
-import { BigNumber } from 'bignumber.js';
-
 
 /**
  * Token Prices (USD)

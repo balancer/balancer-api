@@ -12,6 +12,7 @@ import {
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const subgraphPoolFetcher = new PoolsSubgraphRepository({
     url: getSubgraphURL(chainId),
+    chainId,
     query: {
       args: {
         where: {

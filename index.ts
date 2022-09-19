@@ -130,13 +130,13 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     const updatePoolsLambdas: Record<number, NodejsFunction> = {};
-    Object.entries(PRODUCTION_NETWORKS).forEach(([networkName, networkId]) => {
+    Object.entries(PRODUCTION_NETWORKS).forEach(([networkName, chainId]) => {
       const functionProps = {...nodeJsFunctionProps};
       functionProps.environment = {
         ...functionProps.environment,
-        'NETWORK_ID':networkId.toString()
+        'CHAIN_ID': chainId.toString()
       };
-      updatePoolsLambdas[networkId] = new NodejsFunction(this, `updatePoolsFunction-${networkName}`, {
+      updatePoolsLambdas[chainId] = new NodejsFunction(this, `updatePoolsFunction-${networkName}`, {
         entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
         ...functionProps,
         memorySize: 2048,
@@ -146,13 +146,13 @@ export class BalancerPoolsAPI extends Stack {
     });
     
     const decoratePoolsLambdas: Record<number, NodejsFunction> = {};
-    Object.entries(PRODUCTION_NETWORKS).forEach(([networkName, networkId]) => {
+    Object.entries(PRODUCTION_NETWORKS).forEach(([networkName, chainId]) => {
       const functionProps = {...nodeJsFunctionProps};
       functionProps.environment = {
         ...functionProps.environment,
-        'NETWORK_ID':networkId.toString()
+        'CHAIN_ID': chainId.toString()
       };
-      decoratePoolsLambdas[networkId] = new NodejsFunction(this, `decoratePoolsFunction-${networkName}`, {
+      decoratePoolsLambdas[chainId] = new NodejsFunction(this, `decoratePoolsFunction-${networkName}`, {
         entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
         ...functionProps,
         memorySize: 2048,
@@ -237,10 +237,10 @@ export class BalancerPoolsAPI extends Stack {
     const pools = api.root.addResource('pools');
     addCorsOptions(pools);
 
-    const poolsOnNetwork = pools.addResource('{chainId}');
-    poolsOnNetwork.addMethod('GET', getPoolsIntegration);
+    const poolsOnChain = pools.addResource('{chainId}');
+    poolsOnChain.addMethod('GET', getPoolsIntegration);
 
-    const singlePool = poolsOnNetwork.addResource('{id}');
+    const singlePool = poolsOnChain.addResource('{id}');
     singlePool.addMethod('GET', getPoolIntegration);
     addCorsOptions(singlePool);
 
@@ -254,8 +254,8 @@ export class BalancerPoolsAPI extends Stack {
 
 
     const tokens = api.root.addResource('tokens');
-    const tokensOnNetwork = tokens.addResource('{chainId}');
-    tokensOnNetwork.addMethod('GET', getTokensIntegration);
+    const tokensOnChain = tokens.addResource('{chainId}');
+    tokensOnChain.addMethod('GET', getTokensIntegration);
     addCorsOptions(tokens);
 
     const updatePrices = tokens.addResource('update');
@@ -263,13 +263,13 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(updatePrices);
 
     const sor = api.root.addResource('sor');
-    const sorOnNetwork = sor.addResource('{chainId}')
-    sorOnNetwork.addMethod('POST', runSORIntegration);
+    const sorOnChain = sor.addResource('{chainId}')
+    sorOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(sor);
 
     const gnosis = api.root.addResource('gnosis');
-    const gnosisOnNetwork = gnosis.addResource('{chainId}')
-    gnosisOnNetwork.addMethod('POST', runSORIntegration);
+    const gnosisOnChain = gnosis.addResource('{chainId}')
+    gnosisOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
 
     const walletCheck = api.root.addResource('wallet-check');

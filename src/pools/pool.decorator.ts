@@ -48,7 +48,7 @@ export class PoolDecorator {
     const networkConfig = balancerSdk.networkConfig;
 
     async function decoratePool(pool) {
-      if (IGNORED_POOL_TYPES.find(pool.poolType)) return pool;
+      if (IGNORED_POOL_TYPES.includes(pool.poolType)) return pool;
 
       let poolService;
       try {

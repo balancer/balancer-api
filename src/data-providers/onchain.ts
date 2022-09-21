@@ -6,7 +6,7 @@ import { Pool, Token } from '../types';
 import { 
   getTokenInfo, 
   getSubgraphURL,
-  getInfuraUrl
+  getInfuraUrl,
 } from "../utils";
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
@@ -24,11 +24,21 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
       attrs: {}
     }
   });
-  const subgraphPools = await subgraphPoolFetcher.fetch();
 
-  const pools: Pool[] = subgraphPools.map((subgraphPool) => {
-    return Object.assign({totalLiquidity: '0', name: ''}, subgraphPool, {poolType: subgraphPool.poolType as PoolType, chainId});
-  });
+  let pools: Pool[] = [];
+  let subgraphPools = [];
+
+  const first = 1000;
+  let skip = 0;
+  do { 
+    subgraphPools = await subgraphPoolFetcher.fetch({ first, skip });
+    skip += first;
+
+    pools = pools.concat(subgraphPools.map((subgraphPool) => {
+      return Object.assign({totalLiquidity: '0', name: ''}, subgraphPool, {poolType: subgraphPool.poolType as PoolType, chainId});
+    }));
+  } while (subgraphPools.length > 0);
+
   return pools;
 }
 

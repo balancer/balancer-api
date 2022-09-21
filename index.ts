@@ -26,19 +26,19 @@ const {
   NETWORKS,
 } = process.env;
 
-let SELECTED_NETWORKS = PRODUCTION_NETWORKS;
+let SELECTED_NETWORKS: Record<string, number>  = PRODUCTION_NETWORKS;
 if (NETWORKS) {
-  const networksArray: (string | number)[] = NETWORKS.split(',');
+  const networksArray: string[] = NETWORKS.split(',');
   SELECTED_NETWORKS = Object.entries(PRODUCTION_NETWORKS).filter(([name, id]) => {
-    if (networksArray.includes(name) || networksArray.includes(id)) {
+    if (networksArray.includes(name) || networksArray.includes(id.toString())) {
       return true;
     }
-  }).reduce((obj, [name, id]) => {
+    return false;
+  }).reduce((obj: Record<string, number>, [name, id]) => {
     obj[name] = id;
     return obj;
   }, {});
 }
-
 
 const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25');
 const POOLS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_WRITE_CAPACITY || '25');

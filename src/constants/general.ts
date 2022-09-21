@@ -29,20 +29,20 @@ export const NativeAssetPriceSymbol = {
 }
 
 export const TEST_NETWORKS: Record<string, number> = Object.entries(Network)
-  .filter(([name, id]) => {
+  .filter(([, id]) => {
     return [Network.GOERLI, Network.KOVAN].includes(id)
   })
-  .reduce((obj, [name, id]) => {
+  .reduce((obj: Record<string, number>, [name, id]) => {
     obj[name] = id
     return obj;
   }, {});
 
 
 export const PRODUCTION_NETWORKS: Record<string, number> = Object.entries(Network)
-  .filter(([name, id]) => {
+  .filter(([name]) => {
     return TEST_NETWORKS[name] == null
   })
-  .reduce((obj, [name, id]) => {
+  .reduce((obj: Record<string, number>, [name, id]) => {
     obj[name] = id
     return obj;
   }, {});

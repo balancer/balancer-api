@@ -2,7 +2,7 @@ import { parseUnits } from 'ethers/lib/utils';
 import supertest from 'supertest';
 import { Network } from './constants';
 import { SorRequest, SerializedSwapInfo, Token } from './types';
-import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive, updateToken } from './data-providers/dynamodb';
+import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive, updateToken, getPools, getTokens } from './data-providers/dynamodb';
 import TOKENS from '../test/mocks/tokens.json';
 import POOLS from '../test/mocks/pools';
 import server from './server';
@@ -26,6 +26,11 @@ beforeAll(async () => {
   console.log("Populating Tables...");
   await updateTokens(TOKENS);
   await updatePools(POOLS);
+  console.log("Checking tables were populated...");
+  const pools = await getPools(1)
+  expect(pools.length).toEqual(POOLS.length);
+  const tokens = await getTokens(1)
+  expect(tokens.length).toEqual(TOKENS.length);
   console.log("Running tests...");
 });
 

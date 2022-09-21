@@ -18,18 +18,25 @@ AWS.config.update(localAWSConfig);
 const port = PORT || 8090;
 const app = express();
 
+function sendResponse(result, res) {
+  res
+    .status(result.statusCode)
+    .header('Content-Type', 'application/json')
+    .send(result.body);
+}
+
 app.get("/pools/:chainId", async (req, res) => {
   const result = await getPoolsHandler({
       pathParameters: req.params
   });
-  res.status(result.statusCode).send(result.body);
+  sendResponse(result, res);
 });
 
 app.get("/pools/:chainId/:id", async (req, res) => {
   const result = await getPoolHandler({
     pathParameters: req.params
   });
-  res.status(result.statusCode).send(result.body);
+  sendResponse(result, res);
 });
 
 app.post("/sor/:chainId", express.json(), async (req, res) => {
@@ -37,14 +44,14 @@ app.post("/sor/:chainId", express.json(), async (req, res) => {
     pathParameters: req.params,
     body: req.body
   });
-  res.status(result.statusCode).send(result.body);
+  sendResponse(result, res);
 });
 
 app.get("/tokens/:chainId", async (req, res) => {
   const result = await getTokensHandler({
     pathParameters: req.params
   });
-  res.status(result.statusCode).send(result.body);
+  sendResponse(result, res);
 });
 
 app.get("/tokens/:chainId/:id", async (req, res) => {

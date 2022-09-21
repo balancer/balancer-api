@@ -1,13 +1,14 @@
 import { getPools } from '../data-providers/dynamodb';
 import { isValidChainId } from '../utils';
+import { INVALID_CHAIN_ID_ERROR, MISSING_CHAIN_ID_ERROR } from '../constants/errors';
 
 export const handler = async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);
   if (!chainId) {
-    return { statusCode: 400, body: `Error: You are missing the chainId` };
+    return MISSING_CHAIN_ID_ERROR;
   }
   if (!isValidChainId(chainId)) {
-    return { statusCode: 404, body: `Error: ChainId ${chainId} does not exist`}
+    return INVALID_CHAIN_ID_ERROR;
   } 
 
   const corsHeaders = {

@@ -9,6 +9,7 @@ import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { GraphqlApi, Schema, AuthorizationType, MappingTemplate, DynamoDbDataSource } from '@aws-cdk/aws-appsync-alpha';
+import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path'
 
 const { 
@@ -21,14 +22,23 @@ const {
   DYNAMODB_TOKENS_WRITE_CAPACITY,
   DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
-  SANCTIONS_API_KEY
+  SANCTIONS_API_KEY,
+  NETWORKS,
 } = process.env;
 
-const PRODUCTION_NETWORKS: Record<string, number> = {
-  mainnet: 1, 
-  polygon: 137, 
-  arbitrum: 42161
-};
+let SELECTED_NETWORKS = PRODUCTION_NETWORKS;
+if (NETWORKS) {
+  const networksArray: (string | number)[] = NETWORKS.split(',');
+  SELECTED_NETWORKS = Object.entries(PRODUCTION_NETWORKS).filter(([name, id]) => {
+    if (networksArray.includes(name) || networksArray.includes(id)) {
+      return true;
+    }
+  }).reduce((obj, [name, id]) => {
+    obj[name] = id;
+    return obj;
+  }, {});
+}
+
 
 const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25');
 const POOLS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_WRITE_CAPACITY || '25');
@@ -130,7 +140,7 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     const updatePoolsLambdas: Record<number, NodejsFunction> = {};
-    Object.entries(PRODUCTION_NETWORKS).forEach(([networkName, chainId]) => {
+    Object.entries(SELECTED_NETWORKS).forEach(([networkName, chainId]) => {
       const functionProps = {...nodeJsFunctionProps};
       functionProps.environment = {
         ...functionProps.environment,
@@ -146,7 +156,7 @@ export class BalancerPoolsAPI extends Stack {
     });
     
     const decoratePoolsLambdas: Record<number, NodejsFunction> = {};
-    Object.entries(PRODUCTION_NETWORKS).forEach(([networkName, chainId]) => {
+    Object.entries(SELECTED_NETWORKS).forEach(([networkName, chainId]) => {
       const functionProps = {...nodeJsFunctionProps};
       functionProps.environment = {
         ...functionProps.environment,
@@ -244,7 +254,7 @@ export class BalancerPoolsAPI extends Stack {
     singlePool.addMethod('GET', getPoolIntegration);
     addCorsOptions(singlePool);
 
-    Object.values(PRODUCTION_NETWORKS).forEach((networkId) => {
+    Object.values(SELECTED_NETWORKS).forEach((networkId) => {
       const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambdas[networkId], {timeout: Duration.seconds(29)});
       const updatePoolsWithNetworkId = pools.addResource(networkId.toString());
       const updatePools = updatePoolsWithNetworkId.addResource('update');

@@ -8,6 +8,12 @@ import util from 'util';
 
 const log = debug('balancer:pool-decorator');
 
+const IGNORED_POOL_TYPES = [
+  PoolType.Element,
+  PoolType.Gyro2,
+  PoolType.Gyro3
+]
+
 export class PoolDecorator {
   constructor(
     public pools: Pool[],
@@ -42,7 +48,7 @@ export class PoolDecorator {
     const networkConfig = balancerSdk.networkConfig;
 
     async function decoratePool(pool) {
-      if (pool.poolType === PoolType.Element) return pool;
+      if (IGNORED_POOL_TYPES.find(pool.poolType)) return pool;
 
       let poolService;
       try {

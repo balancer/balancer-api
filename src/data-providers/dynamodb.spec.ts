@@ -4,6 +4,7 @@ import POOLS from '../../test/mocks/pools';
 import { updatePools } from './dynamodb';
 import { generateUpdateExpression } from './dynamodb-marshaller';
 
+jest.unmock('@balancer-labs/sdk');
 
 jest.mock('aws-sdk', () => {
   const mDynamoDB = { 

@@ -1,6 +1,6 @@
 
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Op, PoolsSubgraphRepository, PoolType } from '@balancer-labs/sdk';
+import { PoolsSubgraphRepository, PoolType } from '@balancer-labs/sdk';
 import { getToken } from './dynamodb';
 import { Pool, Token } from '../types';
 import { 
@@ -16,7 +16,9 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     query: {
       args: {
         where: {
-          totalShares: Op.GreaterThan(0)
+          totalShares: {
+            gt: 0
+          }
         }
       },
       attrs: {}

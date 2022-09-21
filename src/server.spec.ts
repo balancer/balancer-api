@@ -1,6 +1,7 @@
 import { parseUnits } from 'ethers/lib/utils';
 import supertest from 'supertest';
-import { Network, SorRequest, SerializedSwapInfo, Token } from './types';
+import { Network } from './constants';
+import { SorRequest, SerializedSwapInfo, Token } from './types';
 import { createPoolsTable, createTokensTable, deleteTable, updateTokens, updatePools, isAlive, updateToken } from './data-providers/dynamodb';
 import TOKENS from '../test/mocks/tokens.json';
 import POOLS from '../test/mocks/pools';

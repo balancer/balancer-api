@@ -1,21 +1,5 @@
 import { DynamoDB } from "aws-sdk";
-import { Schema, Network } from "./types";
-
-export const COINGECKO_BASEURL = 'https://api.coingecko.com/api/v3';
-export const COINGECKO_MAX_TOKENS_PER_PAGE = 100;
-export const COINGECKO_MAX_TPS = 10;
-
-export const MAX_BATCH_WRITE_SIZE = 25;
-export const MAX_DYNAMODB_PRECISION = 38;
-
-export const TEST_NETWORKS: number[] = [
-  Network.GOERLI,
-  Network.KOVAN
-];
-
-export const PRODUCTION_NETWORKS: number[] = Object.values(Network).filter((networkId) => {
-  return TEST_NETWORKS.indexOf(networkId) === -1;
-})
+import { Schema } from "../types";
 
 export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
   TableName: "pools",
@@ -73,34 +57,34 @@ export const TOKENS_TABLE_SCHEMA = {
  * BigNumber: Saved as a number in DynamoDB, but a String in JS
 */
 export const POOL_SCHEMA: Schema = {
-    swapEnabled: { type: 'Boolean' },
-    swapFee: { type: 'BigDecimal' },
+  swapEnabled: { type: 'Boolean' },
+  swapFee: { type: 'BigDecimal' },
 
-    totalWeight: { type: 'BigDecimal' },
-    totalSwapVolume: { type: 'BigDecimal' },
-    totalSwapFee: { type: 'BigDecimal' },
-    totalLiquidity: { type: 'BigDecimal' },
-    totalShares: { type: 'BigDecimal' },
+  totalWeight: { type: 'BigDecimal' },
+  totalSwapVolume: { type: 'BigDecimal' },
+  totalSwapFee: { type: 'BigDecimal' },
+  totalLiquidity: { type: 'BigDecimal' },
+  totalShares: { type: 'BigDecimal' },
 
-    volumeSnapshot: { type: 'BigDecimal' },
+  volumeSnapshot: { type: 'BigDecimal' },
 
-    createTime: { type: 'Int' },
-    swapsCount: { type: 'BigInt' },
-    holdersCount: { type: 'BigInt' },
+  createTime: { type: 'Int' },
+  swapsCount: { type: 'BigInt' },
+  holdersCount: { type: 'BigInt' },
 
-    // StablePool Only
-    amp: { type: 'BigInt' },
+  // StablePool Only
+  amp: { type: 'BigInt' },
 
-    // ConvergentCurvePool (Element) Only
-    expiryTime: { type: 'BigInt' },
-    unitSeconds: { type: 'BigInt' },
+  // ConvergentCurvePool (Element) Only
+  expiryTime: { type: 'BigInt' },
+  unitSeconds: { type: 'BigInt' },
 
-    //InvestmentPool Only
-    managementFee: { type: 'BigDecimal' },
+  //InvestmentPool Only
+  managementFee: { type: 'BigDecimal' },
 
-    // LinearPool only
-    mainIndex: { type: 'Int' },
-    wrappedIndex: { type: 'Int' },
-    lowerTarget: { type: 'BigDecimal' },
-    upperTarget: { type: 'BigDecimal' },
+  // LinearPool only
+  mainIndex: { type: 'Int' },
+  wrappedIndex: { type: 'Int' },
+  lowerTarget: { type: 'BigDecimal' },
+  upperTarget: { type: 'BigDecimal' },
 }

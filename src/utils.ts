@@ -3,7 +3,8 @@ import { BigNumber as OldBigNumber } from "bignumber.js";
 import { Contract } from '@ethersproject/contracts';
 import { AprBreakdown, Price, SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
 import { getToken } from "./data-providers/dynamodb";
-import { Network, Token, Pool, NativeAssetAddress, NativeAssetPriceSymbol } from "./types";
+import { Token, Pool } from "./types";
+import { Network, NativeAssetAddress, NativeAssetPriceSymbol } from "./constants";
 
 const { INFURA_PROJECT_ID } = process.env;
 

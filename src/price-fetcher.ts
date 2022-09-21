@@ -1,8 +1,8 @@
 import { Price, CoingeckoPriceRepository } from "@balancer-labs/sdk";
 import { getPlatformId, getNativeAssetPriceSymbol, formatPrice } from "./utils";
-import { NativeAssetId, NativeAssetPriceSymbol, Network, Token } from "./types";
+import { Token } from "./types";
 import { BigNumber } from "bignumber.js";
-import { COINGECKO_BASEURL, COINGECKO_MAX_TOKENS_PER_PAGE, COINGECKO_MAX_TPS } from "./constants";
+import { NativeAssetId, NativeAssetPriceSymbol, Network, COINGECKO_BASEURL, COINGECKO_MAX_TOKENS_PER_PAGE, COINGECKO_MAX_TPS } from "./constants";
 import fetch from 'isomorphic-fetch';
 import debug from 'debug';
 

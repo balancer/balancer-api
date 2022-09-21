@@ -1,9 +1,8 @@
 require("dotenv").config();
 import debug from "debug";
 import express from "express";
-import { getSorSwap } from "./sor";
-import { getPool, getPools, getToken, getTokens } from "./data-providers/dynamodb";
-import { isValidChainId, localAWSConfig } from "./utils";
+import { getToken } from "./data-providers/dynamodb";
+import { localAWSConfig } from "./utils";
 import { handler as getPoolsHandler } from "./lambdas/get-pools";
 import { handler as getPoolHandler } from "./lambdas/get-pool";
 import { handler as sorHandler } from "./lambdas/run-sor";

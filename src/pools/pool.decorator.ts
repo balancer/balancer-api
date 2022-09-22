@@ -61,6 +61,7 @@ export class PoolDecorator {
       await poolService.setTotalLiquidity();
       await poolService.setApr();
       await poolService.setVolumeSnapshot();
+      poolService.setIsNew();
 
       return poolService.pool;
     }

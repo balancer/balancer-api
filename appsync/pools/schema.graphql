@@ -29,6 +29,7 @@
 	lowerTarget: String
 	upperTarget: String
 	apr: AprBreakdown
+	isNew: Boolean
 }
 
 type PoolConnection {

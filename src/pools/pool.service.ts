@@ -4,6 +4,7 @@ import util from 'util';
 import debug from 'debug';
 import { isEqual } from 'lodash';
 import { isValidApr } from '../utils';
+import { WEEK_IN_MS } from '../constants';
 
 const log = debug('balancer:pools')
 
@@ -137,5 +138,13 @@ export class PoolService {
     }
 
     return (this.pool.volumeSnapshot = volumeSnapshot);
+  }
+
+  public setIsNew(): boolean {
+    if (!this.pool.createTime) return false;
+
+    const isNew = Date.now() - (this.pool.createTime * 1000) < WEEK_IN_MS;
+
+    return (this.pool.isNew = isNew);
   }
 }

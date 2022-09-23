@@ -1,5 +1,5 @@
 import { PoolDataService, SubgraphPoolBase } from "@balancer-labs/sdk";
-import { getPools } from "./data-providers/dynamodb";
+import { getPools, queryPools } from "./data-providers/dynamodb";
 import debug from "debug";
 import { convertPoolToSubgraphPoolBase } from "./utils";
 import { Pool } from './types';
@@ -19,13 +19,9 @@ export class DatabasePoolDataService implements PoolDataService {
     this.filterParams = {
       IndexName: "byTotalLiquidity",
       KeyConditionExpression:
-        "#totalLiquidity > :totalLiquidityCount AND #chainId = :chainId",
-      ExpressionAttributeNames: {
-        "#totalLiquidity": "totalLiquidity",
-        "#chainId": "chainId",
-      },
+        "totalLiquidity > :totalLiquidity AND chainId = :chainId",
       ExpressionAttributeValues: {
-        ":totalLiquidityCount": { N: "100" },
+        ":totalLiquidity": { N: "100" },
         ":chainId": { N: this.chainId?.toString() },
       },
     };
@@ -36,14 +32,9 @@ export class DatabasePoolDataService implements PoolDataService {
 
     let pools: Pool[];
     if (filterPools) {
-      pools = await getPools(
-        undefined,
-        undefined,
-        this.filterParams,
-        true
-      );
+      pools = await queryPools(this.filterParams);
     } else {
-      pools = await getPools(this.chainId, undefined);
+      pools = await getPools(this.chainId);
     }
 
     log(`Retrieved ${pools.length} pools`);

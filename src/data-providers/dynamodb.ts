@@ -68,12 +68,11 @@ export async function updatePools(pools: Pool[]) {
   }));
 }
 
-export async function getPools(chainId?: number, lastResult?: any, additionalParams?: any, useQuery = false): Promise<Pool[]> {
+export async function getPools(chainId?: number, lastResult?: any): Promise<Pool[]> {
   const dynamodb = getDynamoDB();
-  const params = {
+  const params: AWS.DynamoDB.ScanInput = {
     TableName: 'pools',
     ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined,
-    ...(additionalParams || {})
   }
 
   if (chainId) {
@@ -84,18 +83,38 @@ export async function getPools(chainId?: number, lastResult?: any, additionalPar
   }
 
   try {
-    let pools;
-    if (useQuery) {
-      pools = await dynamodb.query(params).promise();
-    } else {
-      pools = await dynamodb.scan(params).promise();
-    }
+    const pools = await dynamodb.scan(params).promise();
 
     if (lastResult) {
       pools.Items = lastResult.Items.concat(pools.Items);
     }
     if (pools.LastEvaluatedKey) {
       return await getPools(chainId, pools);
+    }
+    return pools.Items.map((ddbItem) => unmarshallPool(ddbItem)) as Pool[];
+  } catch (e) {
+      console.error("Failed to get pools, error is: ", e)
+      return [];
+  }
+}
+
+
+export async function queryPools(additionalParams?: any, lastResult?: any): Promise<Pool[]> {
+  const dynamodb = getDynamoDB();
+  const params = {
+    TableName: 'pools',
+    ExclusiveStartKey: lastResult ? lastResult.LastEvaluatedKey : undefined,
+    ...(additionalParams || {})
+  }
+
+  try {
+    const pools = await dynamodb.query(params).promise();
+
+    if (lastResult) {
+      pools.Items = lastResult.Items.concat(pools.Items);
+    }
+    if (pools.LastEvaluatedKey) {
+      return await queryPools(additionalParams, pools);
     }
     return pools.Items.map((ddbItem) => unmarshallPool(ddbItem)) as Pool[];
   } catch (e) {

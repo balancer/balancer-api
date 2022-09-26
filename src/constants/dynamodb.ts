@@ -10,7 +10,7 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
   AttributeDefinitions: [
     { AttributeName: "id", AttributeType: "S" },
     { AttributeName: "chainId", AttributeType: "N" },
-    { AttributeName: "totalLiquidity", AttributeType: "S" },
+    { AttributeName: "totalLiquidity", AttributeType: "N" },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,

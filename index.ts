@@ -29,15 +29,14 @@ const {
 let SELECTED_NETWORKS: Record<string, number>  = PRODUCTION_NETWORKS;
 if (NETWORKS) {
   const networksArray: string[] = NETWORKS.split(',');
-  SELECTED_NETWORKS = Object.entries(PRODUCTION_NETWORKS).filter(([name, id]) => {
-    if (networksArray.includes(name) || networksArray.includes(id.toString())) {
-      return true;
-    }
-    return false;
-  }).reduce((obj: Record<string, number>, [name, id]) => {
-    obj[name] = id;
-    return obj;
-  }, {});
+  SELECTED_NETWORKS = Object.fromEntries(
+    Object.entries(PRODUCTION_NETWORKS).filter(([name, id]) => {
+      if (networksArray.includes(name) || networksArray.includes(id.toString())) {
+        return true;
+      }
+      return false;
+    })
+  );
 }
 
 const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25');

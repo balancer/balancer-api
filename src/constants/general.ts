@@ -32,21 +32,17 @@ export const NativeAssetPriceSymbol = {
   MATIC: "matic"
 }
 
-export const TEST_NETWORKS: Record<string, number> = Object.entries(Network)
-  .filter(([, id]) => {
-    return [Network.GOERLI, Network.KOVAN].includes(id)
-  })
-  .reduce((obj: Record<string, number>, [name, id]) => {
-    obj[name] = id
-    return obj;
-  }, {});
+export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(
+    Object.entries(Network)
+    .filter(([, id]) => {
+      return [Network.GOERLI, Network.KOVAN].includes(id)
+    })
+  );
 
 
-export const PRODUCTION_NETWORKS: Record<string, number> = Object.entries(Network)
-  .filter(([name]) => {
-    return TEST_NETWORKS[name] == null
-  })
-  .reduce((obj: Record<string, number>, [name, id]) => {
-    obj[name] = id
-    return obj;
-  }, {});
+export const PRODUCTION_NETWORKS: Record<string, number> = Object.fromEntries(
+    Object.entries(Network)
+    .filter(([name]) => {
+      return TEST_NETWORKS[name] == null
+    })
+  );

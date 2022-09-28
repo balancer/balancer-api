@@ -2,8 +2,9 @@ import AWS from 'aws-sdk';
 import { Pool } from '../types';
 import POOLS from '../../test/mocks/pools';
 import { updatePools } from './dynamodb';
-import { generateUpdateExpression, marshallPool } from './dynamodb-marshaller';
+import { generateUpdateExpression } from './dynamodb-marshaller';
 
+jest.unmock('@balancer-labs/sdk');
 
 jest.mock('aws-sdk', () => {
   const mDynamoDB = { 

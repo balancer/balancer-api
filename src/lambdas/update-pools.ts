@@ -2,16 +2,15 @@ import { getTokenAddressesFromPools } from "../utils";
 import { updatePools, updateTokens } from "../data-providers/dynamodb";
 import { fetchPoolsFromChain, fetchTokens, removeKnownTokens, sanitizePools } from "../data-providers/onchain";
 
-export const handler = async (event: any = {}): Promise<any> => {
+const { CHAIN_ID } = process.env;
+
+export const handler = async (): Promise<any> => {
   const log = console.log;
 
-  const chainId = parseInt(event.pathParameters.chainId);
-  if (!chainId) {
-    return { statusCode: 400, body: `Error: You are missing the chainId` };
-  }
+  const chainId = parseInt(CHAIN_ID || '1');
 
   try {
-    log(`Fetching pools from chain ${chainId}`)
+    log(`Fetching pools from network ${chainId}`)
     const poolsFromChain = await fetchPoolsFromChain(chainId);
     log(`Sanitizing ${poolsFromChain.length} pools`);
     const pools = sanitizePools(poolsFromChain);

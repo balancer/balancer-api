@@ -16,6 +16,7 @@
 	totalSwapFee: String
 	totalLiquidity: String
 	totalShares: String
+	volumeSnapshot: String
 	createTime: Int
 	swapsCount: String
 	holdersCount: String
@@ -27,10 +28,12 @@
 	wrappedIndex: Int
 	lowerTarget: String
 	upperTarget: String
+	apr: AprBreakdown
+	isNew: Boolean
 }
 
 type PoolConnection {
-	items: [Pool]
+	pools: [Pool]
 	nextToken: String
 }
 
@@ -46,6 +49,31 @@ type PoolToken @entity {
 	weight: String
 }
 
+type AprBreakdown @entity {
+	swapFees: Float
+	tokenAprs: TokenAprs
+	stakingApr: StakingApr
+	rewardAprs: RewardAprs
+	protocolApr: Float
+	min: Float
+	max: Float
+}
+
+type TokenAprs @entity {
+	total: Float
+	breakdown: AWSJSON 
+}
+
+type StakingApr @entity {
+	min: Float
+	max: Float
+}
+
+type RewardAprs @entity {
+	total: Float
+	breakdown: AWSJSON 
+}
+
 type Query {
 	pools(
 		first: Int, 
@@ -53,8 +81,8 @@ type Query {
 		where: TablePoolsFilterInput, 
 		orderBy: String, 
 		orderDirection: String
-		skip: Int
-	): [Pool]
+		nextToken: String
+	): PoolConnection
 }
 
 input TableBooleanFilterInput {

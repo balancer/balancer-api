@@ -2,7 +2,7 @@
 
 **Alpha Release, use with caution, there may be breaking changes**
 
-A service that acts as a caching layer for Balancer Pools information. This service runs using AWS Lambda, DynamoDB and API Gateway.
+A service that acts as a caching layer for Balancer Pools information. This service runs using AWS Lambda, DynamoDB, API Gateway and AppSync.
 This was built to speed up frontend queries, and for services such as Gnosis to use to route orders through Balancer pools.
 
 This package consists of CDK scripts that setup all the required infrastructure, and code for all the lambdas and services involved.
@@ -12,11 +12,12 @@ It has the following components:
 - A DynamoDB database that hold Balancer pool information with tokens and current balances.
 - A Lambda that fetches the latest data from the graph / infura and updates the database.
 - An API Gateway server and set of lambdas that handle user requests.
+- An AppSync GraphQL endpoint for loading decorated pools.
 
 ## Disclaimers
 
-This software is in Alpha and may have breaking changes at any time. There is little security implemented on the Lambda functions
-so anyone can call them.
+This software is in Alpha and may have breaking changes at any time. There is little security implemented on the Lambda 
+functions or GraphQL interface so anyone can call them.
 
 ## Requirements
 
@@ -27,7 +28,7 @@ so anyone can call them.
 
 ## Usage
 
-This package can be run locally for development, or deployed to an AWS account.
+This package can be run locally for development, or deployed to an AWS account. AppSync cannot be used locally yet.
 
 ### Initial Setup
 
@@ -100,7 +101,7 @@ Note: Everything inside the AWS container is setup by the CDK scripts in this re
 
 ![](./pools-api-diagram.png)
 
-## API Endpoints
+## API Gateway Endpoints
 
 The `{chainId}` in each endpoint is the chain/network number you wish to request from. 1 for Mainnet, 137 for Polygon, 42161 for Arbitrum etc.
 
@@ -116,21 +117,44 @@ The `{chainId}` in each endpoint is the chain/network number you wish to request
 The update lambda is not called automatically, you must call it to initially poplate the database. We recommend connecting a webhook to
 this endpoint that runs with every new Ethereum block, or whenever a transaction is made to the [Balancer Vault Contract](https://etherscan.io/address/0xba12222222228d8ba445958a75a0704d566bf2c8).
 
-Example pools update
+Only one instance of this lambda can run at a time per network. If you attempt to run it twice the second call will return a 500 Internal Server Error.
+
+Update for Ethereum Mainnet
 
 ```sh
 curl -X POST $ENDPOINT_URL/pools/1/update
 ```
 
+Update pools for Polygon PoS
+
+```sh
+curl -X POST $ENDPOINT_URL/pools/137/update
+```
+
 On success this will return a 201 code and no other data.
 
-### Get Pools Examples
+### Decorate Pools Lambda
+
+This lambda runs on a timer controlled by the environment variable `DECORATE_POOLS_INTERVAL_IN_MINUTES`, defaulting to 5 minutes. 
+It loads all the latest token and pool data and calculates the following for each pool:
+
+- Total Liquidity
+- APR information
+- Volume in last 24hrs
+- Fees in last 24hrs
+
+It then saves this information back out to the database. This is so that pools can be fetched in one call to the GraphQL API and contain
+all neccessary data to display them in the Balancer App.
+
+### Get Pools Lambda
 
 Retrieve JSON array of all pools
 
 ```sh
 curl $ENDPOINT_URL/pools/1
 ```
+
+### Get Single Pool Lambda
 
 Retrieve JSON object describing a single pool
 
@@ -168,7 +192,7 @@ You can POST the following JSON content to the endpoint to return smart order ro
 }
 ```
 
-Order Kind - Set to 'buy' to buy the exact amount of your `buyToken` and sell as little as possible to get that. Set to 'sell' to sell the exact amount of your `sellToken` and buy as much as you can with that. 
+Order Kind - Set to 'buy' to buy the exact amount of your `buyToken` and sell as little as possible to get that. Set to 'sell' to sell the exact amount of your `sellToken` and buy as much as you can with that.
 
 ### Smart Order Router Examples
 
@@ -201,3 +225,36 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13C
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
  ```
+
+## AppSync GraphQL endpoints
+
+To find your GraphQL URL and API Key you'll need to visit the AWS console and go to AppSync -> settings. Copy and paste these
+values into your .env file as `APPSYNC_URL` and `APPSYNC_KEY` for testing.
+
+You can run the script `src/scripts/graphql-query.js` to see example requests fetching pools from the API.  
+
+
+## Options
+
+### Environment Variables
+
+You can customize your deployment with env variables. See .env.example for all possible variables. They are described below: 
+
+- DEBUG - Used by the [npm debug package](https://www.npmjs.com/package/debug) Can be used for showing debug information.
+- PORT - default: 8090 - Port to run the local server on
+- NETWORKS - default: 1,137,42161 - A comma separated list of networks ID's or names to run the API on. 
+- INFURA_PROJECT_ID - Your infura project ID. Used for loading data across all networks
+- DYNAMODB_POOLS_READ_CAPACITY - default: 25 -  The read capacity of the `pools` DynamoDB table.
+- DYNAMODB_POOLS_WRITE_CAPACITY - default: 25 - The write capacity of the `pools` DynamoDB table.
+- DYNAMODB_POOLS_IDX_READ_CAPACITY - default: 10 -  The read capacity of the secondary indexes on the `pools` DynamoDB table.
+- DYNAMODB_POOLS_WRITE_CAPACITY - default: 10 - The write capacity of the secondary indexes on the `pools` DynamoDB table.
+- DYNAMODB_TOKENS_READ_CAPACITY - default: 10 - The read capcity of the `tokens` DynamoDB table. 
+- DYNAMODB_TOKENS_WRITE_CAPACITY - default: 10 - The write capacity of the `tokens` DynamoDB tbale.
+- DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created
+- SANCTIONS_API_KEY - TRM API key for running sanction checks
+- DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda
+
+## Common Issues
+
+- AWS error `Specified ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value of [10]`
+    - By default this package creates 13 lambdas while new AWS accounts are limited to 10. You can fix this by changing the `NETWORKS` environment variable to just `1` to only deploy lambdas for Mainnet instead of all networks.

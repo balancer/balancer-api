@@ -6,7 +6,7 @@
 require("dotenv").config();
 import debug from "debug";
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Network } from "./types";
+import { Network } from "./constants";
 import { fetchPoolsFromChain, fetchTokens, removeKnownTokens, sanitizePools } from "./data-providers/onchain";
 import { getPools, getTokens, isAlive, updatePools, updateTokens } from "./data-providers/dynamodb";
 import { localAWSConfig, getInfuraUrl, getTokenAddressesFromPools  } from "./utils";

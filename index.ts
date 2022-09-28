@@ -9,6 +9,7 @@ import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { GraphqlApi, Schema, AuthorizationType, MappingTemplate, DynamoDbDataSource } from '@aws-cdk/aws-appsync-alpha';
+import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path'
 
 const { 
@@ -19,9 +20,24 @@ const {
   DYNAMODB_POOLS_IDX_WRITE_CAPACITY,
   DYNAMODB_TOKENS_READ_CAPACITY, 
   DYNAMODB_TOKENS_WRITE_CAPACITY,
+  DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
-  SANCTIONS_API_KEY
+  SANCTIONS_API_KEY,
+  NETWORKS,
 } = process.env;
+
+let SELECTED_NETWORKS: Record<string, number>  = PRODUCTION_NETWORKS;
+if (NETWORKS) {
+  const networksArray: string[] = NETWORKS.split(',');
+  SELECTED_NETWORKS = Object.fromEntries(
+    Object.entries(PRODUCTION_NETWORKS).filter(([name, id]) => {
+      if (networksArray.includes(name) || networksArray.includes(id.toString())) {
+        return true;
+      }
+      return false;
+    })
+  );
+}
 
 const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25');
 const POOLS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_WRITE_CAPACITY || '25');
@@ -29,6 +45,8 @@ const POOLS_IDX_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_IDX_READ_CAPACITY
 const POOLS_IDX_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_IDX_WRITE_CAPACITY || DYNAMODB_POOLS_WRITE_CAPACITY || '10');
 const TOKENS_READ_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_READ_CAPACITY || '10');
 const TOKENS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_WRITE_CAPACITY || '10');
+
+const DECORATE_POOLS_INTERVAL = Number.parseInt(DECORATE_POOLS_INTERVAL_IN_MINUTES || '5');
 
 const BALANCER_API_KEY_EXPIRATION = Date.now() + (365 * 24 * 60 * 60 * 1000); // For GraphQL API - Maximum expiry time is 1 year
 
@@ -119,20 +137,37 @@ export class BalancerPoolsAPI extends Stack {
       ...nodeJsFunctionProps,
       memorySize: 2048
     });
-    const updatePoolsLambda = new NodejsFunction(this, 'updatePoolsFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
-      ...nodeJsFunctionProps,
-      memorySize: 2048,
-      timeout: Duration.seconds(60),
-      reservedConcurrentExecutions: 1
-    });
 
-    const decoratePoolsLambda = new NodejsFunction(this, 'decoratePoolsFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
-      ...nodeJsFunctionProps,
-      memorySize: 2048,
-      timeout: Duration.seconds(60),
-      reservedConcurrentExecutions: 1
+    const updatePoolsLambdas: Record<number, NodejsFunction> = {};
+    Object.entries(SELECTED_NETWORKS).forEach(([networkName, chainId]) => {
+      const functionProps = {...nodeJsFunctionProps};
+      functionProps.environment = {
+        ...functionProps.environment,
+        'CHAIN_ID': chainId.toString()
+      };
+      updatePoolsLambdas[chainId] = new NodejsFunction(this, `updatePoolsFunction-${networkName}`, {
+        entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
+        ...functionProps,
+        memorySize: 2048,
+        timeout: Duration.seconds(60),
+        reservedConcurrentExecutions: 1
+      });
+    });
+    
+    const decoratePoolsLambdas: Record<number, NodejsFunction> = {};
+    Object.entries(SELECTED_NETWORKS).forEach(([networkName, chainId]) => {
+      const functionProps = {...nodeJsFunctionProps};
+      functionProps.environment = {
+        ...functionProps.environment,
+        'CHAIN_ID': chainId.toString()
+      };
+      decoratePoolsLambdas[chainId] = new NodejsFunction(this, `decoratePoolsFunction-${networkName}`, {
+        entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
+        ...functionProps,
+        memorySize: 2048,
+        timeout: Duration.seconds(60),
+        reservedConcurrentExecutions: 1
+      });
     });
     
     const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {
@@ -155,12 +190,19 @@ export class BalancerPoolsAPI extends Stack {
      * Lambda Schedules
      */
 
-    const rule = new Rule(this, 'updateEachMinute', {
+    const updateTokenPricesRule = new Rule(this, 'updateEachMinute', {
       schedule: Schedule.expression('rate(1 minute)')
     });
+    updateTokenPricesRule.addTarget(new LambdaFunction(updateTokenPricesLambda))
 
-    rule.addTarget(new LambdaFunction(updateTokenPricesLambda))
-    rule.addTarget(new LambdaFunction(decoratePoolsLambda))
+    const periodWord = DECORATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
+    const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
+      schedule: Schedule.expression(`rate(${DECORATE_POOLS_INTERVAL} ${periodWord})`)
+    });
+
+    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+      decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda))
+    })
 
     /**
      * Access Rules
@@ -169,14 +211,22 @@ export class BalancerPoolsAPI extends Stack {
     poolsTable.grantReadData(getPoolsLambda);
     poolsTable.grantReadData(getPoolLambda);
     poolsTable.grantReadWriteData(runSORLambda);
-    poolsTable.grantReadWriteData(updatePoolsLambda);
-    poolsTable.grantReadWriteData(decoratePoolsLambda);
+    Object.values(updatePoolsLambdas).forEach((updatePoolsLambda) => {
+      poolsTable.grantReadWriteData(updatePoolsLambda);
+    });
+    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+      poolsTable.grantReadWriteData(decoratePoolsLambda);
+    });
 
     tokensTable.grantReadData(getTokensLambda);
-    tokensTable.grantReadData(decoratePoolsLambda);
     tokensTable.grantReadWriteData(runSORLambda);
-    tokensTable.grantReadWriteData(updatePoolsLambda);
     tokensTable.grantReadWriteData(updateTokenPricesLambda);
+    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+      tokensTable.grantReadData(decoratePoolsLambda);
+    });
+    Object.values(updatePoolsLambdas).forEach((updatePoolsLambda) => {
+      tokensTable.grantReadWriteData(updatePoolsLambda);
+    });
 
     /**
      * API Gateway
@@ -186,7 +236,6 @@ export class BalancerPoolsAPI extends Stack {
     const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
     const getTokensIntegration = new LambdaIntegration(getTokensLambda);
     const runSORIntegration = new LambdaIntegration(runSORLambda);
-    const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambda, {timeout: Duration.seconds(29)});
     const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
     const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
 
@@ -195,17 +244,23 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     const pools = api.root.addResource('pools');
-    const poolsOnChain = pools.addResource('{chainId}')
-    poolsOnChain.addMethod('GET', getPoolsIntegration);
     addCorsOptions(pools);
 
-    const updatePools = poolsOnChain.addResource('update');
-    updatePools.addMethod('POST', updatePoolsIntegration);
-    addCorsOptions(updatePools);
+    const poolsOnChain = pools.addResource('{chainId}');
+    poolsOnChain.addMethod('GET', getPoolsIntegration);
 
     const singlePool = poolsOnChain.addResource('{id}');
     singlePool.addMethod('GET', getPoolIntegration);
     addCorsOptions(singlePool);
+
+    Object.values(SELECTED_NETWORKS).forEach((networkId) => {
+      const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambdas[networkId], {timeout: Duration.seconds(29)});
+      const updatePoolsWithNetworkId = pools.addResource(networkId.toString());
+      const updatePools = updatePoolsWithNetworkId.addResource('update');
+      addCorsOptions(updatePools);
+      updatePools.addMethod('POST', updatePoolsIntegration);
+    });
+
 
     const tokens = api.root.addResource('tokens');
     const tokensOnChain = tokens.addResource('{chainId}');

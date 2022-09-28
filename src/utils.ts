@@ -1,8 +1,10 @@
 import { BigNumber, ethers } from "ethers";
+import { BigNumber as OldBigNumber } from "bignumber.js";
 import { Contract } from '@ethersproject/contracts';
-import { SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
+import { AprBreakdown, Price, SubgraphPoolBase, SwapTypes } from "@balancer-labs/sdk";
 import { getToken } from "./data-providers/dynamodb";
-import { Network, Token, Pool, NativeAssetAddress, NativeAssetPriceSymbol } from "./types";
+import { Token, Pool } from "./types";
+import { Network, NativeAssetAddress, NativeAssetPriceSymbol } from "./constants";
 
 const { INFURA_PROJECT_ID } = process.env;
 
@@ -97,7 +99,7 @@ export function getInfuraUrl(chainId: number): string {
   }
 }
 
-export function getTheGraphURL(chainId: number): string {
+export function getSubgraphURL(chainId: number): string {
   switch (chainId) {
     case Network.KOVAN:
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-kovan-v2';
@@ -112,8 +114,10 @@ export function getTheGraphURL(chainId: number): string {
   
 }
 
-export function isValidChainId(chainId: number): boolean {
-  return Object.values(Network).includes(chainId)
+
+
+export function isValidChainId(networkId: number): boolean {
+  return Object.values(Network).includes(networkId)
 }
 
 export function getPlatformId(chainId: string | number): string | undefined {
@@ -173,4 +177,28 @@ export function convertPoolToSubgraphPoolBase(pool: Pool): SubgraphPoolBase {
       ...pool, 
       ...{tokens},
   } 
+}
+
+export function isValidApr(apr: AprBreakdown) {
+  for (const value of Object.values(apr)) {
+    if (typeof value === 'object') {
+      if (!isValidApr(value)) return false;
+    }
+    else if (isNaN(value)) return false;
+  }
+
+  return true;
+}
+
+/** Formats a price correctly for storage. Does the following:
+ *  - Converts prices in scientific notation to decimal (e.g. 1.63e-7 => 0.000000163)
+ * 
+ */
+export function formatPrice(price: Price): Price {
+  const formattedPrice: Price = {};
+  Object.entries(price).forEach(([currency, value]) => {
+    formattedPrice[currency] = new OldBigNumber(value).toFixed()
+  });
+
+  return formattedPrice;
 }

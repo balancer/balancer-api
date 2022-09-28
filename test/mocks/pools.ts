@@ -1,7 +1,9 @@
 import { Pool } from '../../src/types';
+import { PoolType } from '@balancer-labs/sdk';
 
 const pools: Pool[] = [
   {
+    "name": "Pool1",
     "tokensList": [
       "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
       "0xba100000625a3754423978a60c9317c58a424e3d"
@@ -9,9 +11,10 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": PoolType.Weighted,
     "address": "0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5",
     "totalWeight": "1",
+    "totalLiquidity": "12345",
     "chainId": 1,
     "swapFee": "0.0007",
     "id": "0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5000200000000000000000025",
@@ -34,6 +37,7 @@ const pools: Pool[] = [
     "totalShares": "2073.896351938041864782",
   },
   {
+    "name": "Pool2",
     "tokensList": [
       "0x6b175474e89094c44da98b954eedeac495271d0f",
       "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -43,9 +47,10 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Stable",
+    "poolType": PoolType.Stable,
     "address": "0x06df3b2bbb68adc8b0e302443692037ed9f91b42",
     "totalWeight": "0",
+    "totalLiquidity": "12345",
     "chainId": 1,
     "swapFee": "0.0001",
     "id": "0x06df3b2bbb68adc8b0e302443692037ed9f91b42000000000000000000000063",
@@ -75,6 +80,8 @@ const pools: Pool[] = [
     "totalShares": "138074688.719281476079175534",
   },
   {
+    "name": "Pool3",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
@@ -82,7 +89,7 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": PoolType.Weighted,
     "address": "0x96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8",
     "totalWeight": "1",
     "chainId": 1,
@@ -107,6 +114,8 @@ const pools: Pool[] = [
     "totalShares": "92602.285699995796203235",
   },
   {
+    "name": "Pool4",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0x6b175474e89094c44da98b954eedeac495271d0f",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
@@ -114,7 +123,7 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": PoolType.Weighted,
     "address": "0x0b09dea16768f0799065c475be02919503cb2a35",
     "totalWeight": "1",
     "chainId": 1,
@@ -139,6 +148,8 @@ const pools: Pool[] = [
     "totalShares": "651487.54439719499081575",
   },
   {
+    "name": "Pool5",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
@@ -146,7 +157,7 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": PoolType.Weighted,
     "address": "0xa6f548df93de924d73be7d25dc02554c6bd66db5",
     "totalWeight": "1",
     "chainId": 1,
@@ -171,6 +182,8 @@ const pools: Pool[] = [
     "totalShares": "14743.443652304171762738",
   },
   {
+    "name": "Pool6",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
       "0xba100000625a3754423978a60c9317c58a424e3d"
@@ -178,7 +191,7 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": PoolType.Weighted,
     "address": "0x9f1f16b025f703ee985b58ced48daf93dad2f7ef",
     "totalWeight": "1",
     "chainId": 1,
@@ -203,6 +216,8 @@ const pools: Pool[] = [
     "totalShares": "391.207490113918570024",
   },
   {
+    "name": "Pool7",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e",
       "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
@@ -216,7 +231,7 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": PoolType.Weighted,
     "address": "0x01abc00e86c7e258823b9a055fd62ca6cf61a163",
     "totalWeight": "1",
     "chainId": 1,
@@ -283,6 +298,8 @@ const pools: Pool[] = [
     "totalShares": "4681.815284332409594302",
   },
   {
+    "name": "Pool8",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0xba100000625a3754423978a60c9317c58a424e3d",
       "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
@@ -290,7 +307,7 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "Weighted",
+    "poolType": PoolType.Weighted,
     "address": "0x3ebf48cd7586d7a4521ce59e53d9a907ebf1480f",
     "totalWeight": "1",
     "chainId": 1,
@@ -315,6 +332,8 @@ const pools: Pool[] = [
     "totalShares": "4232.650507545862316448",
   },
   {
+    "name": "Pool9",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0x2bbf681cc4eb09218bee85ea2a5d3d13fa40fc0c",
       "0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb2",
@@ -325,7 +344,7 @@ const pools: Pool[] = [
     "mainIndex": 0,
     "wrappedIndex": 0,
     "swapEnabled": true,
-    "poolType": "StablePhantom",
+    "poolType": PoolType.StablePhantom,
     "address": "0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb2",
     "totalWeight": "0",
     "chainId": 1,
@@ -364,6 +383,8 @@ const pools: Pool[] = [
     "totalShares": "186039355.455672401586266696",
   },
   {
+    "name": "Pool10",
+    "totalLiquidity": "12345",
     "tokensList": [
       "0x2bbf681cc4eb09218bee85ea2a5d3d13fa40fc0c",
       "0xdac17f958d2ee523a2206206994597c13d831ec7",
@@ -373,7 +394,7 @@ const pools: Pool[] = [
     "lowerTarget": "2900000.0",
     "wrappedIndex": 2,
     "swapEnabled": true,
-    "poolType": "AaveLinear",
+    "poolType": PoolType.AaveLinear,
     "address": "0x2bbf681cc4eb09218bee85ea2a5d3d13fa40fc0c",
     "totalWeight": "0",
     "chainId": 1,

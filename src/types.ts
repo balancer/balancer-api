@@ -1,27 +1,5 @@
 import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
 
-export const Network = {
-    MAINNET: 1,
-    KOVAN: 42,
-    POLYGON: 137,
-    ARBITRUM: 42161
-}
-
-export const NativeAssetAddress = {
-    ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-    MATIC: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0"
-}
-
-export const NativeAssetId = {
-    ETH: "ethereum",
-    MATIC: "matic-network"
-}
-
-export const NativeAssetPriceSymbol = {
-    ETH: "eth",
-    MATIC: "matic"
-}
-
 export interface Order {
     sellToken: string;
     buyToken: string;
@@ -55,6 +33,15 @@ export interface Pool extends SDKPool {
     totalLiquidity?: string;
   }
   lastUpdate?: number;
+  principalToken?: string;
+  baseToken?: string;
+  expiryTime?: number;
+  unitSeconds?: number;
+  managementFee?: string;
+  mainIndex?: number;
+  wrappedIndex?: number;
+  lowerTarget?: string;
+  upperTarget?: string;
 }
 
 
@@ -73,9 +60,9 @@ export interface Schema {
 }
 
 export interface UpdateExpression {
-    UpdateExpression: string
-    ExpressionAttributeNames: {[key: string]: string},
-    ExpressionAttributeValues: {[key: string]: string},
+    UpdateExpression: string;
+    ExpressionAttributeNames: {[key: string]: string};
+    ExpressionAttributeValues: {[key: string]: string};
 }
 export interface TRMAccountDetails {
     accountExternalId: string | null;

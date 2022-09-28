@@ -1,9 +1,8 @@
 import nock from 'nock';
 
-import { Network, Token } from './types';
+import { Token } from './types';
 import PriceFetcher from './price-fetcher';
-import { COINGECKO_BASEURL } from './constants';
-
+import { Network, COINGECKO_BASEURL } from './constants';
 
 /**
  * Token Prices (USD)
@@ -21,6 +20,7 @@ TOKEN_ADDRESSES[Network.MAINNET] = {
   USDC: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
   WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   USDT: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+  AKITA: '0x3301ee63fb29f863f2333bd4466acb46cd8323e6',
   MATIC: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
   TEL: '0x467bccd9d29f223bce8043b84e8c8b282827790f',
   INVALID: '0x1234567890123456789012345678901234567890',
@@ -112,6 +112,26 @@ describe("Price Fetcher", () => {
       const tokensWithPrices = await priceFetcher.fetch(tokens);
       expect(tokensWithPrices[0].price).toEqual({usd: "25", eth: "0.01"});
       expect(tokensWithPrices[1].price).toEqual({usd: "1", eth: "0.0004"}); 
+    });
+
+    it("Should not return prices in scientific notation, even if CoinGecko does", async () => {
+      const tokens: Token[] = [{
+        symbol: 'AKITA',
+        address: TOKEN_ADDRESSES[Network.MAINNET].AKITA,
+        chainId: Network.MAINNET,
+        decimals: 18
+      }];
+      
+      nock(TOKEN_PRICE_BASEURL)
+        .get(`/ethereum?contract_addresses=${TOKEN_ADDRESSES[Network.MAINNET].AKITA}&vs_currencies=usd`)
+        .reply(200, {
+          [TOKEN_ADDRESSES[Network.MAINNET].AKITA]: {
+            "usd": 1.63172e-07
+          }
+        });
+
+      const tokensWithPrices = await priceFetcher.fetch(tokens);
+      expect(tokensWithPrices[0].price).toEqual({usd: "0.000000163172", eth: "0.0000000000652688"}); 
     });
 
     it("Should handle invalid tokens gracefully", async () => {

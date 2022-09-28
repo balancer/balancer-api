@@ -2,6 +2,8 @@ import { Pool } from '../types';
 import { generateUpdateExpression, marshallPool, unmarshallPool } from './dynamodb-marshaller';
 import POOLS from '../../test/mocks/pools';
 
+jest.unmock('@balancer-labs/sdk');
+
 describe('DynamoDB Marshaller', () => {
   describe('Marshall Pool', () => {
     it('Should convert a pool to a DynamoDB object', () => {

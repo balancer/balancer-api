@@ -1,26 +1,44 @@
 
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { BalancerSDK, PoolType } from '@balancer-labs/sdk';
+import { PoolsSubgraphRepository, PoolType } from '@balancer-labs/sdk';
 import { getToken } from './dynamodb';
 import { Pool, Token } from '../types';
 import { 
   getTokenInfo, 
+  getSubgraphURL,
   getInfuraUrl,
 } from "../utils";
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
-  const infuraUrl = getInfuraUrl(chainId);
-
-  // Uses default PoolDataService to retrieve onstored as Chain data
-  const balancer = new BalancerSDK({
-    network: chainId,
-    rpcUrl: infuraUrl
+  const subgraphPoolFetcher = new PoolsSubgraphRepository({
+    url: getSubgraphURL(chainId),
+    chainId,
+    query: {
+      args: {
+        where: {
+          totalShares: {
+            gt: 0
+          }
+        }
+      },
+      attrs: {}
+    }
   });
 
-  await balancer.sor.fetchPools();
-  const pools: Pool[] = balancer.sor.getPools().map((sorPool) => {
-    return Object.assign({totalLiquidity: '0'}, sorPool, {poolType: sorPool.poolType as PoolType, chainId});
-  });
+  let pools: Pool[] = [];
+  let subgraphPools = [];
+
+  const first = 1000;
+  let skip = 0;
+  do { 
+    subgraphPools = await subgraphPoolFetcher.fetch({ first, skip });
+    skip += first;
+
+    pools = pools.concat(subgraphPools.map((subgraphPool) => {
+      return Object.assign({totalLiquidity: '0', name: ''}, subgraphPool, {poolType: subgraphPool.poolType as PoolType, chainId});
+    }));
+  } while (subgraphPools.length > 0);
+
   return pools;
 }
 

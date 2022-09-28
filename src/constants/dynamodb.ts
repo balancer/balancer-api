@@ -20,7 +20,7 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
     {
       IndexName: "byTotalLiquidity",
       KeySchema: [
-        { AttributeName: "id", KeyType: "HASH" },
+        { AttributeName: "chainId", KeyType: "HASH" },
         { AttributeName: "totalLiquidity", KeyType: "RANGE" },
       ],
       Projection: {

@@ -1,30 +1,49 @@
-import { PoolDataService, SubgraphPoolBase } from '@balancer-labs/sdk';
-import { getPools } from "./data-providers/dynamodb";
-import debug from 'debug';
-import { convertPoolToSubgraphPoolBase } from './utils';
+import { PoolDataService, SubgraphPoolBase } from "@balancer-labs/sdk";
+import { getPools, queryPools } from "./data-providers/dynamodb";
+import debug from "debug";
+import { convertPoolToSubgraphPoolBase } from "./utils";
+import { Pool } from './types';
 
-const log = debug('balancer:pool-data-service');
+const log = debug("balancer:pool-data-service");
 
 interface DatabasePoolDataServiceConfig {
-    chainId: number;
+  chainId: number;
 }
 
 export class DatabasePoolDataService implements PoolDataService {
-    chainId;
-    constructor(
-        readonly config: DatabasePoolDataServiceConfig
-    ) { 
-        this.chainId = config.chainId;
+  chainId;
+  filterParams;
+
+  constructor(readonly config: DatabasePoolDataServiceConfig) {
+    this.chainId = config.chainId;
+    this.filterParams = {
+      IndexName: "byTotalLiquidity",
+      KeyConditionExpression:
+        "totalLiquidity > :totalLiquidity AND chainId = :chainId",
+      ExpressionAttributeValues: {
+        ":totalLiquidity": { N: "100" },
+        ":chainId": { N: this.chainId?.toString() },
+      },
+    };
+  }
+
+  public async getPools(filterPools = true): Promise<SubgraphPoolBase[]> {
+    log(`Retrieving pools for chain ${this.chainId} from the database`);
+
+    let pools: Pool[];
+    if (filterPools) {
+      pools = await queryPools(this.filterParams);
+    } else {
+      pools = await getPools(this.chainId);
     }
 
-    public async getPools(): Promise<SubgraphPoolBase[]> {
-        log(`Retrieving pools for chain ${this.chainId} from the database`);
-        const pools = await getPools(this.chainId);
-        log(`Retrieved ${pools.length} pools`);
-        const subgraphPools = pools.map((pool) => convertPoolToSubgraphPoolBase(pool))
-        log(`Found ${subgraphPools.length} subgraph pools total`);
-        const enabledPools = subgraphPools.filter((pool) => pool.swapEnabled);
-        log(`Found ${enabledPools.length} enabled pools`)
-        return enabledPools ?? [];
-    }
+    log(`Retrieved ${pools.length} pools`);
+    const subgraphPools = pools.map((pool) =>
+      convertPoolToSubgraphPoolBase(pool)
+    );
+    log(`Found ${subgraphPools.length} subgraph pools total`);
+    const enabledPools = subgraphPools.filter((pool) => pool.swapEnabled);
+    log(`Found ${enabledPools.length} enabled pools`);
+    return enabledPools ?? [];
+  }
 }

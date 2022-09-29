@@ -1,6 +1,5 @@
 const axios = require('axios');
 const util = require('util');
-const BigNumber = require('bignumber.js');
 
 const {
   APPSYNC_URL,
@@ -17,37 +16,41 @@ const simpleQuery = `query {
       first: 10
       chainId: 1
     ) {
-      id
-      address
-      poolType
-      tokens { 
-        address 
-        symbol 
-        balance 
-      } 
+      pools {
+        id
+        address
+        poolType
+        tokens { 
+          address 
+          symbol 
+          balance 
+        } 
+      }
+      nextToken
     }
   }`
 
 const complexQuery = `query { 
-    pools (
-      chainId: 1, 
-      first: 10, 
-      orderBy: "totalLiquidity", 
-      orderDirection: "desc", 
-      where: {
-        tokensList: {
-          contains: []
-        }, 
-        poolType: {
-          not_in: ["Element", "AaveLinear", "Linear", "ERC4626Linear"]
-        }, 
-        totalShares: {
-          gt: 0.01
-        }, 
-        id: {
-          not_in: [""]
-        }
-      }) { 
+  pools (
+    chainId: 1, 
+    first: 10, 
+    orderBy: "totalLiquidity", 
+    orderDirection: "desc", 
+    where: {
+      tokensList: {
+        contains: []
+      }, 
+      poolType: {
+        not_in: ["Element", "AaveLinear", "Linear", "ERC4626Linear"]
+      }, 
+      totalShares: {
+        gt: 0.01
+      }, 
+      id: {
+        not_in: [""]
+      }
+    }) {
+      pools { 
         id 
         address 
         poolType 
@@ -58,7 +61,6 @@ const complexQuery = `query {
         totalSwapFee 
         totalShares 
         volumeSnapshot
-        feesSnapshot
         owner 
         factory 
         amp 
@@ -90,7 +92,9 @@ const complexQuery = `query {
           max
         }
       } 
-    }`
+      nextToken
+    }
+  }`
 
 
   
@@ -107,7 +111,7 @@ async function runQuery(query) {
     });
 
     if (data.errors) {
-      throw new Error(`Encountered error running query: ${data.errors}`);
+      throw new Error(`Encountered error running query: ${util.inspect(data.errors, false, null)}`);
     }
 
     const pools = data.data.pools;
@@ -119,9 +123,11 @@ async function runQuery(query) {
 
 async function runTestQueries() {
   console.log("Fetching basic pools");
-  await runQuery(simpleQuery);
+  const basicQueryPools = await runQuery(simpleQuery);
+  console.log(util.inspect(basicQueryPools, false, null));
   console.log("Fetching detailed pools");
-  await runQuery(complexQuery);
+  const complexQueryPools = await runQuery(complexQuery);
+  console.log(util.inspect(complexQueryPools, false, null));
 }
 
 runTestQueries();

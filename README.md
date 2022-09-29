@@ -231,7 +231,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8
 To find your GraphQL URL and API Key you'll need to visit the AWS console and go to AppSync -> settings. Copy and paste these
 values into your .env file as `APPSYNC_URL` and `APPSYNC_KEY` for testing.
 
-You can run the script `src/scripts/graphql-query.js` to see example requests fetching pools from the API.  
+You can run `npm run build` then run the script `dist/scripts/graphql-query.ts` to see example requests fetching pools from the API.  
 
 
 ## Options

@@ -107,7 +107,7 @@ async function runQuery(query) {
     });
 
     if (data.errors) {
-      throw new Error('Encountered error running query: ', data.errors);
+      throw new Error(`Encountered error running query: ${data.errors}`);
     }
 
     const pools = data.data.pools;

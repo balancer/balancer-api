@@ -5,3 +5,4 @@ dist/
 docker/
 cdk.out/
 index.js
+src/**/*.js

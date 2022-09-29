@@ -8,7 +8,7 @@ import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
-import { GraphqlApi, Schema, AuthorizationType, MappingTemplate, DynamoDbDataSource } from '@aws-cdk/aws-appsync-alpha';
+import { GraphqlApi, Schema, AuthorizationType, MappingTemplate, DynamoDbDataSource, DomainOptions } from '@aws-cdk/aws-appsync-alpha';
 import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path'
 
@@ -22,9 +22,12 @@ const {
   DYNAMODB_TOKENS_WRITE_CAPACITY,
   DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
+  APPSYNC_DOMAIN_NAME,
   SANCTIONS_API_KEY,
   NETWORKS,
 } = process.env;
+
+let appsyncDomain: DomainOptions;
 
 let SELECTED_NETWORKS: Record<string, number>  = PRODUCTION_NETWORKS;
 if (NETWORKS) {
@@ -286,7 +289,7 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(walletCheck);
 
     /**
-     * Subdomain
+     * ApiGateway Subdomain
      */
     if (DOMAIN_NAME) {
       const domainName = DOMAIN_NAME;
@@ -299,11 +302,24 @@ export class BalancerPoolsAPI extends Stack {
     }
 
     /**
+     * AppSync Subdomain
+     */
+     if (APPSYNC_DOMAIN_NAME) {
+      const domainName = APPSYNC_DOMAIN_NAME;
+      const certificate = new Certificate(this, 'AppsyncCert', { domainName });
+      appsyncDomain = {
+        certificate,
+        domainName,
+      }
+    }
+
+    /**
      * AppSync API
      */
     const graphqlApi = new GraphqlApi(this, 'Api', {
       name: 'poolsApi',
       schema: Schema.fromAsset(join(__dirname, 'appsync/pools/schema.graphql')),
+      domainName: appsyncDomain, 
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: AuthorizationType.API_KEY,

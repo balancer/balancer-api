@@ -30,6 +30,7 @@ jobs:
         INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }} 
         SANCTIONS_API_KEY: ${{ secrets.SANCTIONS_API_KEY }} 
         DOMAIN_NAME: 'api.balancer.fi'
+        APPSYNC_DOMAIN_NAME: 'graphql.balancer.fi'
         NETWORKS: '1,137,42161'
         DYNAMODB_POOLS_READ_CAPACITY: 500
         DYNAMODB_POOLS_WRITE_CAPACITY: 600

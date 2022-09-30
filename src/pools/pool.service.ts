@@ -102,6 +102,11 @@ export class PoolService {
         `Failed to calculate APR. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
       );
+      // If we already have an APR, return it, 
+      // otherwise continue and save out the 0 APR to this pool. 
+      if (this.pool.apr) { 
+        return this.pool.apr;
+      }
     }
 
     if (!isEqual(poolApr, this.pool.apr)) {

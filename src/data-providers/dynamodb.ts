@@ -62,6 +62,10 @@ export async function updatePools(pools: Pool[]) {
     };
     return dynamodb.transactWriteItems(params, (err) => {
       if (err) {
+        if (err.code === 'ProvisionedThroughputExceededException') {
+          console.error('Unable to update pools - Table Throughput exceeded');
+          return;
+        }
         console.error(`Unable to update pools ${JSON.stringify(poolUpdateRequests)} Error JSON: ${JSON.stringify(err, null, 2)}`);
       }
     }).promise();

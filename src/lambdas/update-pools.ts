@@ -1,4 +1,4 @@
-import { getTokenAddressesFromPools } from "../utils";
+import { getDefaultTokensForChain, getTokenAddressesFromPools } from "../utils";
 import { updatePools, updateTokens } from "../data-providers/dynamodb";
 import { fetchPoolsFromChain, fetchTokens, removeKnownTokens, sanitizePools } from "../data-providers/onchain";
 
@@ -17,7 +17,9 @@ export const handler = async (): Promise<any> => {
     log(`Saving ${pools.length} pools for chain ${chainId} to database`);
     await updatePools(pools);
     log(`Saved pools. Fetching Tokens for pools`);
-    const tokenAddresses = getTokenAddressesFromPools(pools);
+    const defaultTokens = getDefaultTokensForChain(chainId);
+    const tokensFromPools = getTokenAddressesFromPools(pools);
+    const tokenAddresses = [...defaultTokens, ...tokensFromPools];
     log(`Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`);
     const filteredTokenAddresses = await removeKnownTokens(chainId, tokenAddresses);
     log(`Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`);

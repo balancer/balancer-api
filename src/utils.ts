@@ -5,6 +5,7 @@ import { AprBreakdown, Price, SubgraphPoolBase, SwapTypes } from "@balancer-labs
 import { getToken } from "./data-providers/dynamodb";
 import { Token, Pool } from "./types";
 import { Network, NativeAssetAddress, NativeAssetPriceSymbol } from "./constants";
+import defaultTokenList from "./constants/default-token-list.json";
 
 const { INFURA_PROJECT_ID } = process.env;
 
@@ -55,7 +56,13 @@ export async function getTokenInfo(provider, chainId: number, address: string): 
   return tokenInfo;
 }
 
-export function getTokenAddressesFromPools(pools: Pool[]) {
+export function getDefaultTokensForChain(chainId: number): string[] {
+  return defaultTokenList
+    .filter((token) => token.chainId === chainId)
+    .map((token) => token.address);
+}
+
+export function getTokenAddressesFromPools(pools: Pool[]): string[] {
   const tokenAddressMap = {};
   pools.forEach((pool) => {
     pool.tokensList.forEach(address => {

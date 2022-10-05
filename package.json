@@ -24,7 +24,7 @@
     "@aws/dynamodb-auto-marshaller": "^0.7.1",
     "@balancer-labs/sdk": "^0.1.25",
     "@ethersproject/contracts": "^5.0.5",
-    "@ethersproject/providers": "^5.0.5",
+    "@ethersproject/providers": "^5.7.1",
     "aws-cdk-lib": "^2.32.1",
     "aws-sdk": "^2.1181.0",
     "bignumber.js": "^9.0.1",

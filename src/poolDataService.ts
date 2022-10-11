@@ -27,7 +27,7 @@ export class DatabasePoolDataService implements PoolDataService {
     };
   }
 
-  public async getPools(filterPools = true): Promise<SubgraphPoolBase[]> {
+  public async getPools(filterPools = false): Promise<SubgraphPoolBase[]> {
     log(`Retrieving pools for chain ${this.chainId} from the database`);
 
     let pools: Pool[];

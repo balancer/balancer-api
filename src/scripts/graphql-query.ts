@@ -41,7 +41,7 @@ const complexQuery = `query {
         contains: []
       }, 
       poolType: {
-        not_in: ["Element", "AaveLinear", "Linear", "ERC4626Linear"]
+        not_in: ["Element", "AaveLinear", "Linear", "ERC4626Linear", "FX"]
       }, 
       totalShares: {
         gt: 0.01

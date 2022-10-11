@@ -38,16 +38,18 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   const infuraUrl = getInfuraUrl(chainId);
 
   // SDK/SOR will use this to retrieve pool list from db (default uses onchain call which will be slow)
-  const dbPoolDataService = new DatabasePoolDataService({
-    chainId: chainId,
-  });
+  // const dbPoolDataService = new DatabasePoolDataService({
+  //   chainId: chainId,
+  // });
+  // dbPoolDataService doesn't work for swaps through the boosted pools, which
+  // seems to be caused by incorrect priceRates. Needs further investigation.
   
   const balancer = new BalancerSDK({
     network: chainId,
     rpcUrl: infuraUrl,
-    sor: {
-      poolDataService: dbPoolDataService
-    },
+    // sor: {
+    //   poolDataService: dbPoolDataService
+    // },
   });
 
   const { sellToken, buyToken, orderKind, amount, gasPrice } = order;

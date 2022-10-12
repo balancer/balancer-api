@@ -34,7 +34,11 @@ export class PoolService {
         `Failed to calculate liquidity. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
       );
-      return '0';
+      // If we already have a totalLiquidity value, return it, 
+      // otherwise continue and save out 0 totalLiquidity so it's not left null
+      if (this.pool.totalLiquidity) {
+        return this.pool.totalLiquidity;
+      }
     }
 
     if (Number(poolLiquidity) == 0 && Number(this.pool.totalLiquidity) > 0) {
@@ -102,7 +106,11 @@ export class PoolService {
         `Failed to calculate APR. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
       );
-      return poolApr;
+      // If we already have an APR, return it, 
+      // otherwise continue and save out the 0 APR to this pool so it's not left null 
+      if (this.pool.apr) { 
+        return this.pool.apr;
+      }
     }
 
     if (!isEqual(poolApr, this.pool.apr)) {

@@ -1,15 +1,17 @@
 import { Pool, Schema, UpdateExpression } from '../types';
 import { POOL_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
-import { Marshaller, NumberValue} from '@aws/dynamodb-auto-marshaller';
+import { Marshaller, NumberValue } from '@aws/dynamodb-auto-marshaller';
 import BigNumber from 'bignumber.js';
 import { AttributeMap } from 'aws-sdk/clients/dynamodb';
 
 /** Modify item to ensure it meets DynamoDB specifications */
 function sanitizeField(marshalledItem) {
   // For numbers, trim to 38 decimals of precision
-  const sanitizedItem = {...marshalledItem};
+  const sanitizedItem = { ...marshalledItem };
   if (sanitizedItem.N) {
-    sanitizedItem.N = new BigNumber(marshalledItem.N).precision(MAX_DYNAMODB_PRECISION).toString();
+    sanitizedItem.N = new BigNumber(marshalledItem.N)
+      .precision(MAX_DYNAMODB_PRECISION)
+      .toString();
   }
 
   return sanitizedItem;
@@ -23,20 +25,20 @@ function marshallItem(schema: Schema, item) {
         case 'BigDecimal':
         case 'BigInt':
         case 'Int':
-          marshalledItem[key] = {'N': item[key]};
+          marshalledItem[key] = { N: item[key] };
           break;
         case 'Boolean':
-          marshalledItem[key] = {'BOOL': item[key]};
+          marshalledItem[key] = { BOOL: item[key] };
           break;
         case 'String':
-          marshalledItem[key] = {'S': item[key]}
+          marshalledItem[key] = { S: item[key] };
       }
     }
   });
   return marshalledItem;
 }
 
-/** 
+/**
  *  Does the final touches to convert a DynamoDB object back into a regular object
  *  Converts NumberValue fields into regular strings/number
  *  - Items specified as BigDecimal are converted to strings
@@ -45,9 +47,9 @@ function marshallItem(schema: Schema, item) {
 function finalizeUnmarshalledItem(schema: Schema, item) {
   const unmarshalledItem = {};
   if (Array.isArray(item)) {
-    return item.map((value) => finalizeUnmarshalledItem({}, value));
+    return item.map(value => finalizeUnmarshalledItem({}, value));
   }
-  if (!item || typeof item !== "object") {
+  if (!item || typeof item !== 'object') {
     return item;
   }
   Object.entries(item).forEach(([key, value]) => {
@@ -56,12 +58,12 @@ function finalizeUnmarshalledItem(schema: Schema, item) {
         switch (schema[key].type) {
           case 'BigDecimal':
           case 'BigInt':
-            unmarshalledItem[key] = value.value
-          break;
+            unmarshalledItem[key] = value.value;
+            break;
           case 'Int':
           default:
-            unmarshalledItem[key] = Number(value.value)
-          break;
+            unmarshalledItem[key] = Number(value.value);
+            break;
         }
       } else {
         unmarshalledItem[key] = Number(value.value);
@@ -71,57 +73,60 @@ function finalizeUnmarshalledItem(schema: Schema, item) {
 
     if (Array.isArray(value)) {
       unmarshalledItem[key] = finalizeUnmarshalledItem({}, value);
-      return
+      return;
     }
 
-    if (typeof value === "object") {
+    if (typeof value === 'object') {
       unmarshalledItem[key] = finalizeUnmarshalledItem({}, value);
       return;
-    } 
+    }
 
-    // If it's not a NumberValue, Array or Object it's a plain value, 
-    // so just set it on the new object. 
+    // If it's not a NumberValue, Array or Object it's a plain value,
+    // so just set it on the new object.
     unmarshalledItem[key] = value;
-  })
+  });
   return unmarshalledItem;
 }
 
 /**
- * Adds types to all pool items for DynamoDB 
+ * Adds types to all pool items for DynamoDB
  * e.g. symbol: '50WBTC-50ETH' -> symbol: {'S': '50WBTC-50ETH'}
  *      decimals: 18 -> decimals: {'N': 18}
- * 
+ *
  * Required because some large numbers are strings in Javascript
- * but numbers in DynamoDB. 
+ * but numbers in DynamoDB.
  * e.g. totalLiquidity: '123.456' -> totalLiquidity: {'N': '123.456'}
-*/
+ */
 export function marshallPool(pool: Pool): Record<string, any> {
   const autoMarshaller = new Marshaller();
   const autoMarshalledPool = autoMarshaller.marshallItem(pool);
 
-  // These are JS strings that should be stored as numbers etc 
+  // These are JS strings that should be stored as numbers etc
   const customPoolItems = marshallItem(POOL_SCHEMA, pool);
   const sanitizedCustomPoolItems = {};
   for (const key of Object.keys(POOL_SCHEMA)) {
-    if (customPoolItems[key] && Object.keys(customPoolItems[key]).length > 0) { 
-      sanitizedCustomPoolItems[key] = sanitizeField(customPoolItems[key])
+    if (customPoolItems[key] && Object.keys(customPoolItems[key]).length > 0) {
+      sanitizedCustomPoolItems[key] = sanitizeField(customPoolItems[key]);
     }
   }
-  return {...autoMarshalledPool, ...sanitizedCustomPoolItems};
+  return { ...autoMarshalledPool, ...sanitizedCustomPoolItems };
 }
 
 /**
  * Turns a marshalled pool back into a normal Pool object
- * 
+ *
  * The automarshaller turns numbers into NumberObjects so the finalizeUnmarshallItem
- * is needed to convert them into either numbers or strings based on the schema. 
+ * is needed to convert them into either numbers or strings based on the schema.
  */
 export function unmarshallPool(dynamodbPool: AttributeMap): Pool {
   if (!dynamodbPool) return;
 
   const autoMarshaller = new Marshaller();
   const autoUnMarshalledPool = autoMarshaller.unmarshallItem(dynamodbPool);
-  const unmarshalledPool = finalizeUnmarshalledItem(POOL_SCHEMA, autoUnMarshalledPool);
+  const unmarshalledPool = finalizeUnmarshalledItem(
+    POOL_SCHEMA,
+    autoUnMarshalledPool
+  );
   return unmarshalledPool as any;
 }
 
@@ -130,15 +135,15 @@ export function generateUpdateExpression(pool: Pool): UpdateExpression {
   const exp: UpdateExpression = {
     UpdateExpression: 'SET',
     ExpressionAttributeNames: {},
-    ExpressionAttributeValues: {}
-  }
+    ExpressionAttributeValues: {},
+  };
   const marshalledPool = marshallPool(pool);
   Object.entries(marshalledPool).forEach(([key, item]) => {
-      if (primaryKeyAttributes.includes(key)) return;
-      exp.UpdateExpression += ` #${key} = :${key},`;
-      exp.ExpressionAttributeNames[`#${key}`] = key;
-      exp.ExpressionAttributeValues[`:${key}`] = item
-  })
+    if (primaryKeyAttributes.includes(key)) return;
+    exp.UpdateExpression += ` #${key} = :${key},`;
+    exp.ExpressionAttributeNames[`#${key}`] = key;
+    exp.ExpressionAttributeValues[`:${key}`] = item;
+  });
   exp.UpdateExpression = exp.UpdateExpression.slice(0, -1);
   return exp;
 }

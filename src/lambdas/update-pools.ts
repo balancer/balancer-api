@@ -1,6 +1,11 @@
-import { getTokenAddressesFromPools } from "../utils";
-import { updatePools, updateTokens } from "../data-providers/dynamodb";
-import { fetchPoolsFromChain, fetchTokens, removeKnownTokens, sanitizePools } from "../data-providers/onchain";
+import { getTokenAddressesFromPools } from '../utils';
+import { updatePools, updateTokens } from '../data-providers/dynamodb';
+import {
+  fetchPoolsFromChain,
+  fetchTokens,
+  removeKnownTokens,
+  sanitizePools,
+} from '../data-providers/onchain';
 
 const { CHAIN_ID } = process.env;
 
@@ -10,7 +15,7 @@ export const handler = async (): Promise<any> => {
   const chainId = parseInt(CHAIN_ID || '1');
 
   try {
-    log(`Fetching pools from network ${chainId}`)
+    log(`Fetching pools from network ${chainId}`);
     const poolsFromChain = await fetchPoolsFromChain(chainId);
     log(`Sanitizing ${poolsFromChain.length} pools`);
     const pools = sanitizePools(poolsFromChain);
@@ -18,9 +23,16 @@ export const handler = async (): Promise<any> => {
     await updatePools(pools);
     log(`Saved pools. Fetching Tokens for pools`);
     const tokenAddresses = getTokenAddressesFromPools(pools);
-    log(`Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`);
-    const filteredTokenAddresses = await removeKnownTokens(chainId, tokenAddresses);
-    log(`Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`);
+    log(
+      `Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`
+    );
+    const filteredTokenAddresses = await removeKnownTokens(
+      chainId,
+      tokenAddresses
+    );
+    log(
+      `Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`
+    );
     const tokens = await fetchTokens(chainId, filteredTokenAddresses);
     await updateTokens(tokens);
     log(`Saved ${filteredTokenAddresses.length} Tokens`);

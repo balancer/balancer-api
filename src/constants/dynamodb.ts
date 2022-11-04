@@ -1,16 +1,16 @@
-import { DynamoDB } from "aws-sdk";
-import { Schema } from "../types";
+import { DynamoDB } from 'aws-sdk';
+import { Schema } from '../types';
 
 export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
-  TableName: "pools",
+  TableName: 'pools',
   KeySchema: [
-    { AttributeName: "id", KeyType: "HASH" },
-    { AttributeName: "chainId", KeyType: "RANGE" },
+    { AttributeName: 'id', KeyType: 'HASH' },
+    { AttributeName: 'chainId', KeyType: 'RANGE' },
   ],
   AttributeDefinitions: [
-    { AttributeName: "id", AttributeType: "S" },
-    { AttributeName: "chainId", AttributeType: "N" },
-    { AttributeName: "totalLiquidity", AttributeType: "N" },
+    { AttributeName: 'id', AttributeType: 'S' },
+    { AttributeName: 'chainId', AttributeType: 'N' },
+    { AttributeName: 'totalLiquidity', AttributeType: 'N' },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,
@@ -18,13 +18,13 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
   },
   GlobalSecondaryIndexes: [
     {
-      IndexName: "byTotalLiquidity",
+      IndexName: 'byTotalLiquidity',
       KeySchema: [
-        { AttributeName: "chainId", KeyType: "HASH" },
-        { AttributeName: "totalLiquidity", KeyType: "RANGE" },
+        { AttributeName: 'chainId', KeyType: 'HASH' },
+        { AttributeName: 'totalLiquidity', KeyType: 'RANGE' },
       ],
       Projection: {
-        ProjectionType: "ALL",
+        ProjectionType: 'ALL',
       },
       ProvisionedThroughput: {
         ReadCapacityUnits: 5,
@@ -35,14 +35,14 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
 };
 
 export const TOKENS_TABLE_SCHEMA = {
-  TableName: "tokens",
+  TableName: 'tokens',
   KeySchema: [
-    { AttributeName: "address", KeyType: "HASH" },
-    { AttributeName: "chainId", KeyType: "RANGE" },
+    { AttributeName: 'address', KeyType: 'HASH' },
+    { AttributeName: 'chainId', KeyType: 'RANGE' },
   ],
   AttributeDefinitions: [
-    { AttributeName: "address", AttributeType: "S" },
-    { AttributeName: "chainId", AttributeType: "N" },
+    { AttributeName: 'address', AttributeType: 'S' },
+    { AttributeName: 'chainId', AttributeType: 'N' },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,
@@ -50,12 +50,12 @@ export const TOKENS_TABLE_SCHEMA = {
   },
 };
 
-/** 
+/**
  * Used for marshalling / unmarshalling into DynamoDB
- * 
+ *
  * Number: Saved as a number in DynamoDB and JS
  * BigNumber: Saved as a number in DynamoDB, but a String in JS
-*/
+ */
 export const POOL_SCHEMA: Schema = {
   swapEnabled: { type: 'Boolean' },
   swapFee: { type: 'BigDecimal' },
@@ -87,4 +87,4 @@ export const POOL_SCHEMA: Schema = {
   wrappedIndex: { type: 'Int' },
   lowerTarget: { type: 'BigDecimal' },
   upperTarget: { type: 'BigDecimal' },
-}
+};

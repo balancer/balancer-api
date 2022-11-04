@@ -1,6 +1,9 @@
 import { getPool } from '../data-providers/dynamodb';
 import { isValidChainId } from '../utils';
-import { INVALID_CHAIN_ID_ERROR, MISSING_CHAIN_ID_ERROR } from '../constants/errors';
+import {
+  INVALID_CHAIN_ID_ERROR,
+  MISSING_CHAIN_ID_ERROR,
+} from '../constants/errors';
 
 export const handler = async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);
@@ -9,7 +12,7 @@ export const handler = async (event: any = {}): Promise<any> => {
   }
   if (!isValidChainId(chainId)) {
     return INVALID_CHAIN_ID_ERROR;
-  } 
+  }
 
   const poolId = event.pathParameters.id;
   if (!poolId) {

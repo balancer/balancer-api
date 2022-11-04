@@ -1,11 +1,11 @@
 import { BalancerSDK, SwapInfo } from '@balancer-labs/sdk';
-import { Order, Token, SerializedSwapInfo } from "./types";
-import { 
+import { Order, Token, SerializedSwapInfo } from './types';
+import {
   orderKindToSwapType,
   getInfuraUrl,
   getNativeAssetPriceSymbol,
-} from "./utils";
-import { getToken } from "./data-providers/dynamodb";
+} from './utils';
+import { getToken } from './data-providers/dynamodb';
 import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './poolDataService';
 import debug from 'debug';
@@ -21,19 +21,27 @@ function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
     tokenAddresses: swapInfo.tokenAddresses,
     swaps: swapInfo.swaps,
     swapAmount: swapInfo.swapAmount.toString(),
-    swapAmountForSwaps: swapInfo.swapAmountForSwaps ? swapInfo.swapAmountForSwaps.toString() : '',
+    swapAmountForSwaps: swapInfo.swapAmountForSwaps
+      ? swapInfo.swapAmountForSwaps.toString()
+      : '',
     returnAmount: swapInfo.returnAmount.toString(),
-    returnAmountFromSwaps: swapInfo.returnAmountFromSwaps ? swapInfo.returnAmountFromSwaps.toString() : '',
-    returnAmountConsideringFees: swapInfo.returnAmountConsideringFees.toString(),
+    returnAmountFromSwaps: swapInfo.returnAmountFromSwaps
+      ? swapInfo.returnAmountFromSwaps.toString()
+      : '',
+    returnAmountConsideringFees:
+      swapInfo.returnAmountConsideringFees.toString(),
     tokenIn: swapInfo.tokenIn,
     tokenOut: swapInfo.tokenOut,
-    marketSp: swapInfo.marketSp
+    marketSp: swapInfo.marketSp,
   };
 
   return serializedSwapInfo;
 }
 
-export async function getSorSwap(chainId: number, order: Order): Promise<SerializedSwapInfo> {
+export async function getSorSwap(
+  chainId: number,
+  order: Order
+): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);
 
@@ -43,7 +51,7 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   // });
   // dbPoolDataService doesn't work for swaps through the boosted pools, which
   // seems to be caused by incorrect priceRates. Needs further investigation.
-  
+
   const balancer = new BalancerSDK({
     network: chainId,
     rpcUrl: infuraUrl,
@@ -55,50 +63,79 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
   const { sellToken, buyToken, orderKind, amount, gasPrice } = order;
 
   const sellTokenDetails: Token = await getToken(chainId, sellToken);
-  log(`Sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(sellTokenDetails)}`)
+  log(
+    `Sell token details for token ${chainId} ${sellToken}: ${JSON.stringify(
+      sellTokenDetails
+    )}`
+  );
   const buyTokenDetails: Token = await getToken(chainId, buyToken);
-  log(`Buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(buyTokenDetails)}`)
+  log(
+    `Buy token details for token ${chainId} ${buyToken}: ${JSON.stringify(
+      buyTokenDetails
+    )}`
+  );
 
   const nativeAssetPriceSymbol = getNativeAssetPriceSymbol(chainId);
 
   let priceOfNativeAssetInSellToken = 0;
   if (sellTokenDetails && sellTokenDetails.price) {
-    if (typeof sellTokenDetails.price !== "object") {
+    if (typeof sellTokenDetails.price !== 'object') {
       priceOfNativeAssetInSellToken = sellTokenDetails.price;
     } else if (sellTokenDetails.price[nativeAssetPriceSymbol]) {
-      priceOfNativeAssetInSellToken = Number(formatFixed(parseFixed('1', 72).div(parseFixed(sellTokenDetails.price[nativeAssetPriceSymbol], 36)), 36));
+      priceOfNativeAssetInSellToken = Number(
+        formatFixed(
+          parseFixed('1', 72).div(
+            parseFixed(sellTokenDetails.price[nativeAssetPriceSymbol], 36)
+          ),
+          36
+        )
+      );
     }
   }
   log(`Price of sell token ${sellToken}: `, priceOfNativeAssetInSellToken);
-  balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(sellToken, priceOfNativeAssetInSellToken.toString());
+  balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(
+    sellToken,
+    priceOfNativeAssetInSellToken.toString()
+  );
 
   let priceOfNativeAssetInBuyToken = 0;
   if (buyTokenDetails && buyTokenDetails.price) {
-    if (typeof buyTokenDetails.price !== "object") {
+    if (typeof buyTokenDetails.price !== 'object') {
       priceOfNativeAssetInBuyToken = buyTokenDetails.price;
     } else if (buyTokenDetails.price[nativeAssetPriceSymbol]) {
-      priceOfNativeAssetInBuyToken = Number(formatFixed(parseFixed('1', 72).div(parseFixed(buyTokenDetails.price[nativeAssetPriceSymbol], 36)), 36));
+      priceOfNativeAssetInBuyToken = Number(
+        formatFixed(
+          parseFixed('1', 72).div(
+            parseFixed(buyTokenDetails.price[nativeAssetPriceSymbol], 36)
+          ),
+          36
+        )
+      );
     }
   }
   log(`Price of buy token ${buyToken}: `, priceOfNativeAssetInBuyToken);
-  balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(buyToken, priceOfNativeAssetInBuyToken.toString());
+  balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(
+    buyToken,
+    priceOfNativeAssetInBuyToken.toString()
+  );
 
   const tokenIn = sellToken;
   const tokenOut = buyToken;
   const swapType = orderKindToSwapType(orderKind);
 
-  const swapOptions = { 
-    gasPrice: BigNumber.from(gasPrice)
+  const swapOptions = {
+    gasPrice: BigNumber.from(gasPrice),
   };
 
   await balancer.sor.fetchPools();
 
   const buyTokenSymbol = buyTokenDetails ? buyTokenDetails.symbol : buyToken;
-  const sellTokenSymbol = sellTokenDetails ? sellTokenDetails.symbol : sellToken;
+  const sellTokenSymbol = sellTokenDetails
+    ? sellTokenDetails.symbol
+    : sellToken;
 
   log(
-    `${orderKind}ing ${amount} ${sellTokenSymbol}` +
-      ` for ${buyTokenSymbol}`
+    `${orderKind}ing ${amount} ${sellTokenSymbol}` + ` for ${buyTokenSymbol}`
   );
   log(orderKind);
   log(`Token In: ${tokenIn}`);
@@ -122,4 +159,3 @@ export async function getSorSwap(chainId: number, order: Order): Promise<Seriali
 
   return serializedSwapInfo;
 }
-

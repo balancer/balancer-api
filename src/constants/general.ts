@@ -14,35 +14,32 @@ export const Network: Record<string, number> = {
   GOERLI: 5,
   KOVAN: 42,
   POLYGON: 137,
-  ARBITRUM: 42161
-}
+  ARBITRUM: 42161,
+};
 
 export const NativeAssetAddress = {
-  ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-  MATIC: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0"
-}
+  ETH: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+  MATIC: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
+};
 
 export const NativeAssetId = {
-  ETH: "ethereum",
-  MATIC: "matic-network"
-}
+  ETH: 'ethereum',
+  MATIC: 'matic-network',
+};
 
 export const NativeAssetPriceSymbol = {
-  ETH: "eth",
-  MATIC: "matic"
-}
+  ETH: 'eth',
+  MATIC: 'matic',
+};
 
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(
-    Object.entries(Network)
-    .filter(([, id]) => {
-      return [Network.GOERLI, Network.KOVAN].includes(id)
-    })
-  );
-
+  Object.entries(Network).filter(([, id]) => {
+    return [Network.GOERLI, Network.KOVAN].includes(id);
+  })
+);
 
 export const PRODUCTION_NETWORKS: Record<string, number> = Object.fromEntries(
-    Object.entries(Network)
-    .filter(([name]) => {
-      return TEST_NETWORKS[name] == null
-    })
-  );
+  Object.entries(Network).filter(([name]) => {
+    return TEST_NETWORKS[name] == null;
+  })
+);

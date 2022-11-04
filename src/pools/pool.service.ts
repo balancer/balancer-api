@@ -1,12 +1,17 @@
 import { Pool } from '../../src/types';
-import { Pools, BalancerNetworkConfig, BalancerDataRepositories, AprBreakdown  } from '@balancer-labs/sdk';
+import {
+  Pools,
+  BalancerNetworkConfig,
+  BalancerDataRepositories,
+  AprBreakdown,
+} from '@balancer-labs/sdk';
 import util from 'util';
 import debug from 'debug';
 import { isEqual } from 'lodash';
 import { isValidApr } from '../utils';
 import { WEEK_IN_MS } from '../constants';
 
-const log = debug('balancer:pools')
+const log = debug('balancer:pools');
 
 export class PoolService {
   pools: Pools;
@@ -16,7 +21,7 @@ export class PoolService {
     networkConfig: BalancerNetworkConfig,
     repositories: BalancerDataRepositories
   ) {
-    this.pools = new Pools(networkConfig, repositories)
+    this.pools = new Pools(networkConfig, repositories);
   }
 
   /**
@@ -34,7 +39,7 @@ export class PoolService {
         `Failed to calculate liquidity. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
       );
-      // If we already have a totalLiquidity value, return it, 
+      // If we already have a totalLiquidity value, return it,
       // otherwise continue and save out 0 totalLiquidity so it's not left null
       if (this.pool.totalLiquidity) {
         return this.pool.totalLiquidity;
@@ -48,7 +53,11 @@ export class PoolService {
       );
     }
 
-    if (this.pool.graphData?.totalLiquidity || this.pool.totalLiquidity || poolLiquidity && poolLiquidity !== this.pool.totalLiquidity) {
+    if (
+      this.pool.graphData?.totalLiquidity ||
+      this.pool.totalLiquidity ||
+      (poolLiquidity && poolLiquidity !== this.pool.totalLiquidity)
+    ) {
       log(
         `Updating Liquidity for Pool: ${this.pool.id} on chain: ${this.pool.chainId}\n
         Graph Provided Liquidity: \t ${this.pool.graphData?.totalLiquidity}\n
@@ -62,14 +71,11 @@ export class PoolService {
       this.pool.lastUpdate = Date.now();
     }
 
-
     return (this.pool.totalLiquidity = poolLiquidity);
   }
 
-  
-
   public async setApr(): Promise<AprBreakdown> {
-    log("Calculating APR for pool: ", this.pool.id);
+    log('Calculating APR for pool: ', this.pool.id);
 
     let poolApr: AprBreakdown = {
       swapFees: 0,
@@ -88,12 +94,14 @@ export class PoolService {
       protocolApr: 0,
       min: 0,
       max: 0,
-    }
+    };
 
     if (Number(this.pool.totalLiquidity) < 100) {
-      log(`Pool only has ${this.pool.totalLiquidity} liquidity. Not processing`);
+      log(
+        `Pool only has ${this.pool.totalLiquidity} liquidity. Not processing`
+      );
       return (this.pool.apr = poolApr); // Don't bother calculating APR for pools with super low liquidity
-    } 
+    }
 
     try {
       const apr = await this.pools.apr(this.pool);
@@ -106,9 +114,9 @@ export class PoolService {
         `Failed to calculate APR. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
       );
-      // If we already have an APR, return it, 
-      // otherwise continue and save out the 0 APR to this pool so it's not left null 
-      if (this.pool.apr) { 
+      // If we already have an APR, return it,
+      // otherwise continue and save out the 0 APR to this pool so it's not left null
+      if (this.pool.apr) {
         return this.pool.apr;
       }
     }
@@ -127,7 +135,7 @@ export class PoolService {
     if (Number(this.pool.totalSwapVolume) < 100) {
       log(`Pool only has ${this.pool.totalSwapVolume} volume. Not processing`);
       return (this.pool.volumeSnapshot = volumeSnapshot); // Don't bother calculating Volume snapshots for pools with super low volume
-    } 
+    }
 
     try {
       const volume = await this.pools.volume(this.pool);
@@ -151,7 +159,7 @@ export class PoolService {
   public setIsNew(): boolean {
     if (!this.pool.createTime) return false;
 
-    const isNew = Date.now() - (this.pool.createTime * 1000) < WEEK_IN_MS;
+    const isNew = Date.now() - this.pool.createTime * 1000 < WEEK_IN_MS;
 
     return (this.pool.isNew = isNew);
   }

@@ -98,7 +98,7 @@ describe('server.ts', () => {
     });
   });
 
-  describe('POST /sor/:chainId', () => {
+  describe.skip('POST /sor/:chainId', () => {
     const defaultSwapAmount = parseUnits('1', 18).toString();
     const defaultSorRequest: SorRequest = {
       sellToken: '',

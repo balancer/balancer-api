@@ -16,7 +16,7 @@ It has the following components:
 
 ## Disclaimers
 
-This software is in Alpha and may have breaking changes at any time. There is little security implemented on the Lambda 
+This software is in Alpha and may have breaking changes at any time. There is little security implemented on the Lambda
 functions or GraphQL interface so anyone can call them.
 
 ## Requirements
@@ -54,7 +54,7 @@ npm run init
 # NOTE: If the init command hangs, you may need to fix permissions on your dynamodb data folder. You can do this with:
 sudo chown -R $(whoami):docker ./docker
 
-# Run Worker 
+# Run Worker
 npm run worker
 
 # In another terminal, Run API Server
@@ -88,7 +88,7 @@ cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION
 Deploy / Redeploy all AWS Services to your account.
 
 ```sh
-npm run build # Compile the CDK index.ts to javascript, must be run after changes are made 
+npm run build # Compile the CDK index.ts to javascript, must be run after changes are made
 npm run deploy # Run CDK to create/update your infrastructure
 ```
 
@@ -135,7 +135,7 @@ On success this will return a 201 code and no other data.
 
 ### Decorate Pools Lambda
 
-This lambda runs on a timer controlled by the environment variable `DECORATE_POOLS_INTERVAL_IN_MINUTES`, defaulting to 5 minutes. 
+This lambda runs on a timer controlled by the environment variable `DECORATE_POOLS_INTERVAL_IN_MINUTES`, defaulting to 5 minutes.
 It loads all the latest token and pool data and calculates the following for each pool:
 
 - Total Liquidity
@@ -188,7 +188,7 @@ You can POST the following JSON content to the endpoint to return smart order ro
     buyToken: string<Address>, # The address of the token you wish to buy
     orderKind: string<buy|sell>, # Either 'buy' or 'sell', described further below
     amount: int, # The amount in sellToken or buyToken that you wish to sell/buy
-    gasPrice: int, # The current gas price in wei, this is used to ensure your trade is most efficient considering the gas cost of performing multiple swaps. 
+    gasPrice: int, # The current gas price in wei, this is used to ensure your trade is most efficient considering the gas cost of performing multiple swaps.
 }
 ```
 
@@ -224,31 +224,30 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13C
 
 ```sh
 curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
- ```
+```
 
 ## AppSync GraphQL endpoints
 
 To find your GraphQL URL and API Key you'll need to visit the AWS console and go to AppSync -> settings. Copy and paste these
 values into your .env file as `APPSYNC_URL` and `APPSYNC_KEY` for testing.
 
-You can run `npm run build` then run the script `dist/scripts/graphql-query.ts` to see example requests fetching pools from the API.  
-
+You can run `npm run build` then run the script `dist/scripts/graphql-query.ts` to see example requests fetching pools from the API.
 
 ## Options
 
 ### Environment Variables
 
-You can customize your deployment with env variables. See .env.example for all possible variables. They are described below: 
+You can customize your deployment with env variables. See .env.example for all possible variables. They are described below:
 
 - DEBUG - Used by the [npm debug package](https://www.npmjs.com/package/debug) Can be used for showing debug information.
 - PORT - default: 8090 - Port to run the local server on
-- NETWORKS - default: 1,137,42161 - A comma separated list of networks ID's or names to run the API on. 
+- NETWORKS - default: 1,137,42161 - A comma separated list of networks ID's or names to run the API on.
 - INFURA_PROJECT_ID - Your infura project ID. Used for loading data across all networks
-- DYNAMODB_POOLS_READ_CAPACITY - default: 25 -  The read capacity of the `pools` DynamoDB table.
+- DYNAMODB_POOLS_READ_CAPACITY - default: 25 - The read capacity of the `pools` DynamoDB table.
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 25 - The write capacity of the `pools` DynamoDB table.
-- DYNAMODB_POOLS_IDX_READ_CAPACITY - default: 10 -  The read capacity of the secondary indexes on the `pools` DynamoDB table.
+- DYNAMODB_POOLS_IDX_READ_CAPACITY - default: 10 - The read capacity of the secondary indexes on the `pools` DynamoDB table.
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 10 - The write capacity of the secondary indexes on the `pools` DynamoDB table.
-- DYNAMODB_TOKENS_READ_CAPACITY - default: 10 - The read capcity of the `tokens` DynamoDB table. 
+- DYNAMODB_TOKENS_READ_CAPACITY - default: 10 - The read capcity of the `tokens` DynamoDB table.
 - DYNAMODB_TOKENS_WRITE_CAPACITY - default: 10 - The write capacity of the `tokens` DynamoDB tbale.
 - DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created
 - SANCTIONS_API_KEY - TRM API key for running sanction checks
@@ -257,4 +256,4 @@ You can customize your deployment with env variables. See .env.example for all p
 ## Common Issues
 
 - AWS error `Specified ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value of [10]`
-    - By default this package creates 13 lambdas while new AWS accounts are limited to 10. You can fix this by changing the `NETWORKS` environment variable to just `1` to only deploy lambdas for Mainnet instead of all networks.
+  - By default this package creates 13 lambdas while new AWS accounts are limited to 10. You can fix this by changing the `NETWORKS` environment variable to just `1` to only deploy lambdas for Mainnet instead of all networks.

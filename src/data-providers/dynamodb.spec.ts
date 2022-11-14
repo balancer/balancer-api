@@ -7,12 +7,12 @@ import { generateUpdateExpression } from './dynamodb-marshaller';
 jest.unmock('@balancer-labs/sdk');
 
 jest.mock('aws-sdk', () => {
-  const mDynamoDB = { 
-    transactWriteItems: jest.fn(() => { 
-      return { promise: () => Promise.resolve() }
+  const mDynamoDB = {
+    transactWriteItems: jest.fn(() => {
+      return { promise: () => Promise.resolve() };
     }),
-    batchWriteItem: jest.fn(() => { 
-      return { promise: () => Promise.resolve() }
+    batchWriteItem: jest.fn(() => {
+      return { promise: () => Promise.resolve() };
     }),
   };
   return { DynamoDB: jest.fn(() => mDynamoDB) };
@@ -26,39 +26,46 @@ describe('DynamoDB', () => {
       const pools: Pool[] = POOLS.slice(0, 2);
 
       const expectedRequest = {
-        TransactItems: [{
-          Update: Object.assign(
-            {
-              Key: {
-                id: { 'S': pools[0].id },
-                chainId: { 'N': pools[0].chainId.toString() }
+        TransactItems: [
+          {
+            Update: Object.assign(
+              {
+                Key: {
+                  id: { S: pools[0].id },
+                  chainId: { N: pools[0].chainId.toString() },
+                },
+                TableName: 'pools',
               },
-              TableName: 'pools'
-            }, 
-            generateUpdateExpression(pools[0])
-          )
-        }, {
-          Update: Object.assign(
-            {
-              Key: {
-                id: { 'S': pools[1].id },
-                chainId: { 'N': pools[1].chainId.toString() }
+              generateUpdateExpression(pools[0])
+            ),
+          },
+          {
+            Update: Object.assign(
+              {
+                Key: {
+                  id: { S: pools[1].id },
+                  chainId: { N: pools[1].chainId.toString() },
+                },
+                TableName: 'pools',
               },
-              TableName: 'pools'
-            }, 
-            generateUpdateExpression(pools[1])
-          )
-        }]
-      }
+              generateUpdateExpression(pools[1])
+            ),
+          },
+        ],
+      };
 
       await updatePools(pools);
-      expect(mDynamoDB.transactWriteItems).toBeCalledWith(expectedRequest, expect.anything());
+      expect(mDynamoDB.transactWriteItems).toBeCalledWith(
+        expectedRequest,
+        expect.anything()
+      );
     });
 
     it('Should break pool updates into chunks of 25', () => {
-      const pools: Pool[] = POOLS.slice(0).concat(POOLS.slice(0)).concat(POOLS.slice(0));
+      const pools: Pool[] = POOLS.slice(0)
+        .concat(POOLS.slice(0))
+        .concat(POOLS.slice(0));
       expect(pools.length).toBe(30); // sanity check
     });
-
   });
-})
+});

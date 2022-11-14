@@ -16,7 +16,9 @@
     "worker": "node dist/worker.js",
     "deploy": "npm run build-cdk && cdk deploy",
     "cdk": "cdk",
-    "test": "jest"
+    "test": "jest",
+    "prettier": "prettier --check '**/*.*(md|json|yaml|ts)' --loglevel warn",
+    "prettier:fix": "npm run prettier -- --write"
   },
   "license": "MIT",
   "dependencies": {

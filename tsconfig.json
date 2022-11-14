@@ -1,20 +1,16 @@
 {
   "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",  
-      "outDir": "./dist/",
-      "baseUrl": "src",
-      "esModuleInterop": true,
-      "noImplicitAny": false,
-      "resolveJsonModule": true,
-      "experimentalDecorators": true,
-      "strictNullChecks": false,
-      "declaration": true,
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "./dist/",
+    "baseUrl": "src",
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "strictNullChecks": false,
+    "declaration": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "src/**/*.spec.ts"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.spec.ts"]
 }

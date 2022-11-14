@@ -9,8 +9,8 @@ let decimalsMethod = jest.fn().mockImplementation(() => {
 export function Contract() {
   return {
     symbol: symbolMethod,
-    decimals: decimalsMethod
-  }
+    decimals: decimalsMethod,
+  };
 }
 
 export function _setSymbolMethod(method) {

@@ -1,24 +1,40 @@
-require("dotenv").config();
-import { DomainName, IResource, LambdaIntegration, MockIntegration, PassthroughBehavior, RestApi } from 'aws-cdk-lib/aws-apigateway';
+require('dotenv').config();
+import {
+  DomainName,
+  IResource,
+  LambdaIntegration,
+  MockIntegration,
+  PassthroughBehavior,
+  RestApi,
+} from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { App, Stack, RemovalPolicy, Duration, Expiration } from 'aws-cdk-lib';
-import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
+import {
+  NodejsFunction,
+  NodejsFunctionProps,
+} from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
-import { Certificate  } from 'aws-cdk-lib/aws-certificatemanager';
+import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
-import { GraphqlApi, Schema, AuthorizationType, MappingTemplate, DynamoDbDataSource } from '@aws-cdk/aws-appsync-alpha';
+import {
+  GraphqlApi,
+  Schema,
+  AuthorizationType,
+  MappingTemplate,
+  DynamoDbDataSource,
+} from '@aws-cdk/aws-appsync-alpha';
 import { PRODUCTION_NETWORKS } from './src/constants/general';
-import { join } from 'path'
+import { join } from 'path';
 
-const { 
-  INFURA_PROJECT_ID, 
-  DYNAMODB_POOLS_READ_CAPACITY, 
+const {
+  INFURA_PROJECT_ID,
+  DYNAMODB_POOLS_READ_CAPACITY,
   DYNAMODB_POOLS_WRITE_CAPACITY,
-  DYNAMODB_POOLS_IDX_READ_CAPACITY, 
+  DYNAMODB_POOLS_IDX_READ_CAPACITY,
   DYNAMODB_POOLS_IDX_WRITE_CAPACITY,
-  DYNAMODB_TOKENS_READ_CAPACITY, 
+  DYNAMODB_TOKENS_READ_CAPACITY,
   DYNAMODB_TOKENS_WRITE_CAPACITY,
   DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
@@ -26,12 +42,15 @@ const {
   NETWORKS,
 } = process.env;
 
-let SELECTED_NETWORKS: Record<string, number>  = PRODUCTION_NETWORKS;
+let SELECTED_NETWORKS: Record<string, number> = PRODUCTION_NETWORKS;
 if (NETWORKS) {
   const networksArray: string[] = NETWORKS.split(',');
   SELECTED_NETWORKS = Object.fromEntries(
     Object.entries(PRODUCTION_NETWORKS).filter(([name, id]) => {
-      if (networksArray.includes(name) || networksArray.includes(id.toString())) {
+      if (
+        networksArray.includes(name) ||
+        networksArray.includes(id.toString())
+      ) {
         return true;
       }
       return false;
@@ -39,21 +58,35 @@ if (NETWORKS) {
   );
 }
 
-const POOLS_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_READ_CAPACITY || '25');
-const POOLS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_WRITE_CAPACITY || '25');
-const POOLS_IDX_READ_CAPACITY = Number.parseInt(DYNAMODB_POOLS_IDX_READ_CAPACITY || DYNAMODB_POOLS_READ_CAPACITY || '10');
-const POOLS_IDX_WRITE_CAPACITY = Number.parseInt(DYNAMODB_POOLS_IDX_WRITE_CAPACITY || DYNAMODB_POOLS_WRITE_CAPACITY || '10');
-const TOKENS_READ_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_READ_CAPACITY || '10');
-const TOKENS_WRITE_CAPACITY = Number.parseInt(DYNAMODB_TOKENS_WRITE_CAPACITY || '10');
+const POOLS_READ_CAPACITY = Number.parseInt(
+  DYNAMODB_POOLS_READ_CAPACITY || '25'
+);
+const POOLS_WRITE_CAPACITY = Number.parseInt(
+  DYNAMODB_POOLS_WRITE_CAPACITY || '25'
+);
+const POOLS_IDX_READ_CAPACITY = Number.parseInt(
+  DYNAMODB_POOLS_IDX_READ_CAPACITY || DYNAMODB_POOLS_READ_CAPACITY || '10'
+);
+const POOLS_IDX_WRITE_CAPACITY = Number.parseInt(
+  DYNAMODB_POOLS_IDX_WRITE_CAPACITY || DYNAMODB_POOLS_WRITE_CAPACITY || '10'
+);
+const TOKENS_READ_CAPACITY = Number.parseInt(
+  DYNAMODB_TOKENS_READ_CAPACITY || '10'
+);
+const TOKENS_WRITE_CAPACITY = Number.parseInt(
+  DYNAMODB_TOKENS_WRITE_CAPACITY || '10'
+);
 
-const DECORATE_POOLS_INTERVAL = Number.parseInt(DECORATE_POOLS_INTERVAL_IN_MINUTES || '5');
+const DECORATE_POOLS_INTERVAL = Number.parseInt(
+  DECORATE_POOLS_INTERVAL_IN_MINUTES || '5'
+);
 
-const BALANCER_API_KEY_EXPIRATION = Date.now() + (365 * 24 * 60 * 60 * 1000); // For GraphQL API - Maximum expiry time is 1 year
+const BALANCER_API_KEY_EXPIRATION = Date.now() + 365 * 24 * 60 * 60 * 1000; // For GraphQL API - Maximum expiry time is 1 year
 
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
     super(app, id);
-    
+
     /**
      * DynamoDB Tables
      */
@@ -61,27 +94,27 @@ export class BalancerPoolsAPI extends Stack {
     const poolsTable = new Table(this, 'pools', {
       partitionKey: {
         name: 'id',
-        type: AttributeType.STRING
+        type: AttributeType.STRING,
       },
       sortKey: {
         name: 'chainId',
-        type: AttributeType.NUMBER
+        type: AttributeType.NUMBER,
       },
       tableName: 'pools',
       removalPolicy: RemovalPolicy.DESTROY,
       readCapacity: POOLS_READ_CAPACITY,
-      writeCapacity: POOLS_WRITE_CAPACITY
+      writeCapacity: POOLS_WRITE_CAPACITY,
     });
 
     poolsTable.addGlobalSecondaryIndex({
       indexName: 'byTotalLiquidity',
       partitionKey: {
-        name: 'chainId', 
-        type: AttributeType.NUMBER
+        name: 'chainId',
+        type: AttributeType.NUMBER,
       },
       sortKey: {
-        name: 'totalLiquidity', 
-        type: AttributeType.NUMBER
+        name: 'totalLiquidity',
+        type: AttributeType.NUMBER,
       },
       readCapacity: POOLS_IDX_READ_CAPACITY,
       writeCapacity: POOLS_IDX_WRITE_CAPACITY,
@@ -91,16 +124,16 @@ export class BalancerPoolsAPI extends Stack {
     const tokensTable = new Table(this, 'tokens', {
       partitionKey: {
         name: 'address',
-        type: AttributeType.STRING
+        type: AttributeType.STRING,
       },
       sortKey: {
         name: 'chainId',
-        type: AttributeType.NUMBER
+        type: AttributeType.NUMBER,
       },
       tableName: 'tokens',
       removalPolicy: RemovalPolicy.DESTROY,
       readCapacity: TOKENS_READ_CAPACITY,
-      writeCapacity: TOKENS_WRITE_CAPACITY
+      writeCapacity: TOKENS_WRITE_CAPACITY,
     });
 
     /**
@@ -109,16 +142,14 @@ export class BalancerPoolsAPI extends Stack {
 
     const nodeJsFunctionProps: NodejsFunctionProps = {
       bundling: {
-        externalModules: [
-          'aws-sdk', 
-        ],
+        externalModules: ['aws-sdk'],
       },
       environment: {
         INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
       },
       runtime: Runtime.NODEJS_14_X,
-      timeout: Duration.seconds(15)
-    }
+      timeout: Duration.seconds(15),
+    };
 
     const getPoolLambda = new NodejsFunction(this, 'getPoolFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'get-pool.ts'),
@@ -135,74 +166,90 @@ export class BalancerPoolsAPI extends Stack {
     const runSORLambda = new NodejsFunction(this, 'runSORFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'run-sor.ts'),
       ...nodeJsFunctionProps,
-      memorySize: 2048
+      memorySize: 2048,
     });
 
     const updatePoolsLambdas: Record<number, NodejsFunction> = {};
     Object.entries(SELECTED_NETWORKS).forEach(([networkName, chainId]) => {
-      const functionProps = {...nodeJsFunctionProps};
+      const functionProps = { ...nodeJsFunctionProps };
       functionProps.environment = {
         ...functionProps.environment,
-        'CHAIN_ID': chainId.toString()
+        CHAIN_ID: chainId.toString(),
       };
-      updatePoolsLambdas[chainId] = new NodejsFunction(this, `updatePoolsFunction-${networkName}`, {
-        entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
-        ...functionProps,
-        memorySize: 2048,
-        timeout: Duration.seconds(60),
-        reservedConcurrentExecutions: 1
-      });
+      updatePoolsLambdas[chainId] = new NodejsFunction(
+        this,
+        `updatePoolsFunction-${networkName}`,
+        {
+          entry: join(__dirname, 'src', 'lambdas', 'update-pools.ts'),
+          ...functionProps,
+          memorySize: 2048,
+          timeout: Duration.seconds(60),
+          reservedConcurrentExecutions: 1,
+        }
+      );
     });
-    
+
     const decoratePoolsLambdas: Record<number, NodejsFunction> = {};
     Object.entries(SELECTED_NETWORKS).forEach(([networkName, chainId]) => {
-      const functionProps = {...nodeJsFunctionProps};
+      const functionProps = { ...nodeJsFunctionProps };
       functionProps.environment = {
         ...functionProps.environment,
-        'CHAIN_ID': chainId.toString()
+        CHAIN_ID: chainId.toString(),
       };
-      decoratePoolsLambdas[chainId] = new NodejsFunction(this, `decoratePoolsFunction-${networkName}`, {
-        entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
-        ...functionProps,
-        memorySize: 2048,
+      decoratePoolsLambdas[chainId] = new NodejsFunction(
+        this,
+        `decoratePoolsFunction-${networkName}`,
+        {
+          entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
+          ...functionProps,
+          memorySize: 2048,
+          timeout: Duration.seconds(60),
+          reservedConcurrentExecutions: 1,
+        }
+      );
+    });
+
+    const updateTokenPricesLambda = new NodejsFunction(
+      this,
+      'updateTokenPricesFunction',
+      {
+        entry: join(__dirname, 'src', 'lambdas', 'update-prices.ts'),
+        ...nodeJsFunctionProps,
+        memorySize: 512,
         timeout: Duration.seconds(60),
-        reservedConcurrentExecutions: 1
-      });
-    });
-    
-    const updateTokenPricesLambda = new NodejsFunction(this, 'updateTokenPricesFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'update-prices.ts'),
-      ...nodeJsFunctionProps,
-      memorySize: 512,
-      timeout: Duration.seconds(60)
-    });
+      }
+    );
 
     const walletCheckLambda = new NodejsFunction(this, 'walletCheckFunction', {
-        entry: join(__dirname, 'src', 'lambdas', 'wallet-check.ts'),
-        environment: {
-          SANCTIONS_API_KEY: SANCTIONS_API_KEY || ''
-        },
-        runtime: Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(15)
+      entry: join(__dirname, 'src', 'lambdas', 'wallet-check.ts'),
+      environment: {
+        SANCTIONS_API_KEY: SANCTIONS_API_KEY || '',
+      },
+      runtime: Runtime.NODEJS_14_X,
+      timeout: Duration.seconds(15),
     });
 
-    /** 
+    /**
      * Lambda Schedules
      */
 
     const updateTokenPricesRule = new Rule(this, 'updateEachMinute', {
-      schedule: Schedule.expression('rate(1 minute)')
+      schedule: Schedule.expression('rate(1 minute)'),
     });
-    updateTokenPricesRule.addTarget(new LambdaFunction(updateTokenPricesLambda))
+    updateTokenPricesRule.addTarget(
+      new LambdaFunction(updateTokenPricesLambda)
+    );
 
     const periodWord = DECORATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
     const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
-      schedule: Schedule.expression(`rate(${DECORATE_POOLS_INTERVAL} ${periodWord})`)
+      schedule: Schedule.expression(
+        `rate(${DECORATE_POOLS_INTERVAL} ${periodWord})`
+      ),
     });
 
-    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
-      decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda))
-    })
+    Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
+      decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda));
+    });
 
     /**
      * Access Rules
@@ -211,20 +258,20 @@ export class BalancerPoolsAPI extends Stack {
     poolsTable.grantReadData(getPoolsLambda);
     poolsTable.grantReadData(getPoolLambda);
     poolsTable.grantReadWriteData(runSORLambda);
-    Object.values(updatePoolsLambdas).forEach((updatePoolsLambda) => {
+    Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
       poolsTable.grantReadWriteData(updatePoolsLambda);
     });
-    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+    Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
       poolsTable.grantReadWriteData(decoratePoolsLambda);
     });
 
     tokensTable.grantReadData(getTokensLambda);
     tokensTable.grantReadWriteData(runSORLambda);
     tokensTable.grantReadWriteData(updateTokenPricesLambda);
-    Object.values(decoratePoolsLambdas).forEach((decoratePoolsLambda) => {
+    Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
       tokensTable.grantReadData(decoratePoolsLambda);
     });
-    Object.values(updatePoolsLambdas).forEach((updatePoolsLambda) => {
+    Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
       tokensTable.grantReadWriteData(updatePoolsLambda);
     });
 
@@ -236,11 +283,14 @@ export class BalancerPoolsAPI extends Stack {
     const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
     const getTokensIntegration = new LambdaIntegration(getTokensLambda);
     const runSORIntegration = new LambdaIntegration(runSORLambda);
-    const updateTokenPricesIntegration = new LambdaIntegration(updateTokenPricesLambda, {timeout: Duration.seconds(29)});
+    const updateTokenPricesIntegration = new LambdaIntegration(
+      updateTokenPricesLambda,
+      { timeout: Duration.seconds(29) }
+    );
     const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
 
     const api = new RestApi(this, 'poolsApi', {
-      restApiName: 'Pools Service'
+      restApiName: 'Pools Service',
     });
 
     const pools = api.root.addResource('pools');
@@ -253,14 +303,16 @@ export class BalancerPoolsAPI extends Stack {
     singlePool.addMethod('GET', getPoolIntegration);
     addCorsOptions(singlePool);
 
-    Object.values(SELECTED_NETWORKS).forEach((networkId) => {
-      const updatePoolsIntegration = new LambdaIntegration(updatePoolsLambdas[networkId], {timeout: Duration.seconds(29)});
+    Object.values(SELECTED_NETWORKS).forEach(networkId => {
+      const updatePoolsIntegration = new LambdaIntegration(
+        updatePoolsLambdas[networkId],
+        { timeout: Duration.seconds(29) }
+      );
       const updatePoolsWithNetworkId = pools.addResource(networkId.toString());
       const updatePools = updatePoolsWithNetworkId.addResource('update');
       addCorsOptions(updatePools);
       updatePools.addMethod('POST', updatePoolsIntegration);
     });
-
 
     const tokens = api.root.addResource('tokens');
     const tokensOnChain = tokens.addResource('{chainId}');
@@ -272,12 +324,12 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(updatePrices);
 
     const sor = api.root.addResource('sor');
-    const sorOnChain = sor.addResource('{chainId}')
+    const sorOnChain = sor.addResource('{chainId}');
     sorOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(sor);
 
     const gnosis = api.root.addResource('gnosis');
-    const gnosisOnChain = gnosis.addResource('{chainId}')
+    const gnosisOnChain = gnosis.addResource('{chainId}');
     gnosisOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
 
@@ -291,8 +343,8 @@ export class BalancerPoolsAPI extends Stack {
     if (DOMAIN_NAME) {
       const domainName = DOMAIN_NAME;
       const domain = new DomainName(this, 'domain-name', {
-          domainName,
-          certificate: new Certificate(this, 'Cert', { domainName }),
+        domainName,
+        certificate: new Certificate(this, 'Cert', { domainName }),
       });
 
       domain.addBasePathMapping(api);
@@ -309,60 +361,77 @@ export class BalancerPoolsAPI extends Stack {
           authorizationType: AuthorizationType.API_KEY,
           apiKeyConfig: {
             name: 'BalancerAPIKey',
-            expires: Expiration.atTimestamp(BALANCER_API_KEY_EXPIRATION)
-          }
+            expires: Expiration.atTimestamp(BALANCER_API_KEY_EXPIRATION),
+          },
         },
       },
       xrayEnabled: true,
     });
 
     const poolsTableRole = new Role(this, 'PoolsDynamoDBRole', {
-      assumedBy: new ServicePrincipal('appsync.amazonaws.com')
+      assumedBy: new ServicePrincipal('appsync.amazonaws.com'),
     });
 
-    poolsTableRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'));
+    poolsTableRole.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess')
+    );
 
     const poolsApi = new DynamoDbDataSource(this, 'poolsApiDataSource', {
       api: graphqlApi,
       table: poolsTable,
-      serviceRole: poolsTableRole
+      serviceRole: poolsTableRole,
     });
-    
+
     poolsApi.createResolver({
       typeName: 'Query',
       fieldName: 'pools',
-      requestMappingTemplate: MappingTemplate.fromFile(join(__dirname, 'appsync/pools/requestMapper.vtl')),
-      responseMappingTemplate: MappingTemplate.fromFile(join(__dirname, 'appsync/pools/responseMapper.vtl'))
+      requestMappingTemplate: MappingTemplate.fromFile(
+        join(__dirname, 'appsync/pools/requestMapper.vtl')
+      ),
+      responseMappingTemplate: MappingTemplate.fromFile(
+        join(__dirname, 'appsync/pools/responseMapper.vtl')
+      ),
     });
   }
- }
+}
 
 export function addCorsOptions(apiResource: IResource) {
-  apiResource.addMethod('OPTIONS', new MockIntegration({
-    integrationResponses: [{
-      statusCode: '200',
-      responseParameters: {
-        'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
-        'method.response.header.Access-Control-Allow-Origin': "'*'",
-        'method.response.header.Access-Control-Allow-Credentials': "'false'",
-        'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET,PUT,POST,DELETE'",
+  apiResource.addMethod(
+    'OPTIONS',
+    new MockIntegration({
+      integrationResponses: [
+        {
+          statusCode: '200',
+          responseParameters: {
+            'method.response.header.Access-Control-Allow-Headers':
+              "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+            'method.response.header.Access-Control-Allow-Origin': "'*'",
+            'method.response.header.Access-Control-Allow-Credentials':
+              "'false'",
+            'method.response.header.Access-Control-Allow-Methods':
+              "'OPTIONS,GET,PUT,POST,DELETE'",
+          },
+        },
+      ],
+      passthroughBehavior: PassthroughBehavior.NEVER,
+      requestTemplates: {
+        'application/json': '{"statusCode": 200}',
       },
-    }],
-    passthroughBehavior: PassthroughBehavior.NEVER,
-    requestTemplates: {
-      "application/json": "{\"statusCode\": 200}"
-    },
-  }), {
-    methodResponses: [{
-      statusCode: '200',
-      responseParameters: {
-        'method.response.header.Access-Control-Allow-Headers': true,
-        'method.response.header.Access-Control-Allow-Methods': true,
-        'method.response.header.Access-Control-Allow-Credentials': true,
-        'method.response.header.Access-Control-Allow-Origin': true,
-      },
-    }]
-  })
+    }),
+    {
+      methodResponses: [
+        {
+          statusCode: '200',
+          responseParameters: {
+            'method.response.header.Access-Control-Allow-Headers': true,
+            'method.response.header.Access-Control-Allow-Methods': true,
+            'method.response.header.Access-Control-Allow-Credentials': true,
+            'method.response.header.Access-Control-Allow-Origin': true,
+          },
+        },
+      ],
+    }
+  );
 }
 
 const app = new App();

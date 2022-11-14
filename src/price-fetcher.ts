@@ -1,8 +1,15 @@
-import { Price, CoingeckoPriceRepository } from "@balancer-labs/sdk";
-import { getPlatformId, getNativeAssetPriceSymbol, formatPrice } from "./utils";
-import { Token } from "./types";
-import { BigNumber } from "bignumber.js";
-import { NativeAssetId, NativeAssetPriceSymbol, Network, COINGECKO_BASEURL, COINGECKO_MAX_TOKENS_PER_PAGE, COINGECKO_MAX_TPS } from "./constants";
+import { Price, CoingeckoPriceRepository } from '@balancer-labs/sdk';
+import { getPlatformId, getNativeAssetPriceSymbol, formatPrice } from './utils';
+import { Token } from './types';
+import { BigNumber } from 'bignumber.js';
+import {
+  NativeAssetId,
+  NativeAssetPriceSymbol,
+  Network,
+  COINGECKO_BASEURL,
+  COINGECKO_MAX_TOKENS_PER_PAGE,
+  COINGECKO_MAX_TPS,
+} from './constants';
 import fetch from 'isomorphic-fetch';
 import debug from 'debug';
 
@@ -19,7 +26,7 @@ interface PriceData {
 
 interface CoinGeckoData {
   [key: string]: PriceData;
-} 
+}
 
 class HTTPError extends Error {
   code: number;
@@ -34,14 +41,14 @@ class PriceFetcher {
   nativeAssetPrices: Record<string, BigNumber>;
   maxTPS: number;
   lastRateLimit: number;
-  rateLimitWaitTimeMS: number; 
+  rateLimitWaitTimeMS: number;
   onCompleteCallback: () => void | null;
 
-  constructor(private abortOnRateLimit = false)  {
+  constructor(private abortOnRateLimit = false) {
     this.queue = [];
     this.tokens = [];
     this.nativeAssetPrices = {};
-    this.maxTPS = COINGECKO_MAX_TPS
+    this.maxTPS = COINGECKO_MAX_TPS;
     this.lastRateLimit = 0;
     this.rateLimitWaitTimeMS = 90 * 1000;
     this.onCompleteCallback = null;
@@ -51,19 +58,21 @@ class PriceFetcher {
     const response = await fetch(COINGECKO_BASEURL + endpoint, {
       method: 'GET',
       headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
     });
 
-    log(`Received ${response.status} status code from CoinGecko`)
+    log(`Received ${response.status} status code from CoinGecko`);
 
     if (response.status >= 400) {
-      const err = new HTTPError(`Received ${response.status} status code from CoinGecko`);
+      const err = new HTTPError(
+        `Received ${response.status} status code from CoinGecko`
+      );
       err.code = response.status;
       throw err;
     }
-  
+
     const data = await response.json();
     return data;
   }
@@ -78,35 +87,45 @@ class PriceFetcher {
     if (this.queue.length === 0) return;
 
     const nextChainId = this.queue[0].chainId;
-    const nextBatch: Token[] = []
-    while (this.queue.length > 0 && this.queue[0].chainId === nextChainId && nextBatch.length < COINGECKO_MAX_TOKENS_PER_PAGE) {
+    const nextBatch: Token[] = [];
+    while (
+      this.queue.length > 0 &&
+      this.queue[0].chainId === nextChainId &&
+      nextBatch.length < COINGECKO_MAX_TOKENS_PER_PAGE
+    ) {
       nextBatch.push(this.queue.shift());
     }
 
     let coinGeckoData;
     try {
       coinGeckoData = await this.fetchPrices(nextChainId, nextBatch);
-    } catch(err) {
-      console.error("Got error: ", err, " reading prices from coingecko.");
+    } catch (err) {
+      console.error('Got error: ', err, ' reading prices from coingecko.');
       if (err.code === HTTP_ERROR_RATELIMIT) {
         if (this.abortOnRateLimit) {
-          console.error("Rate limit hit, aborting.")
+          console.error('Rate limit hit, aborting.');
           return;
         }
-        console.error("Error was a rate-limit. Re-adding tokens to queue.")
+        console.error('Error was a rate-limit. Re-adding tokens to queue.');
         this.lastRateLimit = Date.now();
         this.queue = this.queue.concat(nextBatch);
       } else if (err.code >= 500) {
-        console.error("Error was a server error. Re-adding tokens to queue.")
+        console.error('Error was a server error. Re-adding tokens to queue.');
         this.queue = this.queue.concat(nextBatch);
       }
     }
 
-    nextBatch.forEach((token) => {
+    nextBatch.forEach(token => {
       try {
         this.updateTokenPrice(coinGeckoData, token);
       } catch (err) {
-        console.error("Got error: ", err, " readding token ", token, " to queue");
+        console.error(
+          'Got error: ',
+          err,
+          ' readding token ',
+          token,
+          ' to queue'
+        );
         this.queue.push(token);
       }
     });
@@ -114,26 +133,25 @@ class PriceFetcher {
     if (this.queue.length > 0) {
       return await this.processQueue();
     }
-  
   }
 
   private async fetchPrices(chainId, tokens: Token[]): Promise<CoinGeckoData> {
-    const tokenAddresses = tokens.map(t => t.address)
+    const tokenAddresses = tokens.map(t => t.address);
     const endpoint = this.getEndpoint(chainId, tokenAddresses);
 
     return await this.queryCoingecko(endpoint);
   }
 
-  
-
   private getEndpoint(chainId: number, tokenAddresses: string[]) {
     const platformId = getPlatformId(chainId);
     if (!platformId) {
-      const err = new HTTPError(`Unknown chain id: ${chainId}`)
+      const err = new HTTPError(`Unknown chain id: ${chainId}`);
       err.code = 404;
       throw err;
     }
-    const endpoint = `/simple/token_price/${platformId}?contract_addresses=${tokenAddresses.join(',')}&vs_currencies=usd`;
+    const endpoint = `/simple/token_price/${platformId}?contract_addresses=${tokenAddresses.join(
+      ','
+    )}&vs_currencies=usd`;
 
     return endpoint;
   }
@@ -141,56 +159,76 @@ class PriceFetcher {
   private fetchPrice(data: CoinGeckoData, token: Token): Price {
     const nativeAssetSymbol = getNativeAssetPriceSymbol(token.chainId);
 
-    if (data[token.address.toLowerCase()] == null || data[token.address.toLowerCase()]["usd"] == null) {
+    if (
+      data[token.address.toLowerCase()] == null ||
+      data[token.address.toLowerCase()]['usd'] == null
+    ) {
       const err = new HTTPError('No price returned from Coingecko');
       err.code = 404;
       throw err;
     }
-  
-    const tokenPriceInUSD = new BigNumber(data[token.address.toLowerCase()]["usd"]);
-    const tokenPriceInNativeAsset = tokenPriceInUSD.div(this.nativeAssetPrices[nativeAssetSymbol]);
+
+    const tokenPriceInUSD = new BigNumber(
+      data[token.address.toLowerCase()]['usd']
+    );
+    const tokenPriceInNativeAsset = tokenPriceInUSD.div(
+      this.nativeAssetPrices[nativeAssetSymbol]
+    );
 
     return {
-      'usd': tokenPriceInUSD.toString(),
-      [nativeAssetSymbol]: tokenPriceInNativeAsset.toString()
-    }
+      usd: tokenPriceInUSD.toString(),
+      [nativeAssetSymbol]: tokenPriceInNativeAsset.toString(),
+    };
   }
 
   private async updateTokenPrice(coingeckoData, token: Token): Promise<void> {
     try {
-      const price = this.fetchPrice(coingeckoData, token)
+      const price = this.fetchPrice(coingeckoData, token);
       token.price = formatPrice(price);
-    } catch (err)  {
+    } catch (err) {
       if ((err as HTTPError).code != null) {
-        console.error(`Unable to fetch price data for token ${token.symbol}. ChainID: ${token.chainId}, address ${token.address} Error code is: ${err.code}. Falling back to Balancer SDK`);
-        const coingeckoPriceRepository = new CoingeckoPriceRepository([], token.chainId);
+        console.error(
+          `Unable to fetch price data for token ${token.symbol}. ChainID: ${token.chainId}, address ${token.address} Error code is: ${err.code}. Falling back to Balancer SDK`
+        );
+        const coingeckoPriceRepository = new CoingeckoPriceRepository(
+          [],
+          token.chainId
+        );
         const tokenPrice = await coingeckoPriceRepository.find(token.address);
         if (tokenPrice) {
-          log(`Found price for token ${token.symbol} via the SDK! Price is: ${tokenPrice}`);
+          log(
+            `Found price for token ${token.symbol} via the SDK! Price is: ${tokenPrice}`
+          );
           token.price = formatPrice(tokenPrice);
         } else {
           token.noPriceData = true;
         }
       } else {
-        console.error(`Encountered an error without a status code: ${err.message}`)
+        console.error(
+          `Encountered an error without a status code: ${err.message}`
+        );
       }
     }
 
     try {
       this.tokens.push(token);
-      log(`Updated token ${token.symbol} to price ${JSON.stringify(token.price)}`);
+      log(
+        `Updated token ${token.symbol} to price ${JSON.stringify(token.price)}`
+      );
     } catch (err) {
-      console.error(`Encountered error calling updateToken on ${token.symbol}: ${err.message}`);
+      console.error(
+        `Encountered error calling updateToken on ${token.symbol}: ${err.message}`
+      );
     }
   }
 
   /**
-   * Fetches the price of all native assets as a pre-load so that 
+   * Fetches the price of all native assets as a pre-load so that
    * token prices on their chain can be calculated accurately
    **/
   private async fetchNativeAssetPrices() {
     const nativeAssetIds = Object.values(NativeAssetId).join(',');
-    const coinGeckoQuery = `/simple/price?ids=${nativeAssetIds}&vs_currencies=usd`
+    const coinGeckoQuery = `/simple/price?ids=${nativeAssetIds}&vs_currencies=usd`;
 
     log('Fetching native prices with query: ', coinGeckoQuery);
 
@@ -201,27 +239,43 @@ class PriceFetcher {
     Object.entries(NativeAssetId).forEach(([asset, id]) => {
       const nativeAssetSymbol = NativeAssetPriceSymbol[asset];
       log('Asset: ', asset, ' id: ', id, ' symbol: ', nativeAssetSymbol);
-      this.nativeAssetPrices[nativeAssetSymbol] = new BigNumber(coingeckoResult[id]['usd']);
+      this.nativeAssetPrices[nativeAssetSymbol] = new BigNumber(
+        coingeckoResult[id]['usd']
+      );
     });
 
-    log("Fetched native asset prices. They are: ", JSON.stringify(this.nativeAssetPrices));
+    log(
+      'Fetched native asset prices. They are: ',
+      JSON.stringify(this.nativeAssetPrices)
+    );
   }
 
   public async fetch(tokens: Token[]) {
     await this.fetchNativeAssetPrices();
 
-    tokens.forEach((token) => {
+    tokens.forEach(token => {
       if (token.chainId == Network.KOVAN) return;
-      if (token.price?.usd && token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME) return;
-      if (token.noPriceData && token.lastUpdate > Date.now() - TOKEN_RETRY_PRICE_DATA_TIME) return;
+      if (token.price?.usd && token.lastUpdate > Date.now() - TOKEN_UPDATE_TIME)
+        return;
+      if (
+        token.noPriceData &&
+        token.lastUpdate > Date.now() - TOKEN_RETRY_PRICE_DATA_TIME
+      )
+        return;
 
-      log(`Token: ${token.symbol} has price data: ${token.noPriceData}, was last updated ${(Date.now() - token.lastUpdate)/1000} seconds ago`)
+      log(
+        `Token: ${token.symbol} has price data: ${
+          token.noPriceData
+        }, was last updated ${
+          (Date.now() - token.lastUpdate) / 1000
+        } seconds ago`
+      );
       this.queue.push(token);
     });
 
     this.queue.sort((a, b) => {
       return a.chainId - b.chainId;
-    })
+    });
 
     await this.processQueue();
     return this.tokens;

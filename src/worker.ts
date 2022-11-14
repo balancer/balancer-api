@@ -1,37 +1,54 @@
 /**
- * Script that runs on a schedule/webhook which pulls data from 
- * the graph / infura and pushes it into DynamoDB. 
+ * Script that runs on a schedule/webhook which pulls data from
+ * the graph / infura and pushes it into DynamoDB.
  */
 
-require("dotenv").config();
-import debug from "debug";
+require('dotenv').config();
+import debug from 'debug';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Network } from "./constants";
-import { fetchPoolsFromChain, fetchTokens, removeKnownTokens, sanitizePools } from "./data-providers/onchain";
-import { getPools, getTokens, isAlive, updatePools, updateTokens } from "./data-providers/dynamodb";
-import { localAWSConfig, getInfuraUrl, getTokenAddressesFromPools  } from "./utils";
-import { updateTokenPrices } from "./tokens";
-import { PoolDecorator } from "./pools/pool.decorator";
-import { exit } from "process";
+import { Network } from './constants';
+import {
+  fetchPoolsFromChain,
+  fetchTokens,
+  removeKnownTokens,
+  sanitizePools,
+} from './data-providers/onchain';
+import {
+  getPools,
+  getTokens,
+  isAlive,
+  updatePools,
+  updateTokens,
+} from './data-providers/dynamodb';
+import {
+  localAWSConfig,
+  getInfuraUrl,
+  getTokenAddressesFromPools,
+} from './utils';
+import { updateTokenPrices } from './tokens';
+import { PoolDecorator } from './pools/pool.decorator';
+import { exit } from 'process';
 
-const log = debug("balancer:worker");
+const log = debug('balancer:worker');
 
-const AWS = require("aws-sdk");
+const AWS = require('aws-sdk');
 AWS.config.update(localAWSConfig);
 
 const UPDATE_POOLS_INTERVAL = 500;
 const UPDATE_PRICES_INTERVAL = 60 * 1000;
 
-const lastBlockNumber = {} 
+const lastBlockNumber = {};
 
 async function doWork() {
   log(`Working...`);
   const isDynamoDBAlive = await isAlive();
   if (!isDynamoDBAlive) {
-    console.error("Could not connect to DynamoDB. Please start it first before running worker");
+    console.error(
+      'Could not connect to DynamoDB. Please start it first before running worker'
+    );
     exit(1);
   }
-  Object.values(Network).forEach(async (chainId) => {
+  Object.values(Network).forEach(async chainId => {
     lastBlockNumber[chainId] = 0;
     fetchAndSavePools(chainId);
     if (chainId !== Network.KOVAN) {
@@ -47,9 +64,9 @@ async function fetchAndSavePools(chainId: number) {
   const provider: any = new JsonRpcProvider(infuraUrl);
   const currentBlockNo = await provider.getBlockNumber();
 
-  if(currentBlockNo !== lastBlockNumber[chainId]){
+  if (currentBlockNo !== lastBlockNumber[chainId]) {
     log(`New block ${currentBlockNo} found on chain ${chainId}!`);
-    log(`Fetching pools from chain ${chainId}`)
+    log(`Fetching pools from chain ${chainId}`);
     const poolsFromChain = await fetchPoolsFromChain(chainId);
     log(`Sanitizing ${poolsFromChain.length} pools`);
     const pools = sanitizePools(poolsFromChain);
@@ -57,9 +74,16 @@ async function fetchAndSavePools(chainId: number) {
     await updatePools(pools);
     log(`Saved pools. Fetching Tokens for pools`);
     const tokenAddresses = getTokenAddressesFromPools(pools);
-    log(`Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`);
-    const filteredTokenAddresses = await removeKnownTokens(chainId, tokenAddresses);
-    log(`Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`);
+    log(
+      `Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`
+    );
+    const filteredTokenAddresses = await removeKnownTokens(
+      chainId,
+      tokenAddresses
+    );
+    log(
+      `Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`
+    );
     const tokens = await fetchTokens(chainId, filteredTokenAddresses);
     await updateTokens(tokens);
     log(`Saved ${filteredTokenAddresses.length} Tokens`);
@@ -72,22 +96,22 @@ async function fetchAndSavePools(chainId: number) {
 async function decorateAndSavePools(chainId: number) {
   log(`Decorating and saving pools for chain ${chainId}`);
   const tokens = await getTokens();
-  log(`loaded ${tokens.length} tokens`)
+  log(`loaded ${tokens.length} tokens`);
   const pools = await getPools(chainId);
   log(`loaded ${pools.length} pools`);
   const poolDecorator = new PoolDecorator(pools);
   const decoratedPools = await poolDecorator.decorate(tokens);
-  log(`Got ${decoratedPools.length} decorated pools`)
+  log(`Got ${decoratedPools.length} decorated pools`);
   await updatePools(decoratedPools);
-  log(`Saved decorated pools`)
+  log(`Saved decorated pools`);
   setTimeout(decorateAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
 }
 
 async function updatePrices() {
   const tokens = await getTokens();
-  log("Updating token prices");
+  log('Updating token prices');
   await updateTokenPrices(tokens, false);
-  log("Updated token prices");
+  log('Updated token prices');
   setTimeout(updatePrices, UPDATE_PRICES_INTERVAL);
 }
 

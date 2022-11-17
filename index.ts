@@ -25,6 +25,7 @@ import {
   MappingTemplate,
   DynamoDbDataSource,
 } from '@aws-cdk/aws-appsync-alpha';
+import { CfnWebACL, CfnWebACLAssociation } from 'aws-cdk-lib/aws-wafv2';
 import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path';
 
@@ -336,6 +337,74 @@ export class BalancerPoolsAPI extends Stack {
     const walletCheck = api.root.addResource('wallet-check');
     walletCheck.addMethod('POST', walletCheckIntegration);
     addCorsOptions(walletCheck);
+
+    /** 
+     * Web Application Firewall 
+     */
+
+    const rateLimitWalletCheck = new CfnWebACL(this, 'rateLimitWalletCheck', {
+      name: 'RateLimitWalletCheck',
+      description: 'Rate Limiting for wallet check endpoint',
+      defaultAction: {
+        allow: {}
+      },
+      scope: 'REGIONAL',
+      visibilityConfig: {
+        sampledRequestsEnabled: true,
+        cloudWatchMetricsEnabled: true,
+        metricName: 'RateLimitWalletCheck'
+      },
+      rules: [{
+        name: 'BlockSpamForWalletCheck',
+        priority: 0,
+        statement: {
+          rateBasedStatement: {
+            limit: 100,
+            aggregateKeyType: 'IP',
+            scopeDownStatement: {
+              byteMatchStatement: {
+                searchString: '/wallet-check',
+                fieldToMatch: {
+                  uriPath: {}
+                },
+                textTransformations: [
+                  {
+                    priority: 0,
+                    type: 'NONE'
+                  }
+                ],
+                positionalConstraint: 'ENDS_WITH'
+              },
+            }
+          }
+        },
+        action: {
+          block: {
+            customResponse: {
+              responseCode: 429
+            }
+          }
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'BlockSpamForWalletCheck'
+        }
+      }] 
+    });
+
+    /**
+     * Connect WAF to API Gateway
+     */
+
+    const restApiId = api.restApiId;
+    const stageName = api.deploymentStage.stageName;
+    const apiGatewayArn = `arn:aws:apigateway:${this.region}:${this.account}:/restapis/${restApiId}/stages/${stageName}`;
+
+    new CfnWebACLAssociation(this, 'apigw-waf-ratelimit-wallet-check', {
+      webAclArn: rateLimitWalletCheck.attrArn,
+      resourceArn: apiGatewayArn
+    });
 
     /**
      * Subdomain

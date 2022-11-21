@@ -298,10 +298,27 @@ export class BalancerPoolsAPI extends Stack {
       { timeout: Duration.seconds(29) }
     );
     const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
-    const checkWalletIntegration = new LambdaIntegration(checkWalletLambda);
+    const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
+      proxy: true,
+      cacheKeyParameters: ["method.request.path.address"],
+      cacheNamespace: 'walletAddress',
+      requestParameters: {
+        "integration.request.path.address": "method.request.path.address"
+      }
+    });
 
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service',
+      deployOptions: {
+        cachingEnabled: true,
+        cacheClusterEnabled: true,
+        methodOptions: {
+          '/check-wallet/{address}/GET': {
+            cachingEnabled: true,
+            cacheTtl: Duration.minutes(60)
+          }
+        }
+      }
     });
 
     const pools = api.root.addResource('pools');
@@ -350,7 +367,11 @@ export class BalancerPoolsAPI extends Stack {
 
     const checkWallet = api.root.addResource('check-wallet');
     const checkWalletAddress = checkWallet.addResource('{address}');
-    checkWalletAddress.addMethod('GET', checkWalletIntegration);
+    checkWalletAddress.addMethod('GET', checkWalletIntegration, { 
+      requestParameters: { 
+        "method.request.path.address": true
+      }
+    });
     addCorsOptions(checkWallet);
 
     /** 
@@ -378,7 +399,7 @@ export class BalancerPoolsAPI extends Stack {
             aggregateKeyType: 'IP',
             scopeDownStatement: {
               byteMatchStatement: {
-                searchString: '/check-wallet',
+                searchString: 'wallet',
                 fieldToMatch: {
                   uriPath: {}
                 },
@@ -388,7 +409,7 @@ export class BalancerPoolsAPI extends Stack {
                     type: 'NONE'
                   }
                 ],
-                positionalConstraint: 'ENDS_WITH'
+                positionalConstraint: 'CONTAINS'
               },
             }
           }

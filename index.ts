@@ -230,6 +230,15 @@ export class BalancerPoolsAPI extends Stack {
       timeout: Duration.seconds(15),
     });
 
+    const checkWalletLambda = new NodejsFunction(this, 'checkWalletFunction', {
+      entry: join(__dirname, 'src', 'lambdas', 'check-wallet.ts'),
+      environment: {
+        SANCTIONS_API_KEY: SANCTIONS_API_KEY || '',
+      },
+      runtime: Runtime.NODEJS_14_X,
+      timeout: Duration.seconds(15),
+    });
+
     /**
      * Lambda Schedules
      */
@@ -289,9 +298,27 @@ export class BalancerPoolsAPI extends Stack {
       { timeout: Duration.seconds(29) }
     );
     const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
+    const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
+      proxy: true,
+      cacheKeyParameters: ["method.request.path.address"],
+      cacheNamespace: 'walletAddress',
+      requestParameters: {
+        "integration.request.path.address": "method.request.path.address"
+      }
+    });
 
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service',
+      deployOptions: {
+        cachingEnabled: true,
+        cacheClusterEnabled: true,
+        methodOptions: {
+          '/check-wallet/{address}/GET': {
+            cachingEnabled: true,
+            cacheTtl: Duration.minutes(60)
+          }
+        }
+      }
     });
 
     const pools = api.root.addResource('pools');
@@ -338,6 +365,15 @@ export class BalancerPoolsAPI extends Stack {
     walletCheck.addMethod('POST', walletCheckIntegration);
     addCorsOptions(walletCheck);
 
+    const checkWallet = api.root.addResource('check-wallet');
+    const checkWalletAddress = checkWallet.addResource('{address}');
+    checkWalletAddress.addMethod('GET', checkWalletIntegration, { 
+      requestParameters: { 
+        "method.request.path.address": true
+      }
+    });
+    addCorsOptions(checkWallet);
+
     /** 
      * Web Application Firewall 
      */
@@ -363,7 +399,7 @@ export class BalancerPoolsAPI extends Stack {
             aggregateKeyType: 'IP',
             scopeDownStatement: {
               byteMatchStatement: {
-                searchString: '/wallet-check',
+                searchString: 'wallet',
                 fieldToMatch: {
                   uriPath: {}
                 },
@@ -373,7 +409,7 @@ export class BalancerPoolsAPI extends Stack {
                     type: 'NONE'
                   }
                 ],
-                positionalConstraint: 'ENDS_WITH'
+                positionalConstraint: 'CONTAINS'
               },
             }
           }

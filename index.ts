@@ -221,15 +221,6 @@ export class BalancerPoolsAPI extends Stack {
       }
     );
 
-    const walletCheckLambda = new NodejsFunction(this, 'walletCheckFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'wallet-check.ts'),
-      environment: {
-        SANCTIONS_API_KEY: SANCTIONS_API_KEY || '',
-      },
-      runtime: Runtime.NODEJS_14_X,
-      timeout: Duration.seconds(15),
-    });
-
     const checkWalletLambda = new NodejsFunction(this, 'checkWalletFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'check-wallet.ts'),
       environment: {
@@ -297,7 +288,6 @@ export class BalancerPoolsAPI extends Stack {
       updateTokenPricesLambda,
       { timeout: Duration.seconds(29) }
     );
-    const walletCheckIntegration = new LambdaIntegration(walletCheckLambda);
     const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
       proxy: true,
       cacheKeyParameters: ["method.request.path.address"],
@@ -360,10 +350,6 @@ export class BalancerPoolsAPI extends Stack {
     const gnosisOnChain = gnosis.addResource('{chainId}');
     gnosisOnChain.addMethod('POST', runSORIntegration);
     addCorsOptions(gnosis);
-
-    const walletCheck = api.root.addResource('wallet-check');
-    walletCheck.addMethod('POST', walletCheckIntegration);
-    addCorsOptions(walletCheck);
 
     const checkWallet = api.root.addResource('check-wallet');
     const checkWalletAddress = checkWallet.addResource('{address}');

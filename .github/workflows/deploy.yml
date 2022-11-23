@@ -29,6 +29,9 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }} 
         SANCTIONS_API_KEY: ${{ secrets.SANCTIONS_API_KEY }} 
+        TENDERLY_USER: ${{ secrets.TENDERLY_USER }}
+        TENDERLY_PROJECT: ${{ secrets.TENDERLY_PROJECT }}
+        TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
         DOMAIN_NAME: 'api.balancer.fi'
         NETWORKS: '1,137,42161'
         DYNAMODB_POOLS_READ_CAPACITY: 500

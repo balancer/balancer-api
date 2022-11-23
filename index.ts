@@ -41,6 +41,9 @@ const {
   DOMAIN_NAME,
   SANCTIONS_API_KEY,
   NETWORKS,
+  TENDERLY_USER,
+  TENDERLY_PROJECT,
+  TENDERLY_ACCESS_KEY,
 } = process.env;
 
 let SELECTED_NETWORKS: Record<string, number> = PRODUCTION_NETWORKS;
@@ -221,6 +224,21 @@ export class BalancerPoolsAPI extends Stack {
       }
     );
 
+    const tenderlySimulateLambda = new NodejsFunction(
+      this,
+      'tenderlySimulateFunction',
+      {
+        entry: join(__dirname, 'src', 'lambdas', 'tenderly-simulate.ts'),
+        environment: {
+          TENDERLY_USER: TENDERLY_USER || '',
+          TENDERLY_PROJECT: TENDERLY_PROJECT || '',
+          TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
+        },
+        runtime: Runtime.NODEJS_14_X,
+        timeout: Duration.seconds(15),
+      }
+    );
+
     const checkWalletLambda = new NodejsFunction(this, 'checkWalletFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'check-wallet.ts'),
       environment: {
@@ -287,6 +305,9 @@ export class BalancerPoolsAPI extends Stack {
     const updateTokenPricesIntegration = new LambdaIntegration(
       updateTokenPricesLambda,
       { timeout: Duration.seconds(29) }
+    );
+    const tenderlySimulateIntegration = new LambdaIntegration(
+      tenderlySimulateLambda
     );
     const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
       proxy: true,
@@ -359,8 +380,12 @@ export class BalancerPoolsAPI extends Stack {
     });
     addCorsOptions(checkWallet);
 
-    /** 
-     * Web Application Firewall 
+    const tenderlySimulate = api.root.addResource('simulate');
+    tenderlySimulate.addMethod('POST', tenderlySimulateIntegration);
+    addCorsOptions(tenderlySimulate);
+
+    /**
+     * Web Application Firewall
      */
 
     const rateLimitWalletCheck = new CfnWebACL(this, 'rateLimitWalletCheck', {

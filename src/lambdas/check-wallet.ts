@@ -19,7 +19,7 @@ function formatResponse(statusCode, body) {
 }
 
 export const handler = async (event: any = {}): Promise<any> => {
-  const address = event.pathParameters.address;
+  const address = event.queryStringParameters.address;
   if (!address) {
     return formatResponse(
       400,

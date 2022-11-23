@@ -7,7 +7,7 @@ nock.disableNetConnect();
 let trmResponse: TRMAccountDetails[] = [];
 
 const request = {
-  pathParameters: {
+  queryStringParameters: {
     address: '0x0000000000000000000000000000000000000000',
   },
 };

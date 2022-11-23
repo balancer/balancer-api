@@ -290,10 +290,10 @@ export class BalancerPoolsAPI extends Stack {
     );
     const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
       proxy: true,
-      cacheKeyParameters: ["method.request.path.address"],
+      cacheKeyParameters: ["method.request.querystring.address"],
       cacheNamespace: 'walletAddress',
       requestParameters: {
-        "integration.request.path.address": "method.request.path.address"
+        "integration.request.querystring.address": "method.request.querystring.address"
       }
     });
 
@@ -303,7 +303,7 @@ export class BalancerPoolsAPI extends Stack {
         cachingEnabled: true,
         cacheClusterEnabled: true,
         methodOptions: {
-          '/check-wallet/{address}/GET': {
+          '/check-wallet/GET': {
             cachingEnabled: true,
             cacheTtl: Duration.minutes(60)
           }
@@ -352,10 +352,9 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(gnosis);
 
     const checkWallet = api.root.addResource('check-wallet');
-    const checkWalletAddress = checkWallet.addResource('{address}');
-    checkWalletAddress.addMethod('GET', checkWalletIntegration, { 
+    checkWallet.addMethod('GET', checkWalletIntegration, { 
       requestParameters: { 
-        "method.request.path.address": true
+        "method.request.querystring.address": true
       }
     });
     addCorsOptions(checkWallet);

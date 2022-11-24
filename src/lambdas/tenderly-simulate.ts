@@ -1,21 +1,9 @@
 import fetch from 'isomorphic-fetch';
+import { formatResponse } from './utils';
 
 const { TENDERLY_USER, TENDERLY_PROJECT, TENDERLY_ACCESS_KEY } = process.env;
 
 const TENDERLY_ENDPOINT = `https://api.tenderly.co/api/v1/account/${TENDERLY_USER}/project/${TENDERLY_PROJECT}/simulate`;
-
-function formatResponse(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'OPTIONS,POST',
-    },
-    body,
-  };
-}
 
 export const handler = async ({ body }: any = {}): Promise<any> => {
   if (!body) {
@@ -34,9 +22,9 @@ export const handler = async ({ body }: any = {}): Promise<any> => {
       },
       body: typeof body == 'string' ? body : JSON.stringify(body),
     });
-    console.log({ res });
+
     const result = await res.json();
-    console.log({ result });
+
     return formatResponse(200, JSON.stringify(result));
   } catch (e) {
     console.log(`Error when trying to simulate: ${e}`);

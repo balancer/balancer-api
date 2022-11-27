@@ -37,5 +37,14 @@ describe('Tenderly Simulate Lambda', () => {
   it('Should return 400 if request body is missing', async () => {
     const response = await handler({ body: null });
     expect(response.statusCode).toBe(400);
+    const response2 = await handler({ body: undefined });
+    expect(response2.statusCode).toBe(400);
+  });
+
+  it('Should return 400 if request body contains fields outside of whitelist', async () => {
+    const response = await handler({
+      body: { ...request.body, extra: "I'm not allowed" },
+    });
+    expect(response.statusCode).toBe(400);
   });
 });

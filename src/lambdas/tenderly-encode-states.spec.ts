@@ -29,13 +29,14 @@ const request = {
 };
 
 describe('Tenderly Encode States Lambda', () => {
-  it('Should return tenderly encode states response as it is', async () => {
+  beforeAll(() => {
     nock('https://api.tenderly.co')
       .post(
         '/api/v1/account/mock-user/project/mock-project/contracts/encode-states'
       )
       .reply(200, tenderlyEncodeStatesResponse);
-
+  });
+  it('Should return tenderly encode states response as it is', async () => {
     const response = await handler(request);
 
     expect(response.statusCode).toBe(200);

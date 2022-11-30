@@ -23,11 +23,15 @@ const request = {
 };
 
 describe('Tenderly Simulate Lambda', () => {
-  it('Should return tenderly simulate response as it is', async () => {
+  beforeAll(() => {
     nock('https://api.tenderly.co')
-      .post('/api/v1/account/mock-user/project/mock-project/simulate')
+      .post(
+        '/api/v1/account/mock-user/project/mock-project/contracts/encode-states'
+      )
       .reply(200, tenderlySimulateResponse);
+  });
 
+  it('Should return tenderly simulate response as it is', async () => {
     const response = await handler(request);
     expect(response.statusCode).toBe(200);
     const body = JSON.parse(response.body);

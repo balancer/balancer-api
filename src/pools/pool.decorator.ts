@@ -1,4 +1,4 @@
-import { Pool, Token } from '../types';
+import { Pool, Token, PoolType } from '../types';
 import {
   BalancerDataRepositories,
   PoolsStaticRepository,
@@ -7,7 +7,6 @@ import {
   StaticTokenProvider,
   BalancerSdkConfig,
   BalancerSDK,
-  PoolType,
 } from '@balancer-labs/sdk';
 import { tokensToTokenPrices } from '../tokens';
 import { PoolService } from './pool.service';
@@ -66,10 +65,19 @@ export class PoolDecorator {
         return pool;
       }
 
-      await poolService.setTotalLiquidity();
-      await poolService.setApr();
-      await poolService.setVolumeSnapshot();
-      poolService.setIsNew();
+      try {
+        await poolService.setTotalLiquidity();
+        await poolService.setApr();
+        await poolService.setVolumeSnapshot();
+        await poolService.expandPool();
+        poolService.setIsNew();
+      } catch (e) {
+        console.log(`Failed to decorate pool ${pool.id} Error is: ${e}. Pool is: ${util.inspect(
+          pool,
+          false,
+          null
+        )}`)
+      }
 
       return poolService.pool;
     }
@@ -80,13 +88,13 @@ export class PoolDecorator {
     log(`Processing ${this.pools.length} pools`);
 
     for (let i = 0; i < this.pools.length; i += batchSize) {
-      log(`Processing pools ${i} -> ${i + batchSize}`);
+      log(`Decorating pools ${i} -> ${i + batchSize}`);
       const batch = await Promise.all(
         this.pools.slice(i, i + batchSize).map(pool => decoratePool(pool))
       );
       processedPools = processedPools.concat(batch);
     }
-
+    
     log('------- END decorating pools --------');
 
     return processedPools;

@@ -12,6 +12,8 @@ const pools: Pool[] = [
     wrappedIndex: 0,
     swapEnabled: true,
     poolType: PoolType.Weighted,
+    poolTypeVersion: 1,
+    protocolYieldFeeCache: '',
     address: '0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5',
     totalWeight: '1',
     totalLiquidity: '12345',

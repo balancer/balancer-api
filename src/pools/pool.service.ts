@@ -1,9 +1,10 @@
-import { Pool } from '../../src/types';
+import { Pool, PoolToken, TokenTreePool } from '../../src/types';
 import {
   Pools,
   BalancerNetworkConfig,
   BalancerDataRepositories,
   AprBreakdown,
+  PoolWithMethods,
 } from '@balancer-labs/sdk';
 import util from 'util';
 import debug from 'debug';
@@ -162,5 +163,51 @@ export class PoolService {
     const isNew = Date.now() - this.pool.createTime * 1000 < WEEK_IN_MS;
 
     return (this.pool.isNew = isNew);
+  }
+
+  private async expandToken(token: PoolToken): Promise<PoolToken> {
+    if (token.address === this.pool.address) return token; // Don't expand BPT tokens of this pool
+
+    const tokenPool: PoolWithMethods = await this.pools.findBy('address', token.address);
+    if (!tokenPool) return token;
+
+    const tokenTreePool: TokenTreePool = {
+      id: tokenPool.id,
+      address: tokenPool.address,
+      poolType: tokenPool.poolType,
+      totalShares: tokenPool.totalShares,
+      mainIndex: tokenPool.mainIndex,
+      tokens: await Promise.all(tokenPool.tokens.map((token: PoolToken) => {
+        if (token.address === tokenPool.address) return token; // Don't expand BPT tokens of sub-pools
+        return this.expandToken(token)
+      })),
+    }
+
+    return {
+      ...token,
+      token: {
+        pool: tokenTreePool
+      }
+    }
+
+  }
+
+  /**
+   * Loops through all tokens of the pool and if they are another pool it grabs
+   * that pools data and inserts it into this pool. So all pools will be stored
+   * in the database with all their subpools. 
+   */
+  public async expandPool(): Promise<Pool> {
+    const tokens: PoolToken[] = await Promise.all(this.pool.tokens.map((token) => {
+      return this.expandToken(token); 
+    }));
+
+    if (JSON.stringify(tokens) !== JSON.stringify(this.pool.tokens)) {
+      console.log(`Expanded subpool tokens for pool ${this.pool.id}`);
+      this.pool.lastUpdate = Date.now();
+    }
+
+    this.pool.tokens = tokens;
+    return this.pool;
   }
 }

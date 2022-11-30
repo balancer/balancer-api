@@ -1,4 +1,5 @@
-import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
+import { Pool as SDKPool, PoolType, SwapV2, Token as SDKToken, PoolToken as SDKPoolToken } from '@balancer-labs/sdk';
+export { PoolType } from '@balancer-labs/sdk';
 
 export interface Order {
   sellToken: string;
@@ -12,6 +13,22 @@ export interface Token extends SDKToken {
   chainId: number;
   lastUpdate?: number;
   noPriceData?: boolean;
+}
+
+export interface TokenTreePool {
+  id: string;
+  address: string;
+  poolType: PoolType;
+  totalShares: string;
+  mainIndex: number;
+  tokens?: PoolToken[];
+}
+
+export interface PoolToken extends SDKPoolToken {
+  token?: {
+    pool: TokenTreePool | null;
+    latestUSDPrice?: string;
+  };
 }
 
 export interface SerializedSwapInfo {
@@ -29,6 +46,7 @@ export interface SerializedSwapInfo {
 
 export interface Pool extends SDKPool {
   chainId: number;
+  tokens: PoolToken[];
   graphData?: {
     totalLiquidity?: string;
   };
@@ -36,8 +54,7 @@ export interface Pool extends SDKPool {
   managementFee?: string;
   mainIndex?: number;
   wrappedIndex?: number;
-  lowerTarget?: string;
-  upperTarget?: string;
+  proportionOfParent?: string;
 }
 
 export interface SorRequest {

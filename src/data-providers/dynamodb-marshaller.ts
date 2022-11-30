@@ -1,8 +1,9 @@
 import { Pool, Schema, UpdateExpression } from '../types';
-import { POOL_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
+import { POOL_SCHEMA, POOL_TOKEN_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
 import { Marshaller, NumberValue } from '@aws/dynamodb-auto-marshaller';
 import BigNumber from 'bignumber.js';
 import { AttributeMap } from 'aws-sdk/clients/dynamodb';
+import { UpdatePoolOptions } from './dynamodb';
 
 /** Modify item to ensure it meets DynamoDB specifications */
 function sanitizeField(marshalledItem) {
@@ -32,6 +33,7 @@ function marshallItem(schema: Schema, item) {
           break;
         case 'String':
           marshalledItem[key] = { S: item[key] };
+          break;
       }
     }
   });
@@ -41,8 +43,8 @@ function marshallItem(schema: Schema, item) {
 /**
  *  Does the final touches to convert a DynamoDB object back into a regular object
  *  Converts NumberValue fields into regular strings/number
- *  - Items specified as BigDecimal are converted to strings
- *  - All others are converted to numbers
+ *  - Items specified as Int are converted to numbers
+ *  - All others are left as is
  */
 function finalizeUnmarshalledItem(schema: Schema, item) {
   const unmarshalledItem = {};
@@ -130,14 +132,29 @@ export function unmarshallPool(dynamodbPool: AttributeMap): Pool {
   return unmarshalledPool as any;
 }
 
-export function generateUpdateExpression(pool: Pool): UpdateExpression {
+/** Discards pool fields that rarely change  */
+export function discardStaticFields(marshalledPool: Record<string, any>): Record<string, any> {
+  const trimmedPoolFields = Object.entries(marshalledPool).filter(([key, data]) => {
+    if (POOL_SCHEMA[key]?.static) {
+      return false;
+    }
+    return true;
+  });
+  const trimmedPool = Object.fromEntries(trimmedPoolFields);
+  return trimmedPool;
+}
+
+export function generateUpdateExpression(pool: Pool, options?: UpdatePoolOptions): UpdateExpression {
   const primaryKeyAttributes = ['id', 'chainId'];
   const exp: UpdateExpression = {
     UpdateExpression: 'SET',
     ExpressionAttributeNames: {},
     ExpressionAttributeValues: {},
   };
-  const marshalledPool = marshallPool(pool);
+  let marshalledPool = marshallPool(pool);
+  if (options?.ignoreStaticData) {
+    marshalledPool = discardStaticFields(marshalledPool);
+  }
   Object.entries(marshalledPool).forEach(([key, item]) => {
     if (primaryKeyAttributes.includes(key)) return;
     exp.UpdateExpression += ` #${key} = :${key},`;

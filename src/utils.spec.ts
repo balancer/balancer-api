@@ -1,5 +1,6 @@
 import { AprBreakdown, Price } from '@balancer-labs/sdk';
-import { formatPrice, isValidApr } from './utils';
+import { formatPrice, getNonStaticSchemaFields, isValidApr } from './utils';
+import { Schema } from './types';
 
 describe('utils', () => {
   describe('isValidApr', () => {
@@ -121,5 +122,20 @@ describe('utils', () => {
       const formattedPrice = formatPrice(price);
       expect(formattedPrice).toEqual(expectedPrice);
     });
+  });
+
+  describe('getNonStaticSchemaFields', () => {
+    it('Should return a list of all schema fields that are static', () => {
+      const SCHEMA: Schema = {
+        id: { type: 'String', static: true},
+        totalSwapVolume: { type: 'BigDecimal', static: false },
+        createTime: { type: 'Int', static: true },
+        swapsCount: { type: 'BigInt', static: false},
+      };
+
+      const nonStaticFields = getNonStaticSchemaFields(SCHEMA);
+      const expectedFields = ['totalSwapVolume', 'swapsCount'];
+      expect(nonStaticFields).toEqual(expectedFields);
+    }); 
   });
 });

@@ -26,7 +26,7 @@ export const handler = async (): Promise<any> => {
       pool => pool.lastUpdate >= decorateStartTime
     );
     log(`Saving ${modifiedPools.length} modified pools to the database`);
-    await updatePools(modifiedPools);
+    await updatePools(modifiedPools, {ignoreStaticData: true});
     log(`Saved decorated pools for chain ${chainId}`);
     return { statusCode: 201, body: '' };
   } catch (err) {

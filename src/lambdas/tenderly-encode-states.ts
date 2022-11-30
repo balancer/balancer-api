@@ -3,7 +3,7 @@ import { formatResponse, isBodyValid } from './utils';
 
 const { TENDERLY_USER, TENDERLY_PROJECT, TENDERLY_ACCESS_KEY } = process.env;
 
-const TENDERLY_ENDPOINT = `https://api.tenderly.co/api/v1/account/${TENDERLY_USER}/project/${TENDERLY_PROJECT}/simulate`;
+const TENDERLY_ENDPOINT = `https://api.tenderly.co/api/v1/account/${TENDERLY_USER}/project/${TENDERLY_PROJECT}/contracts/encode-states`;
 
 export const handler = async ({ body }: any = {}): Promise<any> => {
   if (!body) {
@@ -13,22 +13,7 @@ export const handler = async ({ body }: any = {}): Promise<any> => {
     );
   }
 
-  if (
-    !isBodyValid(body, [
-      'state_objects',
-      'to',
-      'network_id',
-      'from',
-      'to',
-      'input',
-      'gas',
-      'gas_price',
-      'value',
-      'save_if_fails',
-      'save',
-      'simulation_type',
-    ])
-  ) {
+  if (!isBodyValid(body, ['networkID', 'stateOverrides'])) {
     return formatResponse(
       400,
       `Error: invalid request, prohibited field in the request body`
@@ -49,7 +34,7 @@ export const handler = async ({ body }: any = {}): Promise<any> => {
 
     return formatResponse(200, JSON.stringify(result));
   } catch (e) {
-    console.log(`Error when trying to simulate: ${e}`);
-    return formatResponse(500, 'Unable to perform simulation');
+    console.log(`Couldn't encode state overrides: ${e}`);
+    return formatResponse(500, "Couldn't encode state overrides");
   }
 };

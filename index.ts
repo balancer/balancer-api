@@ -239,6 +239,21 @@ export class BalancerPoolsAPI extends Stack {
       }
     );
 
+    const tenderlyEncodeStatesLambda = new NodejsFunction(
+      this,
+      'tenderlyEncodeStatesFunction',
+      {
+        entry: join(__dirname, 'src', 'lambdas', 'tenderly-encode-states.ts'),
+        environment: {
+          TENDERLY_USER: TENDERLY_USER || '',
+          TENDERLY_PROJECT: TENDERLY_PROJECT || '',
+          TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
+        },
+        runtime: Runtime.NODEJS_14_X,
+        timeout: Duration.seconds(15),
+      }
+    );
+
     const checkWalletLambda = new NodejsFunction(this, 'checkWalletFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'check-wallet.ts'),
       environment: {
@@ -308,6 +323,9 @@ export class BalancerPoolsAPI extends Stack {
     );
     const tenderlySimulateIntegration = new LambdaIntegration(
       tenderlySimulateLambda
+    );
+    const tenderlyEncodeStateIntegration = new LambdaIntegration(
+      tenderlyEncodeStatesLambda
     );
     const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
       proxy: true,
@@ -383,6 +401,14 @@ export class BalancerPoolsAPI extends Stack {
     const tenderlySimulate = api.root.addResource('simulate');
     tenderlySimulate.addMethod('POST', tenderlySimulateIntegration);
     addCorsOptions(tenderlySimulate);
+
+    const tenderlyContracts = api.root.addResource('contracts');
+    tenderlyContracts.addMethod('POST');
+    addCorsOptions(tenderlyContracts);
+
+    const tenderlyEncodeStates = tenderlyContracts.addResource('encode-states');
+    tenderlyEncodeStates.addMethod('POST', tenderlyEncodeStateIntegration);
+    addCorsOptions(tenderlyEncodeStates);
 
     /**
      * Web Application Firewall

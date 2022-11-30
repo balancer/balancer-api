@@ -25,9 +25,7 @@ const request = {
 describe('Tenderly Simulate Lambda', () => {
   beforeAll(() => {
     nock('https://api.tenderly.co')
-      .post(
-        '/api/v1/account/mock-user/project/mock-project/contracts/encode-states'
-      )
+      .post('/api/v1/account/mock-user/project/mock-project/simulate')
       .reply(200, tenderlySimulateResponse);
   });
 

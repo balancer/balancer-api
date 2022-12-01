@@ -47,6 +47,20 @@ type PoolToken @entity {
 	balance: String
 	# WeightedPool Only
 	weight: String
+	token: Token
+}
+
+type Token @entity {
+	pool: TokenTreePool
+}
+
+type TokenTreePool @entity {
+	id: String
+	address: String
+	poolType: String
+	totalShares: String
+	mainIndex: Int
+	tokens: [PoolToken]
 }
 
 type AprBreakdown @entity {

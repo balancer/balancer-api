@@ -6,4 +6,5 @@ module.exports = {
     },
   },
   roots: ['./src'],
+  setupFiles: ['<rootDir>/.jest/setEnvVars.ts'],
 };

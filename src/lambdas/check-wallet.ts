@@ -1,22 +1,10 @@
 import fetch from 'isomorphic-fetch';
 import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '../types';
+import { formatResponse } from './utils';
 
 const SANCTIONS_ENDPOINT =
   'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;
-
-function formatResponse(statusCode, body) {
-  return {
-    statusCode,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'OPTIONS,POST',
-    },
-    body,
-  };
-}
 
 export const handler = async (event: any = {}): Promise<any> => {
   const address = event.queryStringParameters.address;

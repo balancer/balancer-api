@@ -41,6 +41,9 @@ const {
   DOMAIN_NAME,
   SANCTIONS_API_KEY,
   NETWORKS,
+  TENDERLY_USER,
+  TENDERLY_PROJECT,
+  TENDERLY_ACCESS_KEY,
 } = process.env;
 
 let SELECTED_NETWORKS: Record<string, number> = PRODUCTION_NETWORKS;
@@ -221,6 +224,36 @@ export class BalancerPoolsAPI extends Stack {
       }
     );
 
+    const tenderlySimulateLambda = new NodejsFunction(
+      this,
+      'tenderlySimulateFunction',
+      {
+        entry: join(__dirname, 'src', 'lambdas', 'tenderly-simulate.ts'),
+        environment: {
+          TENDERLY_USER: TENDERLY_USER || '',
+          TENDERLY_PROJECT: TENDERLY_PROJECT || '',
+          TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
+        },
+        runtime: Runtime.NODEJS_14_X,
+        timeout: Duration.seconds(15),
+      }
+    );
+
+    const tenderlyEncodeStatesLambda = new NodejsFunction(
+      this,
+      'tenderlyEncodeStatesFunction',
+      {
+        entry: join(__dirname, 'src', 'lambdas', 'tenderly-encode-states.ts'),
+        environment: {
+          TENDERLY_USER: TENDERLY_USER || '',
+          TENDERLY_PROJECT: TENDERLY_PROJECT || '',
+          TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
+        },
+        runtime: Runtime.NODEJS_14_X,
+        timeout: Duration.seconds(15),
+      }
+    );
+
     const checkWalletLambda = new NodejsFunction(this, 'checkWalletFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'check-wallet.ts'),
       environment: {
@@ -287,6 +320,12 @@ export class BalancerPoolsAPI extends Stack {
     const updateTokenPricesIntegration = new LambdaIntegration(
       updateTokenPricesLambda,
       { timeout: Duration.seconds(29) }
+    );
+    const tenderlySimulateIntegration = new LambdaIntegration(
+      tenderlySimulateLambda
+    );
+    const tenderlyEncodeStateIntegration = new LambdaIntegration(
+      tenderlyEncodeStatesLambda
     );
     const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
       proxy: true,
@@ -359,13 +398,23 @@ export class BalancerPoolsAPI extends Stack {
     });
     addCorsOptions(checkWallet);
 
-    /** 
-     * Web Application Firewall 
+    const tenderly = api.root.addResource('tenderly');
+    const tenderlySimulate = tenderly.addResource('simulate');
+    tenderlySimulate.addMethod('POST', tenderlySimulateIntegration);
+    addCorsOptions(tenderlySimulate);
+
+    const tenderlyContracts = tenderly.addResource('contracts');
+    const tenderlyEncodeStates = tenderlyContracts.addResource('encode-states');
+    tenderlyEncodeStates.addMethod('POST', tenderlyEncodeStateIntegration);
+    addCorsOptions(tenderlyEncodeStates);
+
+    /**
+     * Web Application Firewall
      */
 
-    const rateLimitWalletCheck = new CfnWebACL(this, 'rateLimitWalletCheck', {
-      name: 'RateLimitWalletCheck',
-      description: 'Rate Limiting for wallet check endpoint',
+    const rateLimits = new CfnWebACL(this, 'rateLimits', {
+      name: 'RateLimits',
+      description: 'Rate Limiting for API Gateway',
       defaultAction: {
         allow: {}
       },
@@ -373,7 +422,7 @@ export class BalancerPoolsAPI extends Stack {
       visibilityConfig: {
         sampledRequestsEnabled: true,
         cloudWatchMetricsEnabled: true,
-        metricName: 'RateLimitWalletCheck'
+        metricName: 'RateLimits'
       },
       rules: [{
         name: 'BlockSpamForWalletCheck',
@@ -411,6 +460,43 @@ export class BalancerPoolsAPI extends Stack {
           cloudWatchMetricsEnabled: true,
           metricName: 'BlockSpamForWalletCheck'
         }
+      },
+      {
+        name: 'BlockSpamForTenderly',
+        priority: 1,
+        statement: {
+          rateBasedStatement: {
+            limit: 1000,
+            aggregateKeyType: 'IP',
+            scopeDownStatement: {
+              byteMatchStatement: {
+                searchString: 'tenderly',
+                fieldToMatch: {
+                  uriPath: {}
+                },
+                textTransformations: [
+                  {
+                    priority: 0,
+                    type: 'NONE'
+                  }
+                ],
+                positionalConstraint: 'CONTAINS'
+              },
+            }
+          }
+        },
+        action: {
+          block: {
+            customResponse: {
+              responseCode: 429
+            }
+          }
+        },
+        visibilityConfig: {
+          sampledRequestsEnabled: true,
+          cloudWatchMetricsEnabled: true,
+          metricName: 'BlockSpamForTenderly'
+        }
       }] 
     });
 
@@ -423,7 +509,7 @@ export class BalancerPoolsAPI extends Stack {
     const apiGatewayArn = `arn:aws:apigateway:${this.region}:${this.account}:/restapis/${restApiId}/stages/${stageName}`;
 
     new CfnWebACLAssociation(this, 'apigw-waf-ratelimit-wallet-check', {
-      webAclArn: rateLimitWalletCheck.attrArn,
+      webAclArn: rateLimits.attrArn,
       resourceArn: apiGatewayArn
     });
 

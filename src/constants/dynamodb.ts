@@ -70,7 +70,7 @@ export const POOL_SCHEMA: Schema = {
 
   isNew: { type: 'Boolean', static: false},
 
-  tokens: { type: 'Object', static: false},
+  tokens: { type: 'Array', static: false},
   tokensList: { type: 'Array', static: false },
 
   swapEnabled: { type: 'Boolean', static: false },

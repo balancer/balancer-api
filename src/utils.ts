@@ -236,10 +236,7 @@ export function getChangedPools(newPools: Pool[], currentPools: Pool[]) {
   }));
 
   return newPools.filter((pool) => {
-    if (isSame(pool, currentPoolsMap[pool.id])) {
-      return false;
-    }
-    return true;
+    return !isSame(pool, currentPoolsMap[pool.id]); 
   });
 }
 
@@ -253,7 +250,7 @@ export function getNonStaticSchemaFields(schema: Schema): string[] {
   return compact(nonStaticFields);
 }
 
-export function isSame(newPool: Pool, oldPool: Pool): boolean {
+export function isSame(newPool: Pool, oldPool?: Pool): boolean {
   if (!oldPool) return false;
 
   const poolFieldsToCompare = getNonStaticSchemaFields(POOL_SCHEMA);

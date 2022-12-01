@@ -72,7 +72,6 @@ export const POOL_SCHEMA: Schema = {
 
   tokens: { type: 'Object', static: false},
   tokensList: { type: 'Array', static: false },
-  tokenAddresses: { type: 'Array', static: false },
 
   principalToken: { type: 'String', static: true },
   baseToken: { type: 'String', static: true },

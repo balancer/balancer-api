@@ -33,10 +33,6 @@ export interface Pool extends SDKPool {
     totalLiquidity?: string;
   };
   lastUpdate?: number;
-  principalToken?: string;
-  baseToken?: string;
-  expiryTime?: number;
-  unitSeconds?: number;
   managementFee?: string;
   mainIndex?: number;
   wrappedIndex?: number;

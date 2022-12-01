@@ -73,9 +73,6 @@ export const POOL_SCHEMA: Schema = {
   tokens: { type: 'Object', static: false},
   tokensList: { type: 'Array', static: false },
 
-  principalToken: { type: 'String', static: true },
-  baseToken: { type: 'String', static: true },
-
   swapEnabled: { type: 'Boolean', static: false },
   swapFee: { type: 'BigDecimal', static: false },
 
@@ -95,10 +92,6 @@ export const POOL_SCHEMA: Schema = {
 
   // StablePool Only
   amp: { type: 'BigInt', static: false },
-
-  // ConvergentCurvePool (Element) Only
-  expiryTime: { type: 'BigInt', static: true },
-  unitSeconds: { type: 'BigInt', static: true },
 
   //InvestmentPool Only
   managementFee: { type: 'BigDecimal', static: false },

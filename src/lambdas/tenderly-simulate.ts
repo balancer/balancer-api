@@ -27,6 +27,7 @@ export const handler = async ({ body }: any = {}): Promise<any> => {
       'save_if_fails',
       'save',
       'simulation_type',
+      'block_number',
     ])
   ) {
     return formatResponse(

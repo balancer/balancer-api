@@ -204,7 +204,7 @@ export class BalancerPoolsAPI extends Stack {
           entry: join(__dirname, 'src', 'lambdas', 'decorate-pools.ts'),
           ...functionProps,
           memorySize: 2048,
-          timeout: Duration.seconds(60),
+          timeout: Duration.seconds(300),
           reservedConcurrentExecutions: 1,
         }
       );

@@ -403,9 +403,6 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(tenderlySimulate);
 
     const tenderlyContracts = api.root.addResource('contracts');
-    tenderlyContracts.addMethod('POST');
-    addCorsOptions(tenderlyContracts);
-
     const tenderlyEncodeStates = tenderlyContracts.addResource('encode-states');
     tenderlyEncodeStates.addMethod('POST', tenderlyEncodeStateIntegration);
     addCorsOptions(tenderlyEncodeStates);

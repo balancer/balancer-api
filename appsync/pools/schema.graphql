@@ -52,6 +52,7 @@ type PoolToken @entity {
 
 type Token @entity {
 	pool: TokenTreePool
+	latestUSDPrice: String
 }
 
 type TokenTreePool @entity {

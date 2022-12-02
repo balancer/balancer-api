@@ -1,5 +1,6 @@
 import { getChangedPools, getTokenAddressesFromPools } from '../utils';
-import { getPools, updatePools, updateTokens } from '../data-providers/dynamodb';
+import { getPools, getTokens, updatePools, updateTokens } from '../data-providers/dynamodb';
+import { PoolDecorator } from '../pools/pool.decorator';
 import {
   fetchPoolsFromChain,
   fetchTokens,
@@ -15,12 +16,19 @@ export const handler = async (): Promise<any> => {
   const chainId = parseInt(CHAIN_ID || '1');
 
   try {
-    log(`Fetching pools from network ${chainId}`);
-    const poolsFromChain = await fetchPoolsFromChain(chainId);
+    log(`Loading Pools from chain, DB and Tokens. Network: ${chainId}`);
+    const [poolsFromChain, currentPools, currentTokens] = await Promise.all([
+      fetchPoolsFromChain(chainId),
+      getPools(chainId),
+      getTokens(chainId),
+    ]);
     log(`Sanitizing ${poolsFromChain.length} pools`);
     const pools = sanitizePools(poolsFromChain);
-    const currentPools = await getPools(chainId);
     const changedPools = getChangedPools(pools, currentPools);
+    log(`Found ${changedPools.length} pools have changed. Decorating these pools.`);
+    const poolDecorator = new PoolDecorator(pools, { poolsToDecorate: changedPools, chainId: chainId });
+    const decoratedPools = await poolDecorator.decorate(currentTokens);
+    log(`Decorated ${decoratedPools.length} pools`);
     log(`Saving ${changedPools.length} pools for chain ${chainId} to database`);
     await updatePools(changedPools);
     log(`Saved pools. Fetching Tokens for pools`);

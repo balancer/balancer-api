@@ -19,7 +19,7 @@ export const handler = async (): Promise<any> => {
     const pools = await getPools(chainId);
     log(`Decoracting ${pools.length} pools for chain ${chainId}`);
     const decorateStartTime = Date.now();
-    const poolDecorator = new PoolDecorator(pools, chainId);
+    const poolDecorator = new PoolDecorator(pools, { chainId });
     const decoratedPools = await poolDecorator.decorate(tokens);
     log(`Decorated ${decoratedPools.length} pools`);
     const modifiedPools = decoratedPools.filter(

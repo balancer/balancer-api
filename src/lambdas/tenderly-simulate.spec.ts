@@ -5,11 +5,11 @@ nock.disableNetConnect();
 
 const tenderlySimulateResponse = {
   transaction: {
-    hash: '0xffffff6b166c358506d3de01e1f9b4691ba38cb797ae000ce26dda9cac5de30f',
-    block_hash: '',
-    block_number: 35997827,
-    from: '0x8fe3a2a5ae6baa201c26fc7830eb713f33dfffff',
-    gas: 9223372036854776000,
+    transaction_info: {
+      call_trace: {
+        output: '0x00000000000000000021b043d58ce81f6',
+      },
+    },
   },
 };
 

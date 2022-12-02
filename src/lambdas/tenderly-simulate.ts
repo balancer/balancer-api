@@ -48,7 +48,18 @@ export const handler = async ({ body }: any = {}): Promise<any> => {
 
     const result = await res.json();
 
-    return formatResponse(200, JSON.stringify(result));
+    return formatResponse(
+      200,
+      JSON.stringify({
+        transaction: {
+          transaction_info: {
+            call_trace: {
+              output: result.transaction.transaction_info.call_trace.output,
+            },
+          },
+        },
+      })
+    );
   } catch (e) {
     console.log(`Error when trying to simulate: ${e}`);
     return formatResponse(500, 'Unable to perform simulation');

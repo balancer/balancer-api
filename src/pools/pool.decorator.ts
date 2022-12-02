@@ -28,7 +28,7 @@ export class PoolDecorator {
   poolsRepositories: BalancerDataRepositories;
   networkConfig: BalancerNetworkConfig;
 
-  constructor(public pools: Pool[], private options: PoolDecoratorOptions) {}
+  constructor(public pools: Pool[], private options: PoolDecoratorOptions = {}) {}
 
   public async decorate(tokens: Token[]): Promise<Pool[]> {
     log('------- START Decorating pools --------');
@@ -99,11 +99,14 @@ export class PoolDecorator {
     }
 
     try {
-      await poolService.setTotalLiquidity();
-      await poolService.setApr();
-      await poolService.setVolumeSnapshot();
-      await poolService.expandPool();
-      poolService.setIsNew();
+      await Promise.all([
+        poolService.setTotalLiquidity(),
+        poolService.setApr(),
+        poolService.setVolumeSnapshot(),
+        poolService.expandPool(),
+      ]);
+
+      poolService.setIsNew()
     } catch (e) {
       console.log(`Failed to decorate pool ${pool.id} Error is: ${e}. Pool is: ${util.inspect(
         pool,

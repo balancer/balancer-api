@@ -29,10 +29,10 @@ export const handler = async (): Promise<any> => {
     const poolDecorator = new PoolDecorator(pools, { poolsToDecorate: changedPools, chainId: chainId });
     const decoratedPools = await poolDecorator.decorate(currentTokens);
     log(`Decorated ${decoratedPools.length} pools`);
-    log(`Saving ${changedPools.length} pools for chain ${chainId} to database`);
-    await updatePools(changedPools);
+    log(`Saving ${decoratedPools.length} pools for chain ${chainId} to database`);
+    await updatePools(decoratedPools);
     log(`Saved pools. Fetching Tokens for pools`);
-    const tokenAddresses = getTokenAddressesFromPools(changedPools);
+    const tokenAddresses = getTokenAddressesFromPools(decoratedPools);
     log(
       `Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`
     );

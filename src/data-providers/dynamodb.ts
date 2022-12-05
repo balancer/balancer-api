@@ -75,9 +75,8 @@ export async function updatePools(pools: Pool[], options?: UpdatePoolOptions) {
     poolUpdateRequestChunks.map(async (poolUpdateRequests) => {
       const params = {
         TransactItems: poolUpdateRequests,
-        ReturnConsumedCapacity: "TOTAL"
       };
-      const result = await dynamodb
+      await dynamodb
         .transactWriteItems(params, err => {
           if (err) {
             if (err.code === 'ProvisionedThroughputExceededException') {
@@ -94,7 +93,6 @@ export async function updatePools(pools: Pool[], options?: UpdatePoolOptions) {
           }
         })
         .promise();
-      console.log(`Update Batch Pools (${poolUpdateRequests.length} total) Consumed Capacity: `, result.ConsumedCapacity);
     })
   );
 }

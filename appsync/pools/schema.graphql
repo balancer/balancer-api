@@ -30,6 +30,8 @@
 	upperTarget: String
 	apr: AprBreakdown
 	isNew: Boolean
+	protocolYieldFeeCache: Float
+	priceRateProviders: [PriceRateProvider]
 }
 
 type PoolConnection {
@@ -62,6 +64,15 @@ type TokenTreePool @entity {
 	totalShares: String
 	mainIndex: Int
 	tokens: [PoolToken]
+}
+
+type PriceRateProvider @entity {
+	address: String
+	token: PriceRateProviderToken
+}
+
+type PriceRateProviderToken @entity {
+	address: String
 }
 
 type AprBreakdown @entity {

@@ -1,4 +1,4 @@
-import { Pool } from '../types';
+import { Pool, UpdateExpression } from '../types';
 import {
   generateUpdateExpression,
   marshallPool,
@@ -88,11 +88,22 @@ describe('DynamoDB Marshaller', () => {
         address: {
           S: '0xc6a5032dc4bf638e15b4a66bc718ba7ba474ff73',
         },
+        tokensList: {
+          L: [{
+            S: '0xddd5032dc4bf638e15b4a66bc718ba7ba474ff73'
+          }, {
+            S: '0xeee5032dc4bf638e15b4a66bc718ba7ba474ff73'
+          }]
+        }
       };
       const expectedPool = {
         totalSwapFee: '41.889',
         chainId: 1,
         address: '0xc6a5032dc4bf638e15b4a66bc718ba7ba474ff73',
+        tokensList: [
+          '0xddd5032dc4bf638e15b4a66bc718ba7ba474ff73',
+          '0xeee5032dc4bf638e15b4a66bc718ba7ba474ff73'
+        ]
       };
       const unmarshalledPool = unmarshallPool(dbPool);
       expect(unmarshalledPool).toMatchObject(expectedPool);
@@ -171,6 +182,8 @@ describe('DynamoDB Marshaller', () => {
       chainId: 1,
       tokens: [
         {
+          symbol: 'USDC',
+          name: 'USD Coin',
           weight: '0.5',
           address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
           priceRate: '1',
@@ -178,6 +191,8 @@ describe('DynamoDB Marshaller', () => {
           decimals: 6,
         },
         {
+          symbol: 'BAL',
+          name: 'Balancer',
           weight: '0.5',
           address: '0xba100000625a3754423978a60c9317c58a424e3d',
           priceRate: '1',
@@ -187,55 +202,112 @@ describe('DynamoDB Marshaller', () => {
       ],
     };
 
-    const expectedUpdateExpression: UpdateExpression = {
-      UpdateExpression:
-        'SET #totalShares = :totalShares, #swapEnabled = :swapEnabled, #poolType = :poolType, #address = :address, #tokens = :tokens',
-      ExpressionAttributeNames: {
-        '#totalShares': 'totalShares',
-        '#swapEnabled': 'swapEnabled',
-        '#poolType': 'poolType',
-        '#address': 'address',
-        '#tokens': 'tokens',
-      },
-      ExpressionAttributeValues: {
-        ':totalShares': {
-          N: '39522955.298207500034572608',
+    it('Should generate a correct update expression', () => {
+      const expectedUpdateExpression: UpdateExpression = {
+        UpdateExpression:
+          'SET #totalShares = :totalShares, #swapEnabled = :swapEnabled, #poolType = :poolType, #address = :address, #tokens = :tokens',
+        ExpressionAttributeNames: {
+          '#totalShares': 'totalShares',
+          '#swapEnabled': 'swapEnabled',
+          '#poolType': 'poolType',
+          '#address': 'address',
+          '#tokens': 'tokens',
         },
-        ':swapEnabled': {
-          BOOL: true,
-        },
-        ':poolType': {
-          S: 'Weighted',
-        },
-        ':address': {
-          S: '0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5',
-        },
-        ':tokens': {
-          L: [
-            {
-              M: {
-                weight: { S: '0.5' },
-                address: { S: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
-                priceRate: { S: '1' },
-                balance: { S: '4318.529528' },
-                decimals: { N: '6' },
+        ExpressionAttributeValues: {
+          ':totalShares': {
+            N: '39522955.298207500034572608',
+          },
+          ':swapEnabled': {
+            BOOL: true,
+          },
+          ':poolType': {
+            S: 'Weighted',
+          },
+          ':address': {
+            S: '0x9c08c7a7a89cfd671c79eacdc6f07c1996277ed5',
+          },
+          ':tokens': {
+            L: [
+              {
+                M: {
+                  symbol: { S: 'USDC' },
+                  name: { S: 'USD Coin' },
+                  weight: { S: '0.5' },
+                  address: { S: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
+                  priceRate: { S: '1' },
+                  balance: { S: '4318.529528' },
+                  decimals: { N: '6' },
+                },
               },
-            },
-            {
-              M: {
-                weight: { S: '0.5' },
-                address: { S: '0xba100000625a3754423978a60c9317c58a424e3d' },
-                priceRate: { S: '1' },
-                balance: { S: '250.958639102476791721' },
-                decimals: { N: '18' },
+              {
+                M: {
+                  symbol: { S: 'BAL' },
+                  name: { S: 'Balancer' },
+                  weight: { S: '0.5' },
+                  address: { S: '0xba100000625a3754423978a60c9317c58a424e3d' },
+                  priceRate: { S: '1' },
+                  balance: { S: '250.958639102476791721' },
+                  decimals: { N: '18' },
+                },
               },
-            },
-          ],
+            ],
+          },
         },
-      },
-    };
+      };
 
-    const updateExpression = generateUpdateExpression(pool as Pool);
-    expect(updateExpression).toEqual(expectedUpdateExpression);
+      const updateExpression = generateUpdateExpression(pool as Pool);
+      expect(updateExpression).toEqual(expectedUpdateExpression);
+    });
+
+    it('Should ignore static fields if options.ignoreStaticData is set', () => {
+      const expectedUpdateExpression: UpdateExpression = {
+        UpdateExpression:
+          'SET #totalShares = :totalShares, #swapEnabled = :swapEnabled, #tokens = :tokens',
+        ExpressionAttributeNames: {
+          '#totalShares': 'totalShares',
+          '#swapEnabled': 'swapEnabled',
+          '#tokens': 'tokens',
+        },
+        ExpressionAttributeValues: {
+          ':totalShares': {
+            N: '39522955.298207500034572608',
+          },
+          ':swapEnabled': {
+            BOOL: true,
+          },
+          ':tokens': {
+            L: [
+              {
+                M: {
+                  symbol: { S: 'USDC' },
+                  name: { S: 'USD Coin' },
+                  weight: { S: '0.5' },
+                  address: { S: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
+                  priceRate: { S: '1' },
+                  balance: { S: '4318.529528' },
+                  decimals: { N: '6' },
+                },
+              },
+              {
+                M: {
+                  symbol: { S: 'BAL' },
+                  name: { S: 'Balancer' },
+                  weight: { S: '0.5' },
+                  address: { S: '0xba100000625a3754423978a60c9317c58a424e3d' },
+                  priceRate: { S: '1' },
+                  balance: { S: '250.958639102476791721' },
+                  decimals: { N: '18' },
+                },
+              },
+            ],
+          },
+        },
+      };
+
+      const updateExpression = generateUpdateExpression(pool as Pool, { ignoreStaticData: true});
+      expect(updateExpression).toEqual(expectedUpdateExpression);
+    });
   });
+
+  
 });

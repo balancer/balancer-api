@@ -57,34 +57,66 @@ export const TOKENS_TABLE_SCHEMA = {
  * BigNumber: Saved as a number in DynamoDB, but a String in JS
  */
 export const POOL_SCHEMA: Schema = {
-  swapEnabled: { type: 'Boolean' },
-  swapFee: { type: 'BigDecimal' },
+  id: { type: 'String', static: true },
+  chainId: { type: 'Int', static: true },
+  poolType: { type: 'String', static: true },
+  poolTypeVersion: { type: 'Int', static: true },
 
-  totalWeight: { type: 'BigDecimal' },
-  totalSwapVolume: { type: 'BigDecimal' },
-  totalSwapFee: { type: 'BigDecimal' },
-  totalLiquidity: { type: 'BigDecimal' },
-  totalShares: { type: 'BigDecimal' },
+  name: { type: 'String', static: false },
+  address: { type: 'String', static: true },
+  owner: { type: 'String', static: false },
+  factory: { type: 'String', static: true },
+  symbol: { type: 'String', static: true },
 
-  volumeSnapshot: { type: 'BigDecimal' },
+  isNew: { type: 'Boolean', static: false},
 
-  createTime: { type: 'Int' },
-  swapsCount: { type: 'BigInt' },
-  holdersCount: { type: 'BigInt' },
+  tokens: { type: 'Array', static: false},
+  tokensList: { type: 'Array', static: false },
+
+  swapEnabled: { type: 'Boolean', static: false },
+  swapFee: { type: 'BigDecimal', static: false },
+
+  protocolYieldFeeCache: { type: 'String', static: false},
+
+  totalWeight: { type: 'BigDecimal', static: true },
+  totalSwapVolume: { type: 'BigDecimal', static: false },
+  totalSwapFee: { type: 'BigDecimal', static: false },
+  totalLiquidity: { type: 'BigDecimal', static: false },
+  totalShares: { type: 'BigDecimal', static: false },
+
+  volumeSnapshot: { type: 'BigDecimal', static: false },
+
+  createTime: { type: 'Int', static: true },
+  swapsCount: { type: 'BigInt', static: false },
+  holdersCount: { type: 'BigInt', static: false },
 
   // StablePool Only
-  amp: { type: 'BigInt' },
-
-  // ConvergentCurvePool (Element) Only
-  expiryTime: { type: 'BigInt' },
-  unitSeconds: { type: 'BigInt' },
+  amp: { type: 'BigInt', static: false },
 
   //InvestmentPool Only
-  managementFee: { type: 'BigDecimal' },
+  managementFee: { type: 'BigDecimal', static: false },
 
   // LinearPool only
-  mainIndex: { type: 'Int' },
-  wrappedIndex: { type: 'Int' },
-  lowerTarget: { type: 'BigDecimal' },
-  upperTarget: { type: 'BigDecimal' },
+  mainIndex: { type: 'Int', static: true },
+  wrappedIndex: { type: 'Int', static: true },
+  lowerTarget: { type: 'BigDecimal', static: true },
+  upperTarget: { type: 'BigDecimal', static: true },
 };
+
+/**
+ * Used for marshalling / unmarshalling Pool Tokens for 
+ * DynamoDB. Also used for removing static items to save
+ * update bandwidth. 
+ */
+export const POOL_TOKEN_SCHEMA: Schema = {
+  name: { type: 'String', static: true },
+  symbol: { type: 'String', static: true },
+  address: { type: 'String', static: true },
+  decimals: { type: 'Int', static: true },
+  isExemptFromYieldProtocolFee: { type: 'Boolean', static: false },
+  weight: { type: 'BigDecimal', static: false },
+  price: { type: 'Object', static: false },
+  priceRate: { type: 'BigDecimal', static: false },
+  balance: { type: 'BigDecimal', static: false },
+  token: { type: 'BigDecimal', static: true }, // set to static so updatePools doesn't change it
+}

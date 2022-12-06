@@ -8,12 +8,16 @@ import {
   SwapTypes,
 } from '@balancer-labs/sdk';
 import { getToken } from './data-providers/dynamodb';
-import { Token, Pool } from './types';
+import { Token, Pool, Schema } from './types';
 import {
   Network,
   NativeAssetAddress,
   NativeAssetPriceSymbol,
+  POOL_SCHEMA,
+  POOL_TOKEN_SCHEMA,
 } from './constants';
+import { isEqual, compact, pick } from 'lodash';
+import { inspect } from 'util';
 
 const { INFURA_PROJECT_ID } = process.env;
 
@@ -218,4 +222,52 @@ export function formatPrice(price: Price): Price {
   });
 
   return formattedPrice;
+}
+
+
+/** 
+ * Takes a list of currentPools and newPools and returns a list
+ * of all pools that have changed in newPools
+ */
+
+export function getChangedPools(newPools: Pool[], currentPools: Pool[]) {
+  const currentPoolsMap = Object.fromEntries(currentPools.map((pool)=> {
+    return [pool.id, pool];
+  }));
+
+  return newPools.filter((pool) => {
+    return !isSame(pool, currentPoolsMap[pool.id]); 
+  });
+}
+
+export function getNonStaticSchemaFields(schema: Schema): string[] {
+  const nonStaticFields = Object.entries(schema).map(([name, details]) => {
+    if (details.static) {
+      return null;
+    }
+    return name;
+  });
+  return compact(nonStaticFields);
+}
+
+export function isSame(newPool: Pool, oldPool?: Pool): boolean {
+  if (!oldPool) return false;
+
+  const poolFieldsToCompare = getNonStaticSchemaFields(POOL_SCHEMA);
+  const tokenFieldsToCompare = getNonStaticSchemaFields(POOL_TOKEN_SCHEMA);
+  
+  const filteredOldPool = pick(oldPool, poolFieldsToCompare) ;
+  filteredOldPool.tokens = pick(oldPool.tokens, tokenFieldsToCompare);
+  const filteredNewPool = pick(newPool, poolFieldsToCompare);
+  filteredNewPool.tokens = pick(newPool.tokens, tokenFieldsToCompare);
+
+  const newPoolFields = Object.keys(filteredNewPool);
+
+  for (const key of newPoolFields) {
+    if (!isEqual(filteredNewPool[key], filteredOldPool[key])) {
+      console.log(`Updating pool ${newPool.id} -  ${key} is not equal. New: ${inspect(filteredNewPool[key], false, null)} Old: ${inspect(filteredOldPool[key], false, null)}`)
+      return false;
+    }
+  }
+  return true;
 }

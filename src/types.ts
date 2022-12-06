@@ -33,10 +33,6 @@ export interface Pool extends SDKPool {
     totalLiquidity?: string;
   };
   lastUpdate?: number;
-  principalToken?: string;
-  baseToken?: string;
-  expiryTime?: number;
-  unitSeconds?: number;
   managementFee?: string;
   mainIndex?: number;
   wrappedIndex?: number;
@@ -54,14 +50,15 @@ export interface SorRequest {
 
 export interface Schema {
   [key: string]: {
-    type: 'BigDecimal' | 'BigInt' | 'Boolean' | 'Int' | 'String';
+    type: 'BigDecimal' | 'BigInt' | 'Boolean' | 'Int' | 'String' | 'Object' | 'Array';
+    static: boolean;
   };
 }
 
 export interface UpdateExpression {
   UpdateExpression: string;
   ExpressionAttributeNames: { [key: string]: string };
-  ExpressionAttributeValues: { [key: string]: string };
+  ExpressionAttributeValues: { [key: string]: any };
 }
 export interface TRMAccountDetails {
   accountExternalId: string | null;

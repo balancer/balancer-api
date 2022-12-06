@@ -15,6 +15,10 @@ import debug from 'debug';
 
 const log = debug('balancer:dynamodb');
 
+export interface UpdatePoolOptions {
+  ignoreStaticData: boolean; // Ignore fields that rarely ever change
+}
+
 function getDynamoDB() {
   const dynamoDBConfig = {
     maxRetries: 50,
@@ -45,7 +49,7 @@ export async function isAlive() {
   return true;
 }
 
-export async function updatePools(pools: Pool[]) {
+export async function updatePools(pools: Pool[], options?: UpdatePoolOptions) {
   const dynamodb = getDynamoDB();
 
   const allPoolUpdateRequests = pools.map(function (pool) {
@@ -58,7 +62,7 @@ export async function updatePools(pools: Pool[]) {
           },
           TableName: 'pools',
         },
-        generateUpdateExpression(pool)
+        generateUpdateExpression(pool, options)
       ),
     };
   });
@@ -68,11 +72,11 @@ export async function updatePools(pools: Pool[]) {
     MAX_BATCH_WRITE_SIZE
   );
   return Promise.all(
-    poolUpdateRequestChunks.map(poolUpdateRequests => {
+    poolUpdateRequestChunks.map(async (poolUpdateRequests) => {
       const params = {
         TransactItems: poolUpdateRequests,
       };
-      return dynamodb
+      await dynamodb
         .transactWriteItems(params, err => {
           if (err) {
             if (err.code === 'ProvisionedThroughputExceededException') {

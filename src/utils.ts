@@ -257,9 +257,9 @@ export function isSame(newPool: Pool, oldPool?: Pool): boolean {
   const tokenFieldsToCompare = getNonStaticSchemaFields(POOL_TOKEN_SCHEMA);
   
   const filteredOldPool = pick(oldPool, poolFieldsToCompare) ;
-  filteredOldPool.tokens = pick(oldPool.tokens, tokenFieldsToCompare);
+  filteredOldPool.tokens = oldPool.tokens.map((token) => pick(token, tokenFieldsToCompare));
   const filteredNewPool = pick(newPool, poolFieldsToCompare);
-  filteredNewPool.tokens = pick(newPool.tokens, tokenFieldsToCompare);
+  filteredNewPool.tokens = newPool.tokens.map((token) => pick(token, tokenFieldsToCompare));
 
   const newPoolFields = Object.keys(filteredNewPool);
 

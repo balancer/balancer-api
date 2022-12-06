@@ -118,5 +118,5 @@ export const POOL_TOKEN_SCHEMA: Schema = {
   price: { type: 'Object', static: false },
   priceRate: { type: 'BigDecimal', static: false },
   balance: { type: 'BigDecimal', static: false },
-  token: { type: 'BigDecimal', static: true }, // set to static so updatePools doesn't change it
+  token: { type: 'Object', static: false }, 
 }

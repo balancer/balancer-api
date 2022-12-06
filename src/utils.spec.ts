@@ -1,6 +1,11 @@
 import { AprBreakdown, Price } from '@balancer-labs/sdk';
-import { formatPrice, getNonStaticSchemaFields, isValidApr } from './utils';
-import { Schema } from './types';
+import { formatPrice, getNonStaticSchemaFields, isSame, isValidApr } from './utils';
+import { Pool, Schema } from './types';
+import _ from 'lodash';
+
+import POOLS from '../test/mocks/pools';
+
+jest.unmock('@balancer-labs/sdk');
 
 describe('utils', () => {
   describe('isValidApr', () => {
@@ -124,8 +129,37 @@ describe('utils', () => {
     });
   });
 
+  describe('isSame', () => {
+    let newPool: Pool;
+    let oldPool: Pool | undefined;
+
+    beforeEach(() => {
+      newPool = POOLS[0];
+    });
+
+    it('Should return false if oldPool is undefined', () => {
+      const same = isSame(newPool);
+      expect(same).toBe(false);
+    })
+
+    it('Should return true if oldPool is the same', () => {
+      oldPool = Object.assign({}, POOLS[0]);
+      const same = isSame(newPool, oldPool);
+      expect(same).toBe(true);
+    });
+
+    it('Should return false if oldPool has slightly different tokens', () => {
+      oldPool = _.cloneDeep(POOLS[0]);
+      if (oldPool && oldPool.tokens) {
+        oldPool.tokens[0].balance = "12345";
+      }
+      const same = isSame(newPool, oldPool);
+      expect(same).toBe(false);
+    })
+  })
+
   describe('getNonStaticSchemaFields', () => {
-    it('Should return a list of all schema fields that are static', () => {
+    it('Should return a list of all schema fields that are not static', () => {
       const SCHEMA: Schema = {
         id: { type: 'String', static: true},
         totalSwapVolume: { type: 'BigDecimal', static: false },

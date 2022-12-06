@@ -68,6 +68,7 @@ export class PoolService {
     }
 
     if (poolLiquidity !== this.pool.totalLiquidity) {
+      console.log(`Updated pool ${this.pool.id} to Liquidity: ${poolLiquidity}`);
       this.pool.lastUpdate = Date.now();
     }
 

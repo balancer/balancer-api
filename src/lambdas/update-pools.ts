@@ -15,11 +15,13 @@ export const handler = async (): Promise<any> => {
   const chainId = parseInt(CHAIN_ID || '1');
 
   try {
-    log(`Fetching pools from network ${chainId}`);
-    const poolsFromChain = await fetchPoolsFromChain(chainId);
+    log(`Loading Pools from chain, DB and Tokens. Network: ${chainId}`);
+    const [poolsFromChain, currentPools] = await Promise.all([
+      fetchPoolsFromChain(chainId),
+      getPools(chainId),
+    ]);
     log(`Sanitizing ${poolsFromChain.length} pools`);
     const pools = sanitizePools(poolsFromChain);
-    const currentPools = await getPools(chainId);
     const changedPools = getChangedPools(pools, currentPools);
     log(`Saving ${changedPools.length} pools for chain ${chainId} to database`);
     await updatePools(changedPools);
@@ -36,8 +38,7 @@ export const handler = async (): Promise<any> => {
       `Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`
     );
     const tokens = await fetchTokens(chainId, filteredTokenAddresses);
-    const tokenUpdateResult = await updateTokens(tokens);
-    log(`Token update result: ${tokenUpdateResult}`);
+    await updateTokens(tokens);
     log(`Saved ${filteredTokenAddresses.length} Tokens`);
     return { statusCode: 201, body: '' };
   } catch (dbError) {

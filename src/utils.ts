@@ -206,6 +206,7 @@ export function isValidApr(apr: AprBreakdown) {
     if (typeof value === 'object') {
       if (!isValidApr(value)) return false;
     } else if (isNaN(value)) return false;
+    else if (!isFinite(value)) return false;
   }
 
   return true;

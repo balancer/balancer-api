@@ -107,7 +107,7 @@ export class PoolService {
     try {
       const apr = await this.pools.apr(this.pool);
       if (!isValidApr(apr)) {
-        throw new Error('APR is invalid - contains NaN');
+        throw new Error('APR is invalid - contains NaN or Infinity');
       }
       poolApr = apr;
     } catch (e) {

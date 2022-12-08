@@ -55,6 +55,29 @@ describe('utils', () => {
       expect(isValidApr(invalidStakingApr)).toBe(false);
     });
 
+    it('Should return false if the swap fees APR is Infinity', () => {
+      const invalidStakingApr: AprBreakdown = {
+        swapFees: Infinity,
+        tokenAprs: {
+          total: 0,
+          breakdown: {},
+        },
+        stakingApr: {
+          min: 0,
+          max: 0,
+        },
+        rewardAprs: {
+          total: 0,
+          breakdown: {},
+        },
+        protocolApr: 0,
+        min: 0,
+        max: 0,
+      };
+
+      expect(isValidApr(invalidStakingApr)).toBe(false);
+    });
+
     it('Should return true if the APR is the default empty APR', () => {
       const defaultApr: AprBreakdown = {
         swapFees: 0,

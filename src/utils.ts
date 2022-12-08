@@ -205,7 +205,10 @@ export function isValidApr(apr: AprBreakdown) {
   for (const value of Object.values(apr)) {
     if (typeof value === 'object') {
       if (!isValidApr(value)) return false;
-    } else if (isNaN(value)) return false;
+    } else {
+      if (isNaN(value)) return false;
+      if (!isFinite(value)) return false;
+    }
   }
 
   return true;

@@ -72,7 +72,7 @@ export async function getTokenInfo(
   return tokenInfo;
 }
 
-export function getTokenAddressesFromPools(pools: Pool[]) {
+export function getTokenAddressesFromPools(pools: Pool[]): string[] {
   const tokenAddressMap = {};
   pools.forEach(pool => {
     pool.tokensList.forEach(address => {

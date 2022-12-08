@@ -14,6 +14,9 @@ export const handler = async (): Promise<any> => {
 
   const chainId = parseInt(CHAIN_ID || '1');
 
+  let didError = false;
+  let changedPools = [];
+
   try {
     log(`Loading Pools from chain, DB and Tokens. Network: ${chainId}`);
     const [poolsFromChain, currentPools] = await Promise.all([
@@ -22,9 +25,16 @@ export const handler = async (): Promise<any> => {
     ]);
     log(`Sanitizing ${poolsFromChain.length} pools`);
     const pools = sanitizePools(poolsFromChain);
-    const changedPools = getChangedPools(pools, currentPools);
+    changedPools = getChangedPools(pools, currentPools);
     log(`Saving ${changedPools.length} pools for chain ${chainId} to database`);
     await updatePools(changedPools);
+    
+  } catch (dbError) {
+    log(`Received db error updating pools: ${dbError}`);
+    didError = true;
+  }
+
+  try {
     log(`Saved pools. Fetching Tokens for pools`);
     const tokenAddresses = getTokenAddressesFromPools(changedPools);
     log(
@@ -40,9 +50,15 @@ export const handler = async (): Promise<any> => {
     const tokens = await fetchTokens(chainId, filteredTokenAddresses);
     await updateTokens(tokens);
     log(`Saved ${filteredTokenAddresses.length} Tokens`);
-    return { statusCode: 201, body: '' };
   } catch (dbError) {
-    log(`Received db error: ${dbError}`);
-    return { statusCode: 500, body: JSON.stringify(dbError) };
+    log(`Received db error updating tokens: ${dbError}`);
+    didError = true; 
   }
-};
+  
+  if (didError) { 
+    return { statusCode: 500, body: 'Error' };
+  }
+
+  return { statusCode: 200, body: '' };
+}
+

@@ -98,6 +98,7 @@ class PriceFetcher {
 
     let coinGeckoData;
     try {
+      console.log(`Fetching batch prices of size ${nextBatch.length} for chain ${nextChainId}`);
       coinGeckoData = await this.fetchPrices(nextChainId, nextBatch);
     } catch (err) {
       console.error('Got error: ', err, ' reading prices from coingecko.');
@@ -114,6 +115,8 @@ class PriceFetcher {
         this.queue = this.queue.concat(nextBatch);
       }
     }
+
+    console.log('Batch fetch complete.')
 
     nextBatch.forEach(token => {
       try {

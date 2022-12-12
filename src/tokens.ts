@@ -10,9 +10,9 @@ export async function updateTokenPrices(
   abortOnRateLimit = false
 ) {
   const priceFetcher = new PriceFetcher(abortOnRateLimit);
-  log(`fetching prics for ${tokens.length} tokens`);
+  log(`fetching prices for ${tokens.length} tokens`);
   const tokensWithPrices = await priceFetcher.fetch(tokens);
-  log('writing to DB');
+  log(`Saving ${tokensWithPrices.length} updated tokens to DB`);
   await updateTokens(tokensWithPrices);
   log('finished updating token prices');
 }

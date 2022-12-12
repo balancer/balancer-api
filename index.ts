@@ -267,8 +267,8 @@ export class BalancerPoolsAPI extends Stack {
      * Lambda Schedules
      */
 
-    const updateTokenPricesRule = new Rule(this, 'updateEachMinute', {
-      schedule: Schedule.expression('rate(1 minute)'),
+    const updateTokenPricesRule = new Rule(this, 'updateTokensInterval', {
+      schedule: Schedule.expression('rate(2 minutes)'),
     });
     updateTokenPricesRule.addTarget(
       new LambdaFunction(updateTokenPricesLambda)

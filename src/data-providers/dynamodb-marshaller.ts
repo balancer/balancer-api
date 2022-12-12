@@ -1,5 +1,5 @@
 import { Pool, Schema, UpdateExpression } from '../types';
-import { POOL_SCHEMA, POOL_TOKEN_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
+import { POOL_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
 import { Marshaller, NumberValue } from '@aws/dynamodb-auto-marshaller';
 import BigNumber from 'bignumber.js';
 import { AttributeMap } from 'aws-sdk/clients/dynamodb';
@@ -134,7 +134,7 @@ export function unmarshallPool(dynamodbPool: AttributeMap): Pool {
 
 /** Discards pool fields that rarely change  */
 export function discardStaticFields(marshalledPool: Record<string, any>): Record<string, any> {
-  const trimmedPoolFields = Object.entries(marshalledPool).filter(([key, data]) => {
+  const trimmedPoolFields = Object.entries(marshalledPool).filter(([key]) => {
     if (POOL_SCHEMA[key]?.static) {
       return false;
     }

@@ -7,7 +7,6 @@ import {
 } from './utils';
 import { getToken } from './data-providers/dynamodb';
 import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
-import { DatabasePoolDataService } from './poolDataService';
 import debug from 'debug';
 
 let log = debug('balancer:sor');

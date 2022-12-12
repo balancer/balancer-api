@@ -24,7 +24,7 @@
   "dependencies": {
     "@aws-cdk/aws-appsync-alpha": "^2.33.0-alpha.0",
     "@aws/dynamodb-auto-marshaller": "^0.7.1",
-    "@balancer-labs/sdk": "^0.1.39-beta.13",
+    "@balancer-labs/sdk": "^0.1.40",
     "@ethersproject/contracts": "^5.0.5",
     "@ethersproject/providers": "^5.0.5",
     "aws-cdk-lib": "^2.32.1",

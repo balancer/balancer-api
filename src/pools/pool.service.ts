@@ -160,16 +160,25 @@ export class PoolService {
   }
 
   public async setFeesSnapshot(): Promise<string> {
+    let feesSnapshot = '0';
+
     try {
-      const feesSnapshot = await this.pools.fees(this.pool);
-      return (this.pool.feesSnapshot = feesSnapshot.toString());
+      const fees = await this.pools.fees(this.pool);
+      feesSnapshot = fees.toString();
     } catch (e) {
       console.error(
-        `Failed to calculate Fees Snapshot. Error is:  ${e}\n
+        `Failed to calculate Fees. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
       );
-      return '0';
+      return feesSnapshot;
     }
+
+    if (feesSnapshot !== this.pool.feesSnapshot) {
+      console.log(`Updated pool ${this.pool.id} to Fees:  `, feesSnapshot);
+      this.pool.lastUpdate = Date.now();
+    }
+
+    return (this.pool.feesSnapshot = feesSnapshot);
   }
 
   public setIsNew(): boolean {

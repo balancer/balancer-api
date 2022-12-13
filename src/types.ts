@@ -36,7 +36,6 @@ export interface Pool extends SDKPool {
   managementFee?: string;
   mainIndex?: number;
   wrappedIndex?: number;
-  feesSnapshot?: string;
 }
 
 export interface SorRequest {
@@ -49,7 +48,14 @@ export interface SorRequest {
 
 export interface Schema {
   [key: string]: {
-    type: 'BigDecimal' | 'BigInt' | 'Boolean' | 'Int' | 'String' | 'Object' | 'Array';
+    type:
+      | 'BigDecimal'
+      | 'BigInt'
+      | 'Boolean'
+      | 'Int'
+      | 'String'
+      | 'Object'
+      | 'Array';
     static: boolean;
   };
 }

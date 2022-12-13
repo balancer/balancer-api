@@ -85,6 +85,7 @@ export const POOL_SCHEMA: Schema = {
   totalShares: { type: 'BigDecimal', static: false },
 
   volumeSnapshot: { type: 'BigDecimal', static: false },
+  feesSnapshot: { type: 'BigDecimal', static: false },
 
   createTime: { type: 'Int', static: true },
   swapsCount: { type: 'BigInt', static: false },

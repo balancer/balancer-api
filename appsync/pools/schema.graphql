@@ -17,6 +17,7 @@
 	totalLiquidity: String
 	totalShares: String
 	volumeSnapshot: String
+	feesSnapshot: String
 	createTime: Int
 	swapsCount: String
 	holdersCount: String

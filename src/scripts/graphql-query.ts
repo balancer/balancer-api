@@ -60,6 +60,7 @@ const complexQuery = `query {
         totalSwapFee 
         totalShares 
         volumeSnapshot
+        feesSnapshot
         owner 
         factory 
         amp 

@@ -68,7 +68,9 @@ export class PoolService {
     }
 
     if (poolLiquidity !== this.pool.totalLiquidity) {
-      console.log(`Updated pool ${this.pool.id} to Liquidity: ${poolLiquidity}`);
+      console.log(
+        `Updated pool ${this.pool.id} to Liquidity: ${poolLiquidity}`
+      );
       this.pool.lastUpdate = Date.now();
     }
 
@@ -155,6 +157,28 @@ export class PoolService {
     }
 
     return (this.pool.volumeSnapshot = volumeSnapshot);
+  }
+
+  public async setFeesSnapshot(): Promise<string> {
+    let feesSnapshot = '0';
+
+    try {
+      const fees = await this.pools.fees(this.pool);
+      feesSnapshot = fees.toString();
+    } catch (e) {
+      console.error(
+        `Failed to calculate Fees. Error is:  ${e}\n
+        Pool is:  ${util.inspect(this.pool, false, null)}\n`
+      );
+      return feesSnapshot;
+    }
+
+    if (feesSnapshot !== this.pool.feesSnapshot) {
+      console.log(`Updated pool ${this.pool.id} to Fees:  `, feesSnapshot);
+      this.pool.lastUpdate = Date.now();
+    }
+
+    return (this.pool.feesSnapshot = feesSnapshot);
   }
 
   public setIsNew(): boolean {

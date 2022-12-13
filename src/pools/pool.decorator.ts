@@ -104,6 +104,7 @@ export class PoolDecorator {
         poolService.setTotalLiquidity(),
         poolService.setApr(),
         poolService.setVolumeSnapshot(),
+        poolService.setFeesSnapshot(),
       ]);
 
       poolService.setIsNew()

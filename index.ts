@@ -3,9 +3,13 @@ import {
   DomainName,
   IResource,
   LambdaIntegration,
+  AwsIntegration,
   MockIntegration,
   PassthroughBehavior,
   RestApi,
+  LogGroupLogDestination,
+  AccessLogFormat,
+  Model,
 } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -17,7 +21,7 @@ import {
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { Role, ServicePrincipal, ManagedPolicy, PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
 import {
   GraphqlApi,
   Schema,
@@ -28,6 +32,7 @@ import {
 import { CfnWebACL, CfnWebACLAssociation } from 'aws-cdk-lib/aws-wafv2';
 import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path';
+import { LogGroup } from 'aws-cdk-lib/aws-logs';
 
 const {
   INFURA_PROJECT_ID,
@@ -336,9 +341,24 @@ export class BalancerPoolsAPI extends Stack {
       }
     });
 
+    // development stage
+    const devLogGroup = new LogGroup(this, "ApiGatewayDevLogs");
+    
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service',
       deployOptions: {
+        accessLogDestination: new LogGroupLogDestination(devLogGroup),
+        accessLogFormat: AccessLogFormat.jsonWithStandardFields({
+          caller: false,
+          httpMethod: true,
+          ip: true,
+          protocol: true,
+          requestTime: true,
+          resourcePath: true,
+          responseLength: true,
+          status: true,
+          user: true
+        }),
         cachingEnabled: true,
         cacheClusterEnabled: true,
         methodOptions: {
@@ -568,6 +588,54 @@ export class BalancerPoolsAPI extends Stack {
         join(__dirname, 'appsync/pools/responseMapper.vtl')
       ),
     });
+
+    /** 
+     * ApiGateway -> Appsync IAM 
+     **/
+
+    const appSyncAccessPolicy = new PolicyStatement({
+        actions: ['appsync:GraphQL'],
+        resources: [`${graphqlApi.arn}/*`],
+        effect: Effect.ALLOW,
+    });
+
+    const appSyncAccessRole = new Role(this, 'appsync-access-role', {
+      assumedBy: new ServicePrincipal('apigateway.amazonaws.com')
+    });
+
+    appSyncAccessRole.addToPolicy(appSyncAccessPolicy);
+
+    /**
+     * ApiGateway Appsync Path
+     */
+    const graphQLApiEndpoint = api.root.addResource('graphql');
+    graphQLApiEndpoint.addMethod('POST', new AwsIntegration({
+      service: 'appsync-api',
+      region: this.region,
+      subdomain: graphqlApi.apiId,
+      integrationHttpMethod: 'POST',
+      path: 'graphql',
+      options: {
+        passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
+        credentialsRole: appSyncAccessRole,
+        integrationResponses: [{
+          statusCode: '200'
+        }],
+        requestParameters: {
+          'integration.request.header.x-api-key': `'${graphqlApi.apiKey}'`
+        }
+      },
+    }), {  
+      methodResponses: [{
+        statusCode: '200',
+        responseModels: {
+          'application/json': Model.EMPTY_MODEL
+        }
+      }]
+   });
+   addCorsOptions(graphQLApiEndpoint);
+
+
   }
 }
 

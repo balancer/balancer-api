@@ -341,23 +341,22 @@ export class BalancerPoolsAPI extends Stack {
       }
     });
 
-    // development stage
-    const devLogGroup = new LogGroup(this, "ApiGatewayDevLogs");
+    const apiGatewayLogGroup = new LogGroup(this, "ApiGatewayLogs");
     
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service',
       deployOptions: {
-        accessLogDestination: new LogGroupLogDestination(devLogGroup),
+        accessLogDestination: new LogGroupLogDestination(apiGatewayLogGroup),
         accessLogFormat: AccessLogFormat.jsonWithStandardFields({
           caller: false,
           httpMethod: true,
-          ip: true,
+          ip: false,
           protocol: true,
           requestTime: true,
           resourcePath: true,
           responseLength: true,
           status: true,
-          user: true
+          user: false
         }),
         cachingEnabled: true,
         cacheClusterEnabled: true,

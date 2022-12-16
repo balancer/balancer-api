@@ -3,13 +3,13 @@ import {
   DomainName,
   IResource,
   LambdaIntegration,
-  AwsIntegration,
   MockIntegration,
   PassthroughBehavior,
   RestApi,
   LogGroupLogDestination,
   AccessLogFormat,
   Model,
+  HttpIntegration,
 } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -608,15 +608,10 @@ export class BalancerPoolsAPI extends Stack {
      * ApiGateway Appsync Path
      */
     const graphQLApiEndpoint = api.root.addResource('graphql');
-    graphQLApiEndpoint.addMethod('POST', new AwsIntegration({
-      service: 'appsync-api',
-      region: this.region,
-      subdomain: graphqlApi.apiId,
-      integrationHttpMethod: 'POST',
-      path: 'graphql',
+    graphQLApiEndpoint.addMethod('POST', new HttpIntegration(graphqlApi.graphqlUrl, {
+      proxy: true,
+      httpMethod: 'POST',
       options: {
-        passthroughBehavior: PassthroughBehavior.WHEN_NO_TEMPLATES,
-        credentialsRole: appSyncAccessRole,
         integrationResponses: [{
           statusCode: '200'
         }],

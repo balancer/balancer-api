@@ -21,7 +21,7 @@ import {
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { Role, ServicePrincipal, ManagedPolicy, PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
+import { Role, ServicePrincipal, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import {
   GraphqlApi,
   Schema,
@@ -587,22 +587,6 @@ export class BalancerPoolsAPI extends Stack {
         join(__dirname, 'appsync/pools/responseMapper.vtl')
       ),
     });
-
-    /** 
-     * ApiGateway -> Appsync IAM 
-     **/
-
-    const appSyncAccessPolicy = new PolicyStatement({
-        actions: ['appsync:GraphQL'],
-        resources: [`${graphqlApi.arn}/*`],
-        effect: Effect.ALLOW,
-    });
-
-    const appSyncAccessRole = new Role(this, 'appsync-access-role', {
-      assumedBy: new ServicePrincipal('apigateway.amazonaws.com')
-    });
-
-    appSyncAccessRole.addToPolicy(appSyncAccessPolicy);
 
     /**
      * ApiGateway Appsync Path

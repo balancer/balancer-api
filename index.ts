@@ -6,6 +6,10 @@ import {
   MockIntegration,
   PassthroughBehavior,
   RestApi,
+  LogGroupLogDestination,
+  AccessLogFormat,
+  Model,
+  HttpIntegration,
 } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -28,6 +32,7 @@ import {
 import { CfnWebACL, CfnWebACLAssociation } from 'aws-cdk-lib/aws-wafv2';
 import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path';
+import { LogGroup } from 'aws-cdk-lib/aws-logs';
 
 const {
   INFURA_PROJECT_ID,
@@ -336,9 +341,23 @@ export class BalancerPoolsAPI extends Stack {
       }
     });
 
+    const apiGatewayLogGroup = new LogGroup(this, "ApiGatewayLogs");
+    
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service',
       deployOptions: {
+        accessLogDestination: new LogGroupLogDestination(apiGatewayLogGroup),
+        accessLogFormat: AccessLogFormat.jsonWithStandardFields({
+          caller: false,
+          httpMethod: true,
+          ip: false,
+          protocol: true,
+          requestTime: true,
+          resourcePath: true,
+          responseLength: true,
+          status: true,
+          user: false
+        }),
         cachingEnabled: true,
         cacheClusterEnabled: true,
         methodOptions: {
@@ -568,6 +587,33 @@ export class BalancerPoolsAPI extends Stack {
         join(__dirname, 'appsync/pools/responseMapper.vtl')
       ),
     });
+
+    /**
+     * ApiGateway Appsync Path
+     */
+    const graphQLApiEndpoint = api.root.addResource('graphql');
+    graphQLApiEndpoint.addMethod('POST', new HttpIntegration(graphqlApi.graphqlUrl, {
+      proxy: true,
+      httpMethod: 'POST',
+      options: {
+        integrationResponses: [{
+          statusCode: '200'
+        }],
+        requestParameters: {
+          'integration.request.header.x-api-key': `'${graphqlApi.apiKey}'`
+        }
+      },
+    }), {  
+      methodResponses: [{
+        statusCode: '200',
+        responseModels: {
+          'application/json': Model.EMPTY_MODEL
+        }
+      }]
+   });
+   addCorsOptions(graphQLApiEndpoint);
+
+
   }
 }
 

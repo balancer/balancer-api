@@ -4,6 +4,7 @@ import {
   INVALID_CHAIN_ID_ERROR,
   MISSING_CHAIN_ID_ERROR,
 } from '../constants/errors';
+import { formatResponse } from './utils';
 
 export const handler = async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);
@@ -14,24 +15,10 @@ export const handler = async (event: any = {}): Promise<any> => {
     return INVALID_CHAIN_ID_ERROR;
   }
 
-  const corsHeaders = {
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'OPTIONS,GET',
-  };
-
   try {
     const pools = await getPools(chainId);
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify(pools),
-    };
+    return formatResponse(200, JSON.stringify(pools));
   } catch (dbError) {
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify(dbError),
-    };
+    return formatResponse(500, 'Internal DB Error');
   }
 };

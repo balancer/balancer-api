@@ -318,9 +318,31 @@ export class BalancerPoolsAPI extends Stack {
      * API Gateway
      */
 
-    const getPoolIntegration = new LambdaIntegration(getPoolLambda);
-    const getPoolsIntegration = new LambdaIntegration(getPoolsLambda);
-    const getTokensIntegration = new LambdaIntegration(getTokensLambda);
+    const getPoolIntegration = new LambdaIntegration(getPoolLambda, {
+      proxy: true,
+      cacheKeyParameters: ["method.request.path.chainId", "method.request.path.id"],
+      cacheNamespace: 'chainId-poolId',
+      requestParameters: {
+        "integration.request.path.chainId": "method.request.path.chainId",
+        "integration.request.path.id": "method.request.path.id"
+      }
+    });
+    const getPoolsIntegration = new LambdaIntegration(getPoolsLambda, {
+      proxy: true,
+      cacheKeyParameters: ["method.request.path.chainId"],
+      cacheNamespace: 'chainId',
+      requestParameters: {
+        "integration.request.path.chainId": "method.request.path.chainId"
+      }
+    });
+    const getTokensIntegration = new LambdaIntegration(getTokensLambda, {
+      proxy: true,
+      cacheKeyParameters: ["method.request.path.chainId"],
+      cacheNamespace: 'chainId',
+      requestParameters: {
+        "integration.request.path.chainId": "method.request.path.chainId"
+      }
+    });
     const runSORIntegration = new LambdaIntegration(runSORLambda);
     const updateTokenPricesIntegration = new LambdaIntegration(
       updateTokenPricesLambda,
@@ -358,9 +380,21 @@ export class BalancerPoolsAPI extends Stack {
           status: true,
           user: false
         }),
-        cachingEnabled: true,
+        cachingEnabled: false,
         cacheClusterEnabled: true,
         methodOptions: {
+          '/pools/{chainId}/GET': {
+            cachingEnabled: true,
+            cacheTtl: Duration.seconds(30)
+          },
+          '/pools/{chainId}/{id}/GET': {
+            cachingEnabled: true,
+            cacheTtl: Duration.seconds(30)
+          },
+          '/tokens/{chainId}/GET': {
+            cachingEnabled: true,
+            cacheTtl: Duration.seconds(30)
+          },
           '/check-wallet/GET': {
             cachingEnabled: true,
             cacheTtl: Duration.minutes(60)
@@ -373,10 +407,19 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(pools);
 
     const poolsOnChain = pools.addResource('{chainId}');
-    poolsOnChain.addMethod('GET', getPoolsIntegration);
+    poolsOnChain.addMethod('GET', getPoolsIntegration, { 
+      requestParameters: { 
+        "method.request.path.chainId": true
+      }
+    });
 
     const singlePool = poolsOnChain.addResource('{id}');
-    singlePool.addMethod('GET', getPoolIntegration);
+    singlePool.addMethod('GET', getPoolIntegration, { 
+      requestParameters: { 
+        "method.request.path.chainId": true,
+        "method.request.path.id": true
+      }
+    });
     addCorsOptions(singlePool);
 
     Object.values(SELECTED_NETWORKS).forEach(networkId => {
@@ -392,7 +435,11 @@ export class BalancerPoolsAPI extends Stack {
 
     const tokens = api.root.addResource('tokens');
     const tokensOnChain = tokens.addResource('{chainId}');
-    tokensOnChain.addMethod('GET', getTokensIntegration);
+    tokensOnChain.addMethod('GET', getTokensIntegration, { 
+      requestParameters: { 
+        "method.request.path.chainId": true
+      }
+    });
     addCorsOptions(tokens);
 
     const updatePrices = tokens.addResource('update');

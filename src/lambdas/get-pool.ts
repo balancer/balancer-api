@@ -25,7 +25,7 @@ export const handler = async (event: any = {}): Promise<any> => {
     if (pool) {
       return formatResponse(200, JSON.stringify(pool));
     } else {
-      return formatResponse(404, 'Cannot find pool')
+      return formatResponse(404)
     }
   } catch (dbError) {
     return formatResponse(500, 'Internal DB Error');

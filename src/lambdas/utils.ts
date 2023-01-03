@@ -1,4 +1,4 @@
-export function formatResponse(statusCode: number, body: string) {
+export function formatResponse(statusCode: number, body?: string) {
   return {
     statusCode,
     headers: {

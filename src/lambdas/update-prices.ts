@@ -1,7 +1,8 @@
+import { wrapHandler } from '../plugins/sentry';
 import { getTokens } from '../data-providers/dynamodb';
 import { updateTokenPrices } from '../tokens';
 
-export const handler = async (): Promise<any> => {
+export const handler = wrapHandler(async (): Promise<any> => {
   const log = console.log;
 
   try {
@@ -15,4 +16,4 @@ export const handler = async (): Promise<any> => {
     log(`Received error: ${err}`);
     return { statusCode: 500, body: JSON.stringify(err) };
   }
-};
+});

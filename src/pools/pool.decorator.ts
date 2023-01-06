@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { Pool, Token } from '../types';
 import {
   BalancerDataRepositories,
@@ -109,6 +110,7 @@ export class PoolDecorator {
 
       poolService.setIsNew()
     } catch (e) {
+      captureException(e, {extra: { pool }})
       console.log(`Failed to decorate pool ${pool.id} Error is: ${e}. Pool is: ${util.inspect(
         pool,
         false,

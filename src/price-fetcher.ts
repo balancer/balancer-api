@@ -197,7 +197,12 @@ class PriceFetcher {
           [],
           token.chainId
         );
-        const tokenPrice = await coingeckoPriceRepository.find(token.address);
+        let tokenPrice;
+        try {
+          tokenPrice = await coingeckoPriceRepository.find(token.address);
+        } catch (e) {
+          console.error('Received error when fetching price via from SDK: ', e);
+        }
         if (tokenPrice) {
           log(
             `Found price for token ${token.symbol} via the SDK! Price is: ${tokenPrice}`
@@ -254,7 +259,12 @@ class PriceFetcher {
   }
 
   public async fetch(tokens: Token[]) {
-    await this.fetchNativeAssetPrices();
+    try {
+      await this.fetchNativeAssetPrices();
+    } catch (e) {
+      console.error("Failed to fetch native asset prices.")
+      return this.tokens;
+    }
 
     tokens.forEach(token => {
       if (token.chainId == Network.KOVAN) return;

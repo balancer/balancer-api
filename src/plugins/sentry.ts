@@ -1,4 +1,3 @@
-
 import { AWSLambda } from '@sentry/serverless';
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
@@ -8,7 +7,7 @@ export function initSentry() {
 
   AWSLambda.init({
     dsn: SENTRY_DSN,
-  
+
     tracesSampleRate: 1.0,
   });
 }

@@ -68,15 +68,15 @@ export const POOL_SCHEMA: Schema = {
   factory: { type: 'String', static: true },
   symbol: { type: 'String', static: true },
 
-  isNew: { type: 'Boolean', static: false},
+  isNew: { type: 'Boolean', static: false },
 
-  tokens: { type: 'Array', static: false},
+  tokens: { type: 'Array', static: false },
   tokensList: { type: 'Array', static: false },
 
   swapEnabled: { type: 'Boolean', static: false },
   swapFee: { type: 'BigDecimal', static: false },
 
-  protocolYieldFeeCache: { type: 'String', static: false},
+  protocolYieldFeeCache: { type: 'String', static: false },
 
   totalWeight: { type: 'BigDecimal', static: true },
   totalSwapVolume: { type: 'BigDecimal', static: false },
@@ -105,9 +105,9 @@ export const POOL_SCHEMA: Schema = {
 };
 
 /**
- * Used for marshalling / unmarshalling Pool Tokens for 
+ * Used for marshalling / unmarshalling Pool Tokens for
  * DynamoDB. Also used for removing static items to save
- * update bandwidth. 
+ * update bandwidth.
  */
 export const POOL_TOKEN_SCHEMA: Schema = {
   name: { type: 'String', static: true },
@@ -119,5 +119,5 @@ export const POOL_TOKEN_SCHEMA: Schema = {
   price: { type: 'Object', static: false },
   priceRate: { type: 'BigDecimal', static: false },
   balance: { type: 'BigDecimal', static: false },
-  token: { type: 'Object', static: false }, 
-}
+  token: { type: 'Object', static: false },
+};

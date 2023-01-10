@@ -1,7 +1,11 @@
 import { wrapHandler } from '../plugins/sentry';
 import { captureException } from '@sentry/serverless';
 import { getChangedPools, getTokenAddressesFromPools } from '../utils';
-import { getPools, updatePools, updateTokens } from '../data-providers/dynamodb';
+import {
+  getPools,
+  updatePools,
+  updateTokens,
+} from '../data-providers/dynamodb';
 import {
   fetchPoolsFromChain,
   fetchTokens,
@@ -30,7 +34,6 @@ export const handler = wrapHandler(async (): Promise<any> => {
     changedPools = getChangedPools(pools, currentPools);
     log(`Saving ${changedPools.length} pools for chain ${chainId} to database`);
     await updatePools(changedPools);
-    
   } catch (dbError) {
     captureException(dbError);
     log(`Received db error updating pools: ${dbError}`);
@@ -56,13 +59,12 @@ export const handler = wrapHandler(async (): Promise<any> => {
   } catch (dbError) {
     captureException(dbError);
     log(`Received db error updating tokens: ${dbError}`);
-    didError = true; 
+    didError = true;
   }
-  
-  if (didError) { 
+
+  if (didError) {
     return { statusCode: 500, body: 'Error' };
   }
 
   return { statusCode: 200, body: '' };
 });
-

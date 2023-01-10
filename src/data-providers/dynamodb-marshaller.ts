@@ -133,7 +133,9 @@ export function unmarshallPool(dynamodbPool: AttributeMap): Pool {
 }
 
 /** Discards pool fields that rarely change  */
-export function discardStaticFields(marshalledPool: Record<string, any>): Record<string, any> {
+export function discardStaticFields(
+  marshalledPool: Record<string, any>
+): Record<string, any> {
   const trimmedPoolFields = Object.entries(marshalledPool).filter(([key]) => {
     if (POOL_SCHEMA[key]?.static) {
       return false;
@@ -144,7 +146,10 @@ export function discardStaticFields(marshalledPool: Record<string, any>): Record
   return trimmedPool;
 }
 
-export function generateUpdateExpression(pool: Pool, options?: UpdatePoolOptions): UpdateExpression {
+export function generateUpdateExpression(
+  pool: Pool,
+  options?: UpdatePoolOptions
+): UpdateExpression {
   const primaryKeyAttributes = ['id', 'chainId'];
   const exp: UpdateExpression = {
     UpdateExpression: 'SET',

@@ -227,19 +227,20 @@ export function formatPrice(price: Price): Price {
   return formattedPrice;
 }
 
-
-/** 
+/**
  * Takes a list of currentPools and newPools and returns a list
  * of all pools that have changed in newPools
  */
 
 export function getChangedPools(newPools: Pool[], currentPools: Pool[]) {
-  const currentPoolsMap = Object.fromEntries(currentPools.map((pool)=> {
-    return [pool.id, pool];
-  }));
+  const currentPoolsMap = Object.fromEntries(
+    currentPools.map(pool => {
+      return [pool.id, pool];
+    })
+  );
 
-  return newPools.filter((pool) => {
-    return !isSame(pool, currentPoolsMap[pool.id]); 
+  return newPools.filter(pool => {
+    return !isSame(pool, currentPoolsMap[pool.id]);
   });
 }
 
@@ -258,17 +259,27 @@ export function isSame(newPool: Pool, oldPool?: Pool): boolean {
 
   const poolFieldsToCompare = getNonStaticSchemaFields(POOL_SCHEMA);
   const tokenFieldsToCompare = getNonStaticSchemaFields(POOL_TOKEN_SCHEMA);
-  
-  const filteredOldPool = pick(oldPool, poolFieldsToCompare) ;
-  filteredOldPool.tokens = oldPool.tokens.map((token) => pick(token, tokenFieldsToCompare));
+
+  const filteredOldPool = pick(oldPool, poolFieldsToCompare);
+  filteredOldPool.tokens = oldPool.tokens.map(token =>
+    pick(token, tokenFieldsToCompare)
+  );
   const filteredNewPool = pick(newPool, poolFieldsToCompare);
-  filteredNewPool.tokens = newPool.tokens.map((token) => pick(token, tokenFieldsToCompare));
+  filteredNewPool.tokens = newPool.tokens.map(token =>
+    pick(token, tokenFieldsToCompare)
+  );
 
   const newPoolFields = Object.keys(filteredNewPool);
 
   for (const key of newPoolFields) {
     if (!isEqual(filteredNewPool[key], filteredOldPool[key])) {
-      console.log(`Updating pool ${newPool.id} -  ${key} is not equal. New: ${inspect(filteredNewPool[key], false, null)} Old: ${inspect(filteredOldPool[key], false, null)}`)
+      console.log(
+        `Updating pool ${newPool.id} -  ${key} is not equal. New: ${inspect(
+          filteredNewPool[key],
+          false,
+          null
+        )} Old: ${inspect(filteredOldPool[key], false, null)}`
+      );
       return false;
     }
   }

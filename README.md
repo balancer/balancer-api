@@ -251,9 +251,13 @@ You can customize your deployment with env variables. See .env.example for all p
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 10 - The write capacity of the secondary indexes on the `pools` DynamoDB table.
 - DYNAMODB_TOKENS_READ_CAPACITY - default: 10 - The read capcity of the `tokens` DynamoDB table.
 - DYNAMODB_TOKENS_WRITE_CAPACITY - default: 10 - The write capacity of the `tokens` DynamoDB tbale.
-- DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created
-- SANCTIONS_API_KEY - TRM API key for running sanction checks
-- DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda
+- DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created.
+- SANCTIONS_API_KEY - TRM API key for running sanction checks.
+- DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda.
+- TENDERLY_USER - Your Tenderly user id, used by the `/tenderly` endpoints.
+- TENDERLY_PROJECT - Your Tenderly project id, used by the `/tenderly` endpoints.
+- TENDERLY_ACCESS_KEY - Your tenderly access key, used by the `/tenderly` endpoints.
+- SENTRY_DSN - Your Sentry account DSN, if you'd like to send errors to Sentry
 
 ## Common Issues
 

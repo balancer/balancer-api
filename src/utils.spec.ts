@@ -1,5 +1,10 @@
 import { AprBreakdown, Price } from '@balancer-labs/sdk';
-import { formatPrice, getNonStaticSchemaFields, isSame, isValidApr } from './utils';
+import {
+  formatPrice,
+  getNonStaticSchemaFields,
+  isSame,
+  isValidApr,
+} from './utils';
 import { Pool, Schema } from './types';
 import _ from 'lodash';
 
@@ -163,7 +168,7 @@ describe('utils', () => {
     it('Should return false if oldPool is undefined', () => {
       const same = isSame(newPool);
       expect(same).toBe(false);
-    })
+    });
 
     it('Should return true if oldPool is the same', () => {
       oldPool = Object.assign({}, POOLS[0]);
@@ -174,25 +179,25 @@ describe('utils', () => {
     it('Should return false if oldPool has slightly different tokens', () => {
       oldPool = _.cloneDeep(POOLS[0]);
       if (oldPool && oldPool.tokens) {
-        oldPool.tokens[0].balance = "12345";
+        oldPool.tokens[0].balance = '12345';
       }
       const same = isSame(newPool, oldPool);
       expect(same).toBe(false);
-    })
-  })
+    });
+  });
 
   describe('getNonStaticSchemaFields', () => {
     it('Should return a list of all schema fields that are not static', () => {
       const SCHEMA: Schema = {
-        id: { type: 'String', static: true},
+        id: { type: 'String', static: true },
         totalSwapVolume: { type: 'BigDecimal', static: false },
         createTime: { type: 'Int', static: true },
-        swapsCount: { type: 'BigInt', static: false},
+        swapsCount: { type: 'BigInt', static: false },
       };
 
       const nonStaticFields = getNonStaticSchemaFields(SCHEMA);
       const expectedFields = ['totalSwapVolume', 'swapsCount'];
       expect(nonStaticFields).toEqual(expectedFields);
-    }); 
+    });
   });
 });

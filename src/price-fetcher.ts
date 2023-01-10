@@ -98,7 +98,9 @@ class PriceFetcher {
 
     let coinGeckoData;
     try {
-      console.log(`Fetching batch prices of size ${nextBatch.length} for chain ${nextChainId}`);
+      console.log(
+        `Fetching batch prices of size ${nextBatch.length} for chain ${nextChainId}`
+      );
       coinGeckoData = await this.fetchPrices(nextChainId, nextBatch);
     } catch (err) {
       console.error('Got error: ', err, ' reading prices from coingecko.');
@@ -116,7 +118,7 @@ class PriceFetcher {
       }
     }
 
-    console.log('Batch fetch complete.')
+    console.log('Batch fetch complete.');
 
     nextBatch.forEach(token => {
       try {
@@ -262,7 +264,7 @@ class PriceFetcher {
     try {
       await this.fetchNativeAssetPrices();
     } catch (e) {
-      console.error("Failed to fetch native asset prices.")
+      console.error('Failed to fetch native asset prices.');
       return this.tokens;
     }
 

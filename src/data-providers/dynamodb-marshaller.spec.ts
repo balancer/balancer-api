@@ -89,12 +89,15 @@ describe('DynamoDB Marshaller', () => {
           S: '0xc6a5032dc4bf638e15b4a66bc718ba7ba474ff73',
         },
         tokensList: {
-          L: [{
-            S: '0xddd5032dc4bf638e15b4a66bc718ba7ba474ff73'
-          }, {
-            S: '0xeee5032dc4bf638e15b4a66bc718ba7ba474ff73'
-          }]
-        }
+          L: [
+            {
+              S: '0xddd5032dc4bf638e15b4a66bc718ba7ba474ff73',
+            },
+            {
+              S: '0xeee5032dc4bf638e15b4a66bc718ba7ba474ff73',
+            },
+          ],
+        },
       };
       const expectedPool = {
         totalSwapFee: '41.889',
@@ -102,8 +105,8 @@ describe('DynamoDB Marshaller', () => {
         address: '0xc6a5032dc4bf638e15b4a66bc718ba7ba474ff73',
         tokensList: [
           '0xddd5032dc4bf638e15b4a66bc718ba7ba474ff73',
-          '0xeee5032dc4bf638e15b4a66bc718ba7ba474ff73'
-        ]
+          '0xeee5032dc4bf638e15b4a66bc718ba7ba474ff73',
+        ],
       };
       const unmarshalledPool = unmarshallPool(dbPool);
       expect(unmarshalledPool).toMatchObject(expectedPool);
@@ -304,10 +307,10 @@ describe('DynamoDB Marshaller', () => {
         },
       };
 
-      const updateExpression = generateUpdateExpression(pool as Pool, { ignoreStaticData: true});
+      const updateExpression = generateUpdateExpression(pool as Pool, {
+        ignoreStaticData: true,
+      });
       expect(updateExpression).toEqual(expectedUpdateExpression);
     });
   });
-
-  
 });

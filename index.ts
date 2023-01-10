@@ -322,28 +322,31 @@ export class BalancerPoolsAPI extends Stack {
 
     const getPoolIntegration = new LambdaIntegration(getPoolLambda, {
       proxy: true,
-      cacheKeyParameters: ["method.request.path.chainId", "method.request.path.id"],
+      cacheKeyParameters: [
+        'method.request.path.chainId',
+        'method.request.path.id',
+      ],
       cacheNamespace: 'getPool',
       requestParameters: {
-        "integration.request.path.chainId": "method.request.path.chainId",
-        "integration.request.path.id": "method.request.path.id"
-      }
+        'integration.request.path.chainId': 'method.request.path.chainId',
+        'integration.request.path.id': 'method.request.path.id',
+      },
     });
     const getPoolsIntegration = new LambdaIntegration(getPoolsLambda, {
       proxy: true,
-      cacheKeyParameters: ["method.request.path.chainId"],
+      cacheKeyParameters: ['method.request.path.chainId'],
       cacheNamespace: 'getPools',
       requestParameters: {
-        "integration.request.path.chainId": "method.request.path.chainId"
-      }
+        'integration.request.path.chainId': 'method.request.path.chainId',
+      },
     });
     const getTokensIntegration = new LambdaIntegration(getTokensLambda, {
       proxy: true,
-      cacheKeyParameters: ["method.request.path.chainId"],
+      cacheKeyParameters: ['method.request.path.chainId'],
       cacheNamespace: 'getTokens',
       requestParameters: {
-        "integration.request.path.chainId": "method.request.path.chainId"
-      }
+        'integration.request.path.chainId': 'method.request.path.chainId',
+      },
     });
     const runSORIntegration = new LambdaIntegration(runSORLambda);
     const updateTokenPricesIntegration = new LambdaIntegration(
@@ -358,15 +361,16 @@ export class BalancerPoolsAPI extends Stack {
     );
     const checkWalletIntegration = new LambdaIntegration(checkWalletLambda, {
       proxy: true,
-      cacheKeyParameters: ["method.request.querystring.address"],
+      cacheKeyParameters: ['method.request.querystring.address'],
       cacheNamespace: 'walletAddress',
       requestParameters: {
-        "integration.request.querystring.address": "method.request.querystring.address"
-      }
+        'integration.request.querystring.address':
+          'method.request.querystring.address',
+      },
     });
 
-    const apiGatewayLogGroup = new LogGroup(this, "ApiGatewayLogs");
-    
+    const apiGatewayLogGroup = new LogGroup(this, 'ApiGatewayLogs');
+
     const api = new RestApi(this, 'poolsApi', {
       restApiName: 'Pools Service',
       deployOptions: {
@@ -380,47 +384,47 @@ export class BalancerPoolsAPI extends Stack {
           resourcePath: true,
           responseLength: true,
           status: true,
-          user: false
+          user: false,
         }),
         cachingEnabled: false,
         cacheClusterEnabled: true,
         methodOptions: {
           '/pools/{chainId}/GET': {
             cachingEnabled: true,
-            cacheTtl: Duration.seconds(30)
+            cacheTtl: Duration.seconds(30),
           },
           '/pools/{chainId}/{id}/GET': {
             cachingEnabled: true,
-            cacheTtl: Duration.seconds(30)
+            cacheTtl: Duration.seconds(30),
           },
           '/tokens/{chainId}/GET': {
             cachingEnabled: true,
-            cacheTtl: Duration.seconds(30)
+            cacheTtl: Duration.seconds(30),
           },
           '/check-wallet/GET': {
             cachingEnabled: true,
-            cacheTtl: Duration.minutes(60)
-          }
-        }
-      }
+            cacheTtl: Duration.minutes(60),
+          },
+        },
+      },
     });
 
     const pools = api.root.addResource('pools');
     addCorsOptions(pools);
 
     const poolsOnChain = pools.addResource('{chainId}');
-    poolsOnChain.addMethod('GET', getPoolsIntegration, { 
-      requestParameters: { 
-        "method.request.path.chainId": true
-      }
+    poolsOnChain.addMethod('GET', getPoolsIntegration, {
+      requestParameters: {
+        'method.request.path.chainId': true,
+      },
     });
 
     const singlePool = poolsOnChain.addResource('{id}');
-    singlePool.addMethod('GET', getPoolIntegration, { 
-      requestParameters: { 
-        "method.request.path.chainId": true,
-        "method.request.path.id": true
-      }
+    singlePool.addMethod('GET', getPoolIntegration, {
+      requestParameters: {
+        'method.request.path.chainId': true,
+        'method.request.path.id': true,
+      },
     });
     addCorsOptions(singlePool);
 
@@ -437,10 +441,10 @@ export class BalancerPoolsAPI extends Stack {
 
     const tokens = api.root.addResource('tokens');
     const tokensOnChain = tokens.addResource('{chainId}');
-    tokensOnChain.addMethod('GET', getTokensIntegration, { 
-      requestParameters: { 
-        "method.request.path.chainId": true
-      }
+    tokensOnChain.addMethod('GET', getTokensIntegration, {
+      requestParameters: {
+        'method.request.path.chainId': true,
+      },
     });
     addCorsOptions(tokens);
 
@@ -459,10 +463,10 @@ export class BalancerPoolsAPI extends Stack {
     addCorsOptions(gnosis);
 
     const checkWallet = api.root.addResource('check-wallet');
-    checkWallet.addMethod('GET', checkWalletIntegration, { 
-      requestParameters: { 
-        "method.request.querystring.address": true
-      }
+    checkWallet.addMethod('GET', checkWalletIntegration, {
+      requestParameters: {
+        'method.request.querystring.address': true,
+      },
     });
     addCorsOptions(checkWallet);
 
@@ -484,88 +488,90 @@ export class BalancerPoolsAPI extends Stack {
       name: 'RateLimits',
       description: 'Rate Limiting for API Gateway',
       defaultAction: {
-        allow: {}
+        allow: {},
       },
       scope: 'REGIONAL',
       visibilityConfig: {
         sampledRequestsEnabled: true,
         cloudWatchMetricsEnabled: true,
-        metricName: 'RateLimits'
+        metricName: 'RateLimits',
       },
-      rules: [{
-        name: 'BlockSpamForWalletCheck',
-        priority: 0,
-        statement: {
-          rateBasedStatement: {
-            limit: 100,
-            aggregateKeyType: 'IP',
-            scopeDownStatement: {
-              byteMatchStatement: {
-                searchString: 'wallet',
-                fieldToMatch: {
-                  uriPath: {}
+      rules: [
+        {
+          name: 'BlockSpamForWalletCheck',
+          priority: 0,
+          statement: {
+            rateBasedStatement: {
+              limit: 100,
+              aggregateKeyType: 'IP',
+              scopeDownStatement: {
+                byteMatchStatement: {
+                  searchString: 'wallet',
+                  fieldToMatch: {
+                    uriPath: {},
+                  },
+                  textTransformations: [
+                    {
+                      priority: 0,
+                      type: 'NONE',
+                    },
+                  ],
+                  positionalConstraint: 'CONTAINS',
                 },
-                textTransformations: [
-                  {
-                    priority: 0,
-                    type: 'NONE'
-                  }
-                ],
-                positionalConstraint: 'CONTAINS'
               },
-            }
-          }
+            },
+          },
+          action: {
+            block: {
+              customResponse: {
+                responseCode: 429,
+              },
+            },
+          },
+          visibilityConfig: {
+            sampledRequestsEnabled: true,
+            cloudWatchMetricsEnabled: true,
+            metricName: 'BlockSpamForWalletCheck',
+          },
         },
-        action: {
-          block: {
-            customResponse: {
-              responseCode: 429
-            }
-          }
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'BlockSpamForWalletCheck'
-        }
-      },
-      {
-        name: 'BlockSpamForTenderly',
-        priority: 1,
-        statement: {
-          rateBasedStatement: {
-            limit: 1000,
-            aggregateKeyType: 'IP',
-            scopeDownStatement: {
-              byteMatchStatement: {
-                searchString: 'tenderly',
-                fieldToMatch: {
-                  uriPath: {}
+        {
+          name: 'BlockSpamForTenderly',
+          priority: 1,
+          statement: {
+            rateBasedStatement: {
+              limit: 1000,
+              aggregateKeyType: 'IP',
+              scopeDownStatement: {
+                byteMatchStatement: {
+                  searchString: 'tenderly',
+                  fieldToMatch: {
+                    uriPath: {},
+                  },
+                  textTransformations: [
+                    {
+                      priority: 0,
+                      type: 'NONE',
+                    },
+                  ],
+                  positionalConstraint: 'CONTAINS',
                 },
-                textTransformations: [
-                  {
-                    priority: 0,
-                    type: 'NONE'
-                  }
-                ],
-                positionalConstraint: 'CONTAINS'
               },
-            }
-          }
+            },
+          },
+          action: {
+            block: {
+              customResponse: {
+                responseCode: 429,
+              },
+            },
+          },
+          visibilityConfig: {
+            sampledRequestsEnabled: true,
+            cloudWatchMetricsEnabled: true,
+            metricName: 'BlockSpamForTenderly',
+          },
         },
-        action: {
-          block: {
-            customResponse: {
-              responseCode: 429
-            }
-          }
-        },
-        visibilityConfig: {
-          sampledRequestsEnabled: true,
-          cloudWatchMetricsEnabled: true,
-          metricName: 'BlockSpamForTenderly'
-        }
-      }] 
+      ],
     });
 
     /**
@@ -578,7 +584,7 @@ export class BalancerPoolsAPI extends Stack {
 
     new CfnWebACLAssociation(this, 'apigw-waf-ratelimit-wallet-check', {
       webAclArn: rateLimits.attrArn,
-      resourceArn: apiGatewayArn
+      resourceArn: apiGatewayArn,
     });
 
     /**
@@ -641,28 +647,34 @@ export class BalancerPoolsAPI extends Stack {
      * ApiGateway Appsync Path
      */
     const graphQLApiEndpoint = api.root.addResource('graphql');
-    graphQLApiEndpoint.addMethod('POST', new HttpIntegration(graphqlApi.graphqlUrl, {
-      proxy: true,
-      httpMethod: 'POST',
-      options: {
-        integrationResponses: [{
-          statusCode: '200'
-        }],
-        requestParameters: {
-          'integration.request.header.x-api-key': `'${graphqlApi.apiKey}'`
-        }
-      },
-    }), {  
-      methodResponses: [{
-        statusCode: '200',
-        responseModels: {
-          'application/json': Model.EMPTY_MODEL
-        }
-      }]
-   });
-   addCorsOptions(graphQLApiEndpoint);
-
-
+    graphQLApiEndpoint.addMethod(
+      'POST',
+      new HttpIntegration(graphqlApi.graphqlUrl, {
+        proxy: true,
+        httpMethod: 'POST',
+        options: {
+          integrationResponses: [
+            {
+              statusCode: '200',
+            },
+          ],
+          requestParameters: {
+            'integration.request.header.x-api-key': `'${graphqlApi.apiKey}'`,
+          },
+        },
+      }),
+      {
+        methodResponses: [
+          {
+            statusCode: '200',
+            responseModels: {
+              'application/json': Model.EMPTY_MODEL,
+            },
+          },
+        ],
+      }
+    );
+    addCorsOptions(graphQLApiEndpoint);
   }
 }
 

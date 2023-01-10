@@ -8,7 +8,6 @@ import { PoolDecorator } from '../pools/pool.decorator';
 
 const { CHAIN_ID } = process.env;
 
-
 export const handler = wrapHandler(async (): Promise<any> => {
   const log = console.log;
 
@@ -28,7 +27,7 @@ export const handler = wrapHandler(async (): Promise<any> => {
       pool => pool.lastUpdate >= decorateStartTime
     );
     log(`Saving ${modifiedPools.length} modified pools to the database`);
-    await updatePools(modifiedPools, {ignoreStaticData: true});
+    await updatePools(modifiedPools, { ignoreStaticData: true });
     log(`Saved decorated pools for chain ${chainId}`);
     return { statusCode: 201, body: '' };
   } catch (err) {

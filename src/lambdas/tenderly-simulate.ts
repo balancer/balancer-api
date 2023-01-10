@@ -1,3 +1,4 @@
+import { wrapHandler } from '../plugins/sentry';
 import fetch from 'isomorphic-fetch';
 import { formatResponse, isBodyValid } from './utils';
 
@@ -5,7 +6,7 @@ const { TENDERLY_USER, TENDERLY_PROJECT, TENDERLY_ACCESS_KEY } = process.env;
 
 const TENDERLY_ENDPOINT = `https://api.tenderly.co/api/v1/account/${TENDERLY_USER}/project/${TENDERLY_PROJECT}/simulate`;
 
-export const handler = async ({ body }: any = {}): Promise<any> => {
+export const handler = wrapHandler(async ({ body }: any = {}): Promise<any> => {
   if (!body) {
     return formatResponse(
       400,
@@ -64,4 +65,4 @@ export const handler = async ({ body }: any = {}): Promise<any> => {
     console.log(`Error when trying to simulate: ${e}`);
     return formatResponse(500, 'Unable to perform simulation');
   }
-};
+});

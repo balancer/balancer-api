@@ -1,3 +1,4 @@
+import { wrapHandler } from '../plugins/sentry';
 import { getSorSwap } from '../sor';
 import { isValidChainId } from '../utils';
 import {
@@ -5,7 +6,7 @@ import {
   MISSING_CHAIN_ID_ERROR,
 } from '../constants/errors';
 
-export const handler = async (event: any = {}): Promise<any> => {
+export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);
   if (!chainId) {
     return MISSING_CHAIN_ID_ERROR;
@@ -29,4 +30,4 @@ export const handler = async (event: any = {}): Promise<any> => {
   } catch (dbError) {
     return { statusCode: 500, body: JSON.stringify(dbError) };
   }
-};
+});

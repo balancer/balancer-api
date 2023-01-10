@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { Pool } from '../../src/types';
 import {
   Pools,
@@ -35,6 +36,7 @@ export class PoolService {
       const calculatedLiquidity = await this.pools.liquidity(this.pool);
       poolLiquidity = calculatedLiquidity;
     } catch (e) {
+      captureException(e, { extra: { pool: this.pool }});
       console.error(
         `Failed to calculate liquidity. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
@@ -47,8 +49,10 @@ export class PoolService {
     }
 
     if (Number(poolLiquidity) == 0 && Number(this.pool.totalLiquidity) > 0) {
+      const liquidityZeroError = `Failed to calculate liquidity. Calculator returned ${poolLiquidity}`;
+      captureException(new Error(liquidityZeroError), { extra: { pool: this.pool }})
       console.error(
-        `Failed to calculate liquidity. Calculator returned ${poolLiquidity}\n
+        `${liquidityZeroError}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
       );
     }
@@ -113,6 +117,7 @@ export class PoolService {
       }
       poolApr = apr;
     } catch (e) {
+      captureException(e, { extra: { pool: this.pool }});
       console.error(
         `Failed to calculate APR. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
@@ -144,6 +149,7 @@ export class PoolService {
       const volume = await this.pools.volume(this.pool);
       volumeSnapshot = volume.toString();
     } catch (e) {
+      captureException(e, { extra: { pool: this.pool }});
       console.error(
         `Failed to calculate Volume. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`
@@ -166,6 +172,7 @@ export class PoolService {
       const fees = await this.pools.fees(this.pool);
       feesSnapshot = fees.toString();
     } catch (e) {
+      captureException(e, { extra: { pool: this.pool }});
       console.error(
         `Failed to calculate Fees. Error is:  ${e}\n
         Pool is:  ${util.inspect(this.pool, false, null)}\n`

@@ -49,6 +49,7 @@ const {
   TENDERLY_USER,
   TENDERLY_PROJECT,
   TENDERLY_ACCESS_KEY,
+  SENTRY_DSN,
 } = process.env;
 
 let SELECTED_NETWORKS: Record<string, number> = PRODUCTION_NETWORKS;
@@ -155,6 +156,7 @@ export class BalancerPoolsAPI extends Stack {
       },
       environment: {
         INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
+        SENTRY_DSN: SENTRY_DSN || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15),
@@ -321,7 +323,7 @@ export class BalancerPoolsAPI extends Stack {
     const getPoolIntegration = new LambdaIntegration(getPoolLambda, {
       proxy: true,
       cacheKeyParameters: ["method.request.path.chainId", "method.request.path.id"],
-      cacheNamespace: 'chainId-poolId',
+      cacheNamespace: 'getPool',
       requestParameters: {
         "integration.request.path.chainId": "method.request.path.chainId",
         "integration.request.path.id": "method.request.path.id"
@@ -330,7 +332,7 @@ export class BalancerPoolsAPI extends Stack {
     const getPoolsIntegration = new LambdaIntegration(getPoolsLambda, {
       proxy: true,
       cacheKeyParameters: ["method.request.path.chainId"],
-      cacheNamespace: 'chainId',
+      cacheNamespace: 'getPools',
       requestParameters: {
         "integration.request.path.chainId": "method.request.path.chainId"
       }
@@ -338,7 +340,7 @@ export class BalancerPoolsAPI extends Stack {
     const getTokensIntegration = new LambdaIntegration(getTokensLambda, {
       proxy: true,
       cacheKeyParameters: ["method.request.path.chainId"],
-      cacheNamespace: 'chainId',
+      cacheNamespace: 'getTokens',
       requestParameters: {
         "integration.request.path.chainId": "method.request.path.chainId"
       }

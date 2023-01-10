@@ -1,3 +1,4 @@
+import { wrapHandler } from '../plugins/sentry';
 import fetch from 'isomorphic-fetch';
 import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '../types';
 import { formatResponse } from './utils';
@@ -6,7 +7,7 @@ const SANCTIONS_ENDPOINT =
   'https://api.trmlabs.com/public/v2/screening/addresses';
 const { SANCTIONS_API_KEY } = process.env;
 
-export const handler = async (event: any = {}): Promise<any> => {
+export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   const address = event.queryStringParameters.address;
   if (!address) {
     return formatResponse(
@@ -61,4 +62,4 @@ export const handler = async (event: any = {}): Promise<any> => {
     );
     return formatResponse(500, 'Unable to perform sanctions check');
   }
-};
+});

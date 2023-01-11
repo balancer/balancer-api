@@ -1,5 +1,13 @@
 import { CfnWebACL, CfnWebACLProps } from 'aws-cdk-lib/aws-wafv2';
 
+/**
+ * Create a Rule
+ * 
+ * @param name The name of the rule and metric name 
+ * @param searchString If a URL contains this string this rule will be applied
+ * @param limit max requests per 5 min period
+ * @returns RuleProperty object
+ */
 function createRule(name: string, searchString: string, limit: number): CfnWebACL.RuleProperty {
   const rule = {
     name,
@@ -41,6 +49,12 @@ function createRule(name: string, searchString: string, limit: number): CfnWebAC
   return rule;
 }
 
+/**
+ * Iterates through all rules and adds an incremental priority to each
+ *  
+ * @param rules An array of rules
+ * @returns 
+ */
 function formatRules(
   rules: CfnWebACL.RuleProperty[]
 ): CfnWebACL.RuleProperty[] {

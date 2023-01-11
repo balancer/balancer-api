@@ -11,9 +11,8 @@ import {
   Model,
   HttpIntegration,
 } from 'aws-cdk-lib/aws-apigateway';
-import { AttributeType, Table, ProjectionType } from 'aws-cdk-lib/aws-dynamodb';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
-import { App, Stack, RemovalPolicy, Duration, Expiration } from 'aws-cdk-lib';
+import { App, Stack, Duration, Expiration } from 'aws-cdk-lib';
 import {
   NodejsFunction,
   NodejsFunctionProps,
@@ -33,6 +32,7 @@ import { CfnWebACL, CfnWebACLAssociation } from 'aws-cdk-lib/aws-wafv2';
 import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { DynamoDBStack, DynamoDBStackProps } from './cdk/dynamodb-stack';
 
 const {
   INFURA_PROJECT_ID,
@@ -87,64 +87,40 @@ const TOKENS_WRITE_CAPACITY = Number.parseInt(
   DYNAMODB_TOKENS_WRITE_CAPACITY || '10'
 );
 
+const dynamoDbStackProps: DynamoDBStackProps = {
+  capacity: {
+    pools: {
+      general:{
+        read: POOLS_READ_CAPACITY,
+        write: POOLS_WRITE_CAPACITY
+      },
+      byTotalLiquidity: {
+        read: POOLS_IDX_READ_CAPACITY,
+        write: POOLS_IDX_WRITE_CAPACITY
+      }
+    },
+    tokens: {
+      general: {
+        read: TOKENS_READ_CAPACITY,
+        write: TOKENS_WRITE_CAPACITY
+      }
+    }
+  }
+}
+
 const DECORATE_POOLS_INTERVAL = Number.parseInt(
   DECORATE_POOLS_INTERVAL_IN_MINUTES || '5'
 );
 
 const BALANCER_API_KEY_EXPIRATION = Date.now() + 365 * 24 * 60 * 60 * 1000; // For GraphQL API - Maximum expiry time is 1 year
 
+const app = new App();
+
+const dynamodb = new DynamoDBStack(app, 'DynamoDbStack', dynamoDbStackProps);
+
 export class BalancerPoolsAPI extends Stack {
   constructor(app: App, id: string) {
     super(app, id);
-
-    /**
-     * DynamoDB Tables
-     */
-
-    const poolsTable = new Table(this, 'pools', {
-      partitionKey: {
-        name: 'id',
-        type: AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'chainId',
-        type: AttributeType.NUMBER,
-      },
-      tableName: 'pools',
-      removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: POOLS_READ_CAPACITY,
-      writeCapacity: POOLS_WRITE_CAPACITY,
-    });
-
-    poolsTable.addGlobalSecondaryIndex({
-      indexName: 'byTotalLiquidity',
-      partitionKey: {
-        name: 'chainId',
-        type: AttributeType.NUMBER,
-      },
-      sortKey: {
-        name: 'totalLiquidity',
-        type: AttributeType.NUMBER,
-      },
-      readCapacity: POOLS_IDX_READ_CAPACITY,
-      writeCapacity: POOLS_IDX_WRITE_CAPACITY,
-      projectionType: ProjectionType.ALL,
-    });
-
-    const tokensTable = new Table(this, 'tokens', {
-      partitionKey: {
-        name: 'address',
-        type: AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'chainId',
-        type: AttributeType.NUMBER,
-      },
-      tableName: 'tokens',
-      removalPolicy: RemovalPolicy.DESTROY,
-      readCapacity: TOKENS_READ_CAPACITY,
-      writeCapacity: TOKENS_WRITE_CAPACITY,
-    });
 
     /**
      * Lambdas
@@ -296,24 +272,24 @@ export class BalancerPoolsAPI extends Stack {
      * Access Rules
      */
 
-    poolsTable.grantReadData(getPoolsLambda);
-    poolsTable.grantReadData(getPoolLambda);
-    poolsTable.grantReadWriteData(runSORLambda);
+    dynamodb.tables.pools.grantReadData(getPoolsLambda);
+    dynamodb.tables.pools.grantReadData(getPoolLambda);
+    dynamodb.tables.pools.grantReadWriteData(runSORLambda);
     Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
-      poolsTable.grantReadWriteData(updatePoolsLambda);
+      dynamodb.tables.pools.grantReadWriteData(updatePoolsLambda);
     });
     Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
-      poolsTable.grantReadWriteData(decoratePoolsLambda);
+      dynamodb.tables.pools.grantReadWriteData(decoratePoolsLambda);
     });
 
-    tokensTable.grantReadData(getTokensLambda);
-    tokensTable.grantReadWriteData(runSORLambda);
-    tokensTable.grantReadWriteData(updateTokenPricesLambda);
+    dynamodb.tables.tokens.grantReadData(getTokensLambda);
+    dynamodb.tables.tokens.grantReadWriteData(runSORLambda);
+    dynamodb.tables.tokens.grantReadWriteData(updateTokenPricesLambda);
     Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
-      tokensTable.grantReadData(decoratePoolsLambda);
+      dynamodb.tables.tokens.grantReadData(decoratePoolsLambda);
     });
     Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
-      tokensTable.grantReadWriteData(updatePoolsLambda);
+      dynamodb.tables.tokens.grantReadWriteData(updatePoolsLambda);
     });
 
     /**
@@ -628,7 +604,7 @@ export class BalancerPoolsAPI extends Stack {
 
     const poolsApi = new DynamoDbDataSource(this, 'poolsApiDataSource', {
       api: graphqlApi,
-      table: poolsTable,
+      table: dynamodb.tables.pools,
       serviceRole: poolsTableRole,
     });
 
@@ -717,6 +693,6 @@ export function addCorsOptions(apiResource: IResource) {
   );
 }
 
-const app = new App();
+
 new BalancerPoolsAPI(app, 'BalancerPoolsAPI');
 app.synth();

@@ -33,6 +33,7 @@ import { CfnWebACL, CfnWebACLAssociation } from 'aws-cdk-lib/aws-wafv2';
 import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { rateLimitSettings } from './cdk/waf';
 
 const {
   INFURA_PROJECT_ID,
@@ -484,95 +485,7 @@ export class BalancerPoolsAPI extends Stack {
      * Web Application Firewall
      */
 
-    const rateLimits = new CfnWebACL(this, 'rateLimits', {
-      name: 'RateLimits',
-      description: 'Rate Limiting for API Gateway',
-      defaultAction: {
-        allow: {},
-      },
-      scope: 'REGIONAL',
-      visibilityConfig: {
-        sampledRequestsEnabled: true,
-        cloudWatchMetricsEnabled: true,
-        metricName: 'RateLimits',
-      },
-      rules: [
-        {
-          name: 'BlockSpamForWalletCheck',
-          priority: 0,
-          statement: {
-            rateBasedStatement: {
-              limit: 100,
-              aggregateKeyType: 'IP',
-              scopeDownStatement: {
-                byteMatchStatement: {
-                  searchString: 'wallet',
-                  fieldToMatch: {
-                    uriPath: {},
-                  },
-                  textTransformations: [
-                    {
-                      priority: 0,
-                      type: 'NONE',
-                    },
-                  ],
-                  positionalConstraint: 'CONTAINS',
-                },
-              },
-            },
-          },
-          action: {
-            block: {
-              customResponse: {
-                responseCode: 429,
-              },
-            },
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: true,
-            cloudWatchMetricsEnabled: true,
-            metricName: 'BlockSpamForWalletCheck',
-          },
-        },
-        {
-          name: 'BlockSpamForTenderly',
-          priority: 1,
-          statement: {
-            rateBasedStatement: {
-              limit: 1000,
-              aggregateKeyType: 'IP',
-              scopeDownStatement: {
-                byteMatchStatement: {
-                  searchString: 'tenderly',
-                  fieldToMatch: {
-                    uriPath: {},
-                  },
-                  textTransformations: [
-                    {
-                      priority: 0,
-                      type: 'NONE',
-                    },
-                  ],
-                  positionalConstraint: 'CONTAINS',
-                },
-              },
-            },
-          },
-          action: {
-            block: {
-              customResponse: {
-                responseCode: 429,
-              },
-            },
-          },
-          visibilityConfig: {
-            sampledRequestsEnabled: true,
-            cloudWatchMetricsEnabled: true,
-            metricName: 'BlockSpamForTenderly',
-          },
-        },
-      ],
-    });
+    const rateLimits = new CfnWebACL(this, 'rateLimits', rateLimitSettings);
 
     /**
      * Connect WAF to API Gateway
@@ -605,7 +518,7 @@ export class BalancerPoolsAPI extends Stack {
      */
     const graphqlApi = new GraphqlApi(this, 'Api', {
       name: 'poolsApi',
-      schema: Schema.fromAsset(join(__dirname, 'appsync/pools/schema.graphql')),
+      schema: Schema.fromAsset(join(__dirname, 'cdk/appsync/pools/schema.graphql')),
       authorizationConfig: {
         defaultAuthorization: {
           authorizationType: AuthorizationType.API_KEY,
@@ -636,10 +549,10 @@ export class BalancerPoolsAPI extends Stack {
       typeName: 'Query',
       fieldName: 'pools',
       requestMappingTemplate: MappingTemplate.fromFile(
-        join(__dirname, 'appsync/pools/requestMapper.vtl')
+        join(__dirname, 'cdk/appsync/pools/requestMapper.vtl')
       ),
       responseMappingTemplate: MappingTemplate.fromFile(
-        join(__dirname, 'appsync/pools/responseMapper.vtl')
+        join(__dirname, 'cdk/appsync/pools/responseMapper.vtl')
       ),
     });
 

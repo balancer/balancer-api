@@ -105,12 +105,17 @@ Note: Everything inside the AWS container is setup by the CDK scripts in this re
 
 The `{chainId}` in each endpoint is the chain/network number you wish to request from. 1 for Mainnet, 137 for Polygon, 42161 for Arbitrum etc.
 
+- `/graphql` - GraphQL endpoint for retrieving pools with filters / queries. Forwards requests to Appsync. See 'GraphQL Requests' section for more info.
 - `/pools/{chainId}/update` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
 - `/pools/{chainId}` - Returns a JSON array of all Balancer pools of that chain
 - `/pools/{chainId}/{id}` - Returns JSON information about a pool of a specific `id`.
 - `/sor/{chainId}` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
 - `/tokens/{chainId}` - Returns a JSON array of all known tokens of that chain
 - `/tokens/update/` - Runs the worker lambda that for every known token, fetches the latest price (in the chains native asset) from coingecko and saves it in the database.
+
+- `/check-wallet` - Used to perform sanctions checks with TRM.
+- `/tenderly/contracts/encode-states` - Encodes state information with Tenderly
+- `/tenderly/simulate` - Simulate a transaction with Tenderly
 
 ### Update Pools Lambda
 
@@ -226,12 +231,9 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13C
 curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
 ```
 
-## AppSync GraphQL endpoints
+## GraphQL Requests
 
-To find your GraphQL URL and API Key you'll need to visit the AWS console and go to AppSync -> settings. Copy and paste these
-values into your .env file as `APPSYNC_URL` and `APPSYNC_KEY` for testing.
-
-You can run `npm run build` then run the script `dist/scripts/graphql-query.ts` to see example requests fetching pools from the API.
+You can run `npm run build` then run the script `node dist/scripts/graphql-query.js` to see example requests fetching pools from the API.
 
 ## Options
 
@@ -249,9 +251,13 @@ You can customize your deployment with env variables. See .env.example for all p
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 10 - The write capacity of the secondary indexes on the `pools` DynamoDB table.
 - DYNAMODB_TOKENS_READ_CAPACITY - default: 10 - The read capcity of the `tokens` DynamoDB table.
 - DYNAMODB_TOKENS_WRITE_CAPACITY - default: 10 - The write capacity of the `tokens` DynamoDB tbale.
-- DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created
-- SANCTIONS_API_KEY - TRM API key for running sanction checks
-- DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda
+- DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created.
+- SANCTIONS_API_KEY - TRM API key for running sanction checks.
+- DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda.
+- TENDERLY_USER - Your Tenderly user id, used by the `/tenderly` endpoints.
+- TENDERLY_PROJECT - Your Tenderly project id, used by the `/tenderly` endpoints.
+- TENDERLY_ACCESS_KEY - Your tenderly access key, used by the `/tenderly` endpoints.
+- SENTRY_DSN - Your Sentry account DSN, if you'd like to send errors to Sentry
 
 ## Common Issues
 

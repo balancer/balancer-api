@@ -1,11 +1,11 @@
 const axios = require('axios');
 const util = require('util');
 
-const { APPSYNC_URL, APPSYNC_KEY } = process.env;
+const { ENDPOINT_URL } = process.env;
 
-if (!APPSYNC_URL || !APPSYNC_KEY) {
+if (!ENDPOINT_URL) {
   console.error(
-    'You need to set the env variables APPSYNC_URL and APPSYNC_KEY before running this script'
+    'You need to set the env variable ENDPOINT_URL before running this script'
   );
   process.exit(1);
 }
@@ -98,13 +98,9 @@ const complexQuery = `query {
 
 async function runQuery(query) {
   try {
-    const url = APPSYNC_URL;
+    const url = `${ENDPOINT_URL}/graphql`;
     const payload = { query };
-    const { data } = await axios.post(url, payload, {
-      headers: {
-        'x-api-key': APPSYNC_KEY,
-      },
-    });
+    const { data } = await axios.post(url, payload);
 
     if (data.errors) {
       throw new Error(

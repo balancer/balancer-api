@@ -77,6 +77,7 @@ export const POOL_SCHEMA: Schema = {
   swapFee: { type: 'BigDecimal', static: false },
 
   protocolYieldFeeCache: { type: 'String', static: false },
+  protocolSwapFeeCache: { type: 'String', static: false },
 
   totalWeight: { type: 'BigDecimal', static: true },
   totalSwapVolume: { type: 'BigDecimal', static: false },

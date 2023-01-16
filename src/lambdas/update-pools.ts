@@ -34,9 +34,9 @@ export const handler = wrapHandler(async (): Promise<any> => {
     changedPools = getChangedPools(pools, currentPools);
     log(`Saving ${changedPools.length} pools for chain ${chainId} to database`);
     await updatePools(changedPools);
-  } catch (dbError) {
-    captureException(dbError);
-    log(`Received db error updating pools: ${dbError}`);
+  } catch (e) {
+    captureException(e);
+    log(`Received db error updating pools: ${e}`);
     didError = true;
   }
 
@@ -56,9 +56,9 @@ export const handler = wrapHandler(async (): Promise<any> => {
     const tokens = await fetchTokens(chainId, filteredTokenAddresses);
     await updateTokens(tokens);
     log(`Saved ${filteredTokenAddresses.length} Tokens`);
-  } catch (dbError) {
-    captureException(dbError);
-    log(`Received db error updating tokens: ${dbError}`);
+  } catch (e) {
+    captureException(e);
+    log(`Received db error updating tokens: ${e}`);
     didError = true;
   }
 

@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { Price, CoingeckoPriceRepository } from '@balancer-labs/sdk';
 import { getPlatformId, getNativeAssetPriceSymbol, formatPrice } from './utils';
 import { Token } from './types';
@@ -115,6 +116,9 @@ class PriceFetcher {
       } else if (err.code >= 500) {
         console.error('Error was a server error. Re-adding tokens to queue.');
         this.queue = this.queue.concat(nextBatch);
+      } else {
+        console.error('Unknown Error from Coingecko. Aborting.');
+        captureException(err, { extra: { batch: nextBatch } })
       }
     }
 

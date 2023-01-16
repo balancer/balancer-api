@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { wrapHandler } from '../plugins/sentry';
 import { getPool } from '../data-providers/dynamodb';
 import { isValidChainId } from '../utils';
@@ -28,7 +29,8 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     } else {
       return formatResponse(404);
     }
-  } catch (dbError) {
+  } catch (e) {
+    captureException(e);
     return formatResponse(500, 'Internal DB Error');
   }
 });

@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { wrapHandler } from '../plugins/sentry';
 import fetch from 'isomorphic-fetch';
 import { formatResponse, isBodyValid } from './utils';
@@ -35,6 +36,7 @@ export const handler = wrapHandler(async ({ body }: any = {}): Promise<any> => {
 
     return formatResponse(200, JSON.stringify(result));
   } catch (e) {
+    captureException(e);
     console.log(`Couldn't encode state overrides: ${e}`);
     return formatResponse(500, "Couldn't encode state overrides");
   }

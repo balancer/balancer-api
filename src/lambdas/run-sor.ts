@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { wrapHandler } from '../plugins/sentry';
 import { getSorSwap } from '../sor';
 import { isValidChainId } from '../utils';
@@ -27,7 +28,8 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   try {
     const swapInfo = await getSorSwap(chainId, sorRequest);
     return { statusCode: 200, body: JSON.stringify(swapInfo) };
-  } catch (dbError) {
-    return { statusCode: 500, body: JSON.stringify(dbError) };
+  } catch (e) {
+    captureException(e);
+    return { statusCode: 500, body: JSON.stringify(e) };
   }
 });

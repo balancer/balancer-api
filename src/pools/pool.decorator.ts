@@ -99,6 +99,7 @@ export class PoolDecorator {
         this.poolsRepositories
       );
     } catch (e) {
+      captureException(e, { extra: { pool } })
       console.log(
         `Failed to initialize pool service. Error is: ${e}. Pool is:  ${util.inspect(
           pool,

@@ -1,4 +1,5 @@
 /* Functions for writing and reading to DynamoDB database */
+import { captureException } from '@sentry/serverless';
 import AWS from 'aws-sdk';
 import {
   MAX_BATCH_WRITE_SIZE,
@@ -77,18 +78,19 @@ export async function updatePools(pools: Pool[], options?: UpdatePoolOptions) {
         TransactItems: poolUpdateRequests,
       };
       await dynamodb
-        .transactWriteItems(params, err => {
-          if (err) {
-            if (err.code === 'ProvisionedThroughputExceededException') {
+        .transactWriteItems(params, e => {
+          if (e) {
+            if (e.code === 'ProvisionedThroughputExceededException') {
               console.error(
                 'Unable to update pools - Table Throughput exceeded'
               );
               return;
             }
+            captureException(e, { extra: { poolUpdateRequests }});
             console.error(
               `Unable to update pools ${JSON.stringify(
                 poolUpdateRequests
-              )} Error JSON: ${JSON.stringify(err, null, 2)}`
+              )} Error JSON: ${JSON.stringify(e, null, 2)}`
             );
           }
         })
@@ -126,6 +128,7 @@ export async function getPools(
     return pools.Items.map(ddbItem => unmarshallPool(ddbItem)) as Pool[];
   } catch (e) {
     console.error('Failed to get pools, error is: ', e);
+    captureException(e, { extra: { chainId } })
     return [];
   }
 }
@@ -153,6 +156,7 @@ export async function queryPools(
     return pools.Items.map(ddbItem => unmarshallPool(ddbItem)) as Pool[];
   } catch (e) {
     console.error('Failed to get pools, error is: ', e);
+    captureException(e, { extra: { additionalParams, lastResult } })
     return [];
   }
 }
@@ -173,6 +177,7 @@ export async function getPool(chainId: number, id: string) {
     return unmarshalledPool;
   } catch (e) {
     console.error(`Failed to get pool: ${chainId}, ${id}. Error is:`, e);
+    captureException(e, { extra: { chainId, id } })
   }
 }
 
@@ -192,6 +197,7 @@ export async function getToken(
     return token.Item as Token;
   } catch (e) {
     console.error(`Failed to get token: ${chainId}, ${address}. Error is:`, e);
+    captureException(e, { extra: { chainId, address } })
   }
 }
 
@@ -223,6 +229,7 @@ export async function getTokens(
     return tokens.Items as Token[];
   } catch (e) {
     console.error('Failed to get tokens, error is: ', e);
+    captureException(e, { extra: { chainId } })
     return [];
   }
 }
@@ -240,8 +247,9 @@ export async function updateToken(tokenInfo: Token) {
 
   try {
     await docClient.put(params).promise();
-  } catch (err) {
-    log(`Unable to add token. Error JSON: ${JSON.stringify(err, null, 2)}`);
+  } catch (e) {
+    log(`Unable to add token. Error JSON: ${JSON.stringify(e, null, 2)}`);
+    captureException(e, { extra: { tokenInfo } })
   }
 }
 
@@ -257,13 +265,14 @@ export async function updateTokens(tokens: Token[]) {
       };
 
       return docClient
-        .put(params, err => {
-          if (err) {
+        .put(params, e => {
+          if (e) {
             log(
               `Unable to add token ${
                 token.address
-              }. Error JSON: ${JSON.stringify(err, null, 2)}`
+              }. Error JSON: ${JSON.stringify(e, null, 2)}`
             );
+            captureException(e, { extra: { address: token.address } })
           }
         })
         .promise();
@@ -294,10 +303,10 @@ export async function updateTable(params) {
   log('Updating table with params: ', params);
   try {
     await dynamodb.updateTable(params).promise();
-  } catch (err) {
+  } catch (e) {
     console.error(
       'Unable to update table. Error JSON:',
-      JSON.stringify(err, null, 2)
+      JSON.stringify(e, null, 2)
     );
   }
   log('Updated table ', params.TableName);
@@ -308,10 +317,10 @@ export async function createTable(params) {
   log('Creating table with params: ', params);
   try {
     await dynamodb.createTable(params).promise();
-  } catch (err) {
+  } catch (e) {
     console.error(
       'Unable to create table. Error JSON:',
-      JSON.stringify(err, null, 2)
+      JSON.stringify(e, null, 2)
     );
   }
   log('Created table ', params.TableName);
@@ -321,8 +330,8 @@ export async function deleteTable(name) {
   const dynamodb = getDynamoDB();
   try {
     await dynamodb.deleteTable({ TableName: name }).promise();
-  } catch (err) {
-    console.error('Unable to delete table ', name, ' error: ', err);
+  } catch (e) {
+    console.error('Unable to delete table ', name, ' error: ', e);
   }
   log('Deleted table ', name);
 }

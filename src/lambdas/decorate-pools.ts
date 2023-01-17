@@ -2,6 +2,7 @@
  * This lambda runs after prices have been updated, it updates the liquidity of each pool
  * based on the latest token prices + pool token values.
  */
+import { captureException } from '@sentry/serverless';
 import { wrapHandler } from '../plugins/sentry';
 import { getPools, getTokens, updatePools } from '../data-providers/dynamodb';
 import { PoolDecorator } from '../pools/pool.decorator';
@@ -30,8 +31,9 @@ export const handler = wrapHandler(async (): Promise<any> => {
     await updatePools(modifiedPools, { ignoreStaticData: true });
     log(`Saved decorated pools for chain ${chainId}`);
     return { statusCode: 201, body: '' };
-  } catch (err) {
-    log(`Received error: ${err}`);
-    return { statusCode: 500, body: JSON.stringify(err) };
+  } catch (e) {
+    log(`Received error: ${e}`);
+    captureException(e);
+    return { statusCode: 500, body: JSON.stringify(e) };
   }
 });

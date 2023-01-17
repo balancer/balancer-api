@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { wrapHandler } from '../plugins/sentry';
 import { getTokens } from '../data-providers/dynamodb';
 import { isValidChainId } from '../utils';
@@ -18,7 +19,8 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   try {
     const tokens = await getTokens(chainId);
     return { statusCode: 200, body: JSON.stringify(tokens) };
-  } catch (dbError) {
-    return { statusCode: 500, body: JSON.stringify(dbError) };
+  } catch (e) {
+    captureException(e);
+    return { statusCode: 500, body: 'Internal DB Error'};
   }
 });

@@ -1,3 +1,4 @@
+import { captureException } from '@sentry/serverless';
 import { wrapHandler } from '../plugins/sentry';
 import fetch from 'isomorphic-fetch';
 import { formatResponse, isBodyValid } from './utils';
@@ -62,6 +63,7 @@ export const handler = wrapHandler(async ({ body }: any = {}): Promise<any> => {
       })
     );
   } catch (e) {
+    captureException(e);
     console.log(`Error when trying to simulate: ${e}`);
     return formatResponse(500, 'Unable to perform simulation');
   }

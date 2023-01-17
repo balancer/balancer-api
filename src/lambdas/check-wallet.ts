@@ -1,4 +1,5 @@
 import { wrapHandler } from '../plugins/sentry';
+import { captureException } from '@sentry/serverless';
 import fetch from 'isomorphic-fetch';
 import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '../types';
 import { formatResponse } from './utils';
@@ -60,6 +61,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     console.log(
       `Received error performing wallet check on address ${address}: ${e}`
     );
+    captureException(e, { extra: { address } })
     return formatResponse(500, 'Unable to perform sanctions check');
   }
 });

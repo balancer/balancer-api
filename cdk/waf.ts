@@ -66,7 +66,7 @@ export const rateLimitSettings: CfnWebACLProps = {
   },
   rules: formatRules([
     createRule('BlockSpamForWalletCheck', '/check-wallet', 100),
-    createRule('BlockSpamForTenderly', '/tenderly', 1000),
+    createRule('BlockSpamForTenderly', '/tenderly', 100),
     createRule('BlockSpamForPools', '/pools', 200),
     createRule('BlockSpamForTokens', '/tokens', 100),
     createRule('BlockSpamForSor', '/sor', 100),

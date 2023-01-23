@@ -1,8 +1,9 @@
 const axios = require('axios');
 const util = require('util');
+require('dotenv').config();
 
 const { ENDPOINT_URL } = process.env;
-
+console.log(ENDPOINT_URL);
 if (!ENDPOINT_URL) {
   console.error(
     'You need to set the env variable ENDPOINT_URL before running this script'
@@ -120,12 +121,16 @@ async function runQuery(query) {
 }
 
 async function runTestQueries() {
-  console.log('Fetching basic pools');
-  const basicQueryPools = await runQuery(simpleQuery);
-  console.log(util.inspect(basicQueryPools, false, null));
-  console.log('Fetching detailed pools');
-  const complexQueryPools = await runQuery(complexQuery);
-  console.log(util.inspect(complexQueryPools, false, null));
+  try {
+    console.log('Fetching basic pools');
+    const basicQueryPools = await runQuery(simpleQuery);
+    console.log(util.inspect(basicQueryPools, false, null));
+    console.log('Fetching detailed pools');
+    const complexQueryPools = await runQuery(complexQuery);
+    console.log(util.inspect(complexQueryPools, false, null));
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 runTestQueries();

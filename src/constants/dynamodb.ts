@@ -11,6 +11,7 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
     { AttributeName: 'id', AttributeType: 'S' },
     { AttributeName: 'chainId', AttributeType: 'N' },
     { AttributeName: 'totalLiquidity', AttributeType: 'N' },
+    { AttributeName: 'volumeSnapshot', AttributeType: 'S' },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,
@@ -22,6 +23,20 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
       KeySchema: [
         { AttributeName: 'chainId', KeyType: 'HASH' },
         { AttributeName: 'totalLiquidity', KeyType: 'RANGE' },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+    },
+    {
+      IndexName: 'byVolume',
+      KeySchema: [
+        { AttributeName: 'chainId', KeyType: 'HASH' },
+        { AttributeName: 'volumeSnapshot', KeyType: 'RANGE' },
       ],
       Projection: {
         ProjectionType: 'ALL',

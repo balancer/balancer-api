@@ -402,6 +402,7 @@ export class BalancerPoolsAPI extends Stack {
           status: true,
           user: false,
         }),
+        metricsEnabled: true,
         cachingEnabled: false,
         cacheClusterEnabled: true,
         methodOptions: {

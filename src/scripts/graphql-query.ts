@@ -3,7 +3,7 @@ const util = require('util');
 require('dotenv').config();
 
 const { ENDPOINT_URL } = process.env;
-console.log(ENDPOINT_URL);
+
 if (!ENDPOINT_URL) {
   console.error(
     'You need to set the env variable ENDPOINT_URL before running this script'

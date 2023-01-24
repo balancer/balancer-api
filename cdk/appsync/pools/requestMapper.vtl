@@ -9,11 +9,14 @@
     },
     #if( ${context.arguments.orderBy} == "volume")
         "index": "byVolume",
-    #end
-    #if( ${context.arguments.orderBy} == "totalLiquidity")
+    #else
         "index": "byTotalLiquidity",
     #end
-    "scanIndexForward": ${context.arguments.orderDirection} == "asc",
+    #if( ${context.arguments.orderDirection} == "asc")
+        "scanIndexForward": true,
+    #else
+        "scanIndexForward": false,
+    #end
     #if( ${context.arguments.first} )
         "limit": ${ctx.args.first},
     #end

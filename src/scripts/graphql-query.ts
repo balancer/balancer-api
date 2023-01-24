@@ -34,7 +34,7 @@ const complexQuery = `query {
   pools (
     chainId: 1, 
     first: 10, 
-    orderBy: "byTotalLiquidity", 
+    orderBy: "totalLiquidity", 
     orderDirection: "desc", 
     where: {
       tokensList: {

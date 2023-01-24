@@ -1,13 +1,5 @@
 import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
 
-export interface Order {
-  sellToken: string;
-  buyToken: string;
-  orderKind: string;
-  amount: string;
-  gasPrice: string;
-}
-
 export interface Token extends SDKToken {
   chainId: number;
   lastUpdate?: number;

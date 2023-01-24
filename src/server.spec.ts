@@ -1,6 +1,6 @@
 import { parseUnits } from 'ethers/lib/utils';
 import supertest from 'supertest';
-import { Network } from './constants';
+import { Network, TOKEN_ADDRESSES } from './constants';
 import { SorRequest, SerializedSwapInfo, Token } from './types';
 import {
   createPoolsTable,
@@ -46,16 +46,7 @@ beforeAll(async () => {
   console.log('Running tests...');
 });
 
-const TOKEN_ADDRESSES = {};
-TOKEN_ADDRESSES[Network.MAINNET] = {
-  ETH: '0x0000000000000000000000000000000000000000',
-  BAL: '0xba100000625a3754423978a60c9317c58a424e3d',
-  DAI: '0x6b175474e89094c44da98b954eedeac495271d0f',
-  USDC: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-  WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  USDT: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-  BBAUSD: '0x7b50775383d3d6f0215a8f290f2c9e2eebbeceb2',
-};
+
 
 describe('server.ts', () => {
   describe('GET /pools/:chainId', () => {

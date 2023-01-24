@@ -204,7 +204,7 @@ Order Kind - Set to 'buy' to buy the exact amount of your `buyToken` and sell as
 #### Swap BAL for DAI
 
 ```sh
-curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0xba100000625a3754423978a60c9317c58a424e3d","buyToken":"0x6b175474e89094c44da98b954eedeac495271d0f","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/1
+curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x6b175474e89094c44da98b954eedeac495271d0f","buyToken":"0xba100000625a3754423978a60c9317c58a424e3d","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/1
 ```
 
 #### Swap USDC for DAI

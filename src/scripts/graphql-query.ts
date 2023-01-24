@@ -34,7 +34,7 @@ const complexQuery = `query {
   pools (
     chainId: 1, 
     first: 10, 
-    orderBy: "totalLiquidity", 
+    orderBy: "byTotalLiquidity", 
     orderDirection: "desc", 
     where: {
       tokensList: {
@@ -100,6 +100,7 @@ const complexQuery = `query {
 async function runQuery(query) {
   try {
     const url = `${ENDPOINT_URL}/graphql`;
+    console.log('url', url);
     const payload = { query };
     const { data } = await axios.post(url, payload);
 

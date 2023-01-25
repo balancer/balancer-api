@@ -140,7 +140,7 @@ export class BalancerPoolsAPI extends Stack {
       },
       sortKey: {
         name: 'volumeSnapshot',
-        type: AttributeType.STRING,
+        type: AttributeType.NUMBER,
       },
       readCapacity: POOLS_IDX_READ_CAPACITY,
       writeCapacity: POOLS_IDX_WRITE_CAPACITY,

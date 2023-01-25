@@ -72,7 +72,7 @@ export async function updatePools(pools: Pool[], options?: UpdatePoolOptions) {
     allPoolUpdateRequests,
     MAX_BATCH_WRITE_SIZE
   );
-  return Promise.all(
+  return Promise.allSettled(
     poolUpdateRequestChunks.map(async poolUpdateRequests => {
       const params = {
         TransactItems: poolUpdateRequests,

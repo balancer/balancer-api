@@ -100,7 +100,6 @@ const complexQuery = `query {
 async function runQuery(query) {
   try {
     const url = `${ENDPOINT_URL}/graphql`;
-    console.log('url', url);
     const payload = { query };
     const { data } = await axios.post(url, payload);
 
@@ -122,16 +121,12 @@ async function runQuery(query) {
 }
 
 async function runTestQueries() {
-  try {
-    console.log('Fetching basic pools');
-    const basicQueryPools = await runQuery(simpleQuery);
-    console.log(util.inspect(basicQueryPools, false, null));
-    console.log('Fetching detailed pools');
-    const complexQueryPools = await runQuery(complexQuery);
-    console.log(util.inspect(complexQueryPools, false, null));
-  } catch (error) {
-    console.log(error);
-  }
+  console.log('Fetching basic pools');
+  const basicQueryPools = await runQuery(simpleQuery);
+  console.log(util.inspect(basicQueryPools, false, null));
+  console.log('Fetching detailed pools');
+  const complexQueryPools = await runQuery(complexQuery);
+  console.log(util.inspect(complexQueryPools, false, null));
 }
 
 runTestQueries();

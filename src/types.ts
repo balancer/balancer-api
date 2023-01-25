@@ -87,3 +87,15 @@ export interface TRMEntity {
   trmAppUrl: string;
   trmUrn: string;
 }
+
+export enum SwapTokenType {
+  fixed,
+  min,
+  max,
+}
+
+export interface SwapToken {
+  address: string;
+  amount: BigNumber;
+  type: SwapTokenType;
+}

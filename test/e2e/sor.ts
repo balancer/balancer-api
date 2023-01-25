@@ -1,19 +1,20 @@
 /** Tests fetching common token trades from the SOR endpoint, converting them into a transaction, and simulates with Tenderly to make sure they work*/
 require('dotenv').config();
-import { SerializedSwapInfo, SorRequest } from '../../src/types';
+
+import axios from 'axios';
 import { ADDRESSES } from '../../src/constants/addresses';
 import { Network } from '../../src/constants/general';
-import { AddressZero, MaxInt256 } from '@ethersproject/constants';
+import { AddressZero, MaxUint256 } from '@ethersproject/constants';
 import {
   JsonRpcProvider,
   JsonRpcSigner,
   TransactionRequest,
   TransactionResponse,
 } from '@ethersproject/providers';
+import { SwapTokenType, SwapToken } from '../../src/types';
 import { hexValue } from '@ethersproject/bytes';
 import { parseEther } from '@ethersproject/units';
 import { parseFixed, formatFixed } from '@ethersproject/bignumber';
-import axios from 'axios';
 import { Contract } from '@ethersproject/contracts';
 import {
   BalancerSDK,
@@ -23,25 +24,26 @@ import {
   Swaps,
   SwapType,
 } from '@balancer-labs/sdk';
-import { BigNumber } from 'ethers';
+import { BigNumber, Wallet } from 'ethers';
 import { String } from 'aws-sdk/clients/dynamodb';
 import { Json } from 'aws-sdk/clients/robomaker';
+import {
+  mockSimpleBatchSwap,
+  mockSwapFromFrontend,
+  sorRequest,
+} from '../mocks/sor';
 
 const ERC20_ABI = require('../../src/lib/abi/ERC20.json');
 const { TENDERLY_USER, TENDERLY_PROJECT, TENDERLY_ACCESS_KEY } = process.env;
-const SIMULATE_URL = `https://api.tenderly.co/api/v1/account/${TENDERLY_USER}/project/${TENDERLY_PROJECT}/simulate`;
-const TENDERLY_FORK_API = `https://api.tenderly.co/api/v1/account/${TENDERLY_USER}/project/${TENDERLY_PROJECT}/fork`;
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 const WALLET_ADDRESS =
   process.env.WALLET_ADDRESS || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
+const WALLET_KEY =
+  process.env.WALLET_KEY ||
+  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 
 const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000001';
-
-interface TenderlyForkResponse {
-  forkId: string;
-  forkRPC: string;
-}
 
 const rpcUrl = `http://127.0.0.1:8545`;
 
@@ -60,71 +62,6 @@ const GAS_PRICE = 500 * GWEI;
  * - Turn response into a transaction
  * - Simulate transaction with Tenderly, make sure it completes correctly
  */
-
-const sorRequest: SorRequest = {
-  sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
-  buyToken: '0xba100000625a3754423978a60c9317c58a424e3d',
-  orderKind: 'buy',
-  amount: '1000000000000000000',
-  gasPrice: '10000000',
-};
-
-const sorResponse: SerializedSwapInfo = {
-  tokenAddresses: [
-    '0x6b175474e89094c44da98b954eedeac495271d0f',
-    '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9',
-    '0xba100000625a3754423978a60c9317c58a424e3d',
-  ],
-  swaps: [
-    {
-      poolId:
-        '0xbcae92a7ef7ff3feec11eb3354990640f6e5842f0002000000000000000003d1',
-      assetInIndex: 0,
-      assetOutIndex: 1,
-      amount: '699424720798068046',
-      userData: '0x',
-      returnAmount: '10228131218777839',
-    },
-    {
-      poolId:
-        '0x20facecaa68e9b7c92d2d0ec9136d864df805233000100000000000000000190',
-      assetInIndex: 1,
-      assetOutIndex: 2,
-      amount: '0',
-      userData: '0x',
-      returnAmount: '127660178724891069',
-    },
-    {
-      poolId:
-        '0x4626d81b3a1711beb79f4cecff2413886d461677000200000000000000000011',
-      assetInIndex: 0,
-      assetOutIndex: 2,
-      amount: '300575279201931954',
-      userData: '0x',
-      returnAmount: '46529693520513340',
-    },
-  ],
-  swapAmount: '1000000000000000000',
-  swapAmountForSwaps: '1000000000000000000',
-  returnAmount: '174189872245404409',
-  returnAmountFromSwaps: '174189872245404409',
-  returnAmountConsideringFees: '173586880760688253',
-  tokenIn: '0x6b175474e89094c44da98b954eedeac495271d0f',
-  tokenOut: '0xba100000625a3754423978a60c9317c58a424e3d',
-  marketSp: '4.6423397764319384672265717344106',
-};
-
-export enum SwapTokenType {
-  fixed,
-  min,
-  max,
-}
-
-export interface SwapToken {
-  address: string;
-  amount: BigNumber;
-  type: SwapTokenType;
-}
 
 function calculateLimits(
   tokensIn: SwapToken[],
@@ -153,7 +90,7 @@ function calculateLimits(
   return limits;
 }
 
-function encodeSorResultAsBatchSwap(userAddress: string, swapInfo: SwapInfo) {
+function convertSwapInfoToBatchSwap(userAddress: string, swapInfo: SwapInfo): BatchSwap {
   const tokenIn: SwapToken = {
     address: swapInfo.tokenIn,
     amount: BigNumber.from(swapInfo.swapAmount),
@@ -170,7 +107,7 @@ function encodeSorResultAsBatchSwap(userAddress: string, swapInfo: SwapInfo) {
     swapInfo.tokenAddresses
   );
 
-  const encodedBatchSwapData = Swaps.encodeBatchSwap({
+  const batchSwapData: BatchSwap = {
     kind: SwapType.SwapExactIn,
     swaps: swapInfo.swaps,
     assets: swapInfo.tokenAddresses,
@@ -182,52 +119,9 @@ function encodeSorResultAsBatchSwap(userAddress: string, swapInfo: SwapInfo) {
     },
     limits: limits,
     deadline: '999999999999999999',
-  });
+  };
 
-  // const encodedBatchSwapData = Swaps.encodeBatchSwap({
-  //   kind: SwapType.SwapExactIn,
-  //   swaps: [
-  //     // First pool swap: 0.01ETH > USDC
-  //     {
-  //       poolId:
-  //         '0x96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8000200000000000000000019',
-  //       // ETH
-  //       assetInIndex: 0,
-  //       // USDC
-  //       assetOutIndex: 1,
-  //       amount: '10000000000000000',
-  //       userData: '0x',
-  //     },
-  //     // Second pool swap: 0.01ETH > BAL
-  //     {
-  //       poolId:
-  //         '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014',
-  //       // ETH
-  //       assetInIndex: 0,
-  //       // BAL
-  //       assetOutIndex: 2,
-  //       amount: '10000000000000000',
-  //       userData: '0x',
-  //     },
-  //   ],
-  //   assets: [
-  //     // Balancer use the zero address for ETH and the Vault will wrap/unwrap as neccessary
-  //     AddressZero,
-  //     // USDC
-  //     ADDRESSES[Network.MAINNET].USDC,
-  //     // BAL
-  //     ADDRESSES[Network.MAINNET].BAL,
-  //   ],
-  //   funds: {
-  //     fromInternalBalance: false,
-  //     // These can be different addresses!
-  //     recipient: userAddress,
-  //     sender: userAddress,
-  //     toInternalBalance: false,
-  //   },
-  //   limits: ['20000000000000000', '0', '0'], // +ve for max to send, -ve for min to receive
-  //   deadline: '999999999999999999', // Infinity
-  // });
+  // const encodedBatchSwapData = Swaps.encodeBatchSwap(mockSimpleBatchSwap(userAddress));
 
   // const swapAttributes: SwapAttributes = sdk.swaps.buildSwap({
   //   userAddress,
@@ -240,7 +134,7 @@ function encodeSorResultAsBatchSwap(userAddress: string, swapInfo: SwapInfo) {
 
   // const encodedBatchSwapData = Swaps.encodeBatchSwap(swapAttributes.attributes as BatchSwap)
 
-  return encodedBatchSwapData;
+  return batchSwapData;
 }
 
 async function printBalances(provider: JsonRpcProvider, walletAddress: string) {
@@ -271,41 +165,20 @@ async function printBalances(provider: JsonRpcProvider, walletAddress: string) {
   console.log(`USDC: ${usdcBalance.toString()}`);
 }
 
-async function createTenderlyFork(): Promise<TenderlyForkResponse> {
-  const opts = {
-    headers: {
-      'X-Access-Key': TENDERLY_ACCESS_KEY as string,
-    },
-  };
-
-  const forkBody = {
-    network_id: '1',
-  };
-
-  console.log('Creating fork simulation');
-
-  const resp = await axios.post(TENDERLY_FORK_API, forkBody, opts);
-
-  console.log('Response: ', resp);
-
-  const forkId = resp.data.simulation_fork.id;
-  const forkRPC = `https://rpc.tenderly.co/fork/${forkId}`;
-
-  console.log('Created fork: ', forkId, ' rpc: ', forkRPC);
-
-  return {
-    forkId,
-    forkRPC,
-  };
-}
-
 async function generateToken(
   provider: JsonRpcProvider,
   tokenAddress: string,
   tokenAmount: string,
   walletAddress: string
 ) {
-  console.log("Generating ", tokenAddress, " amount: ", tokenAmount, " to wallet: ", walletAddress);
+  console.log(
+    'Generating ',
+    tokenAddress,
+    ' amount: ',
+    tokenAmount,
+    ' to wallet: ',
+    walletAddress
+  );
 
   const signer = provider.getSigner();
   const tokenContract = new Contract(tokenAddress, ERC20_ABI, signer);
@@ -313,8 +186,8 @@ async function generateToken(
   const unsignedTx = await tokenContract.populateTransaction.approve(
     // ADMIN_ADDRESS,
     await signer.getAddress(),
-    // tokenAmount,
-    MaxInt256.toString()
+    tokenAmount,
+    // MaxUint256.toString()
   );
 
   const transactionParameters = [
@@ -332,18 +205,7 @@ async function generateToken(
     transactionParameters
   );
 
-  console.log('TX info: ', txHash);
-
-  // await txHash.wait();
-
-  console.log(
-    'Transferring ',
-    tokenAmount,
-    ' from ',
-    ADMIN_ADDRESS,
-    ' to ',
-    walletAddress
-  );
+  console.log('Transferring ', tokenAmount, ' to ', walletAddress);
   const respTxTransfer = await tokenContract.transferFrom(
     ADMIN_ADDRESS,
     walletAddress,
@@ -355,9 +217,23 @@ async function generateToken(
   console.log('Transfer: ', respTxTransfer);
 }
 
+export const approveToken = async (
+  token: string,
+  amount: string,
+  signer: JsonRpcSigner
+): Promise<boolean> => {
+  console.log('Approving token ', token);
+  const tokenContract = new Contract(token, ERC20_ABI, signer);
+  return await tokenContract
+    .connect(signer)
+    .approve(ADDRESSES[Network.MAINNET].contracts.vault, amount);
+};
+
 async function initializeSimulation(walletAddress) {
   const provider = new JsonRpcProvider(rpcUrl, Network.MAINNET);
   const signer = provider.getSigner();
+  const wallet = new Wallet(WALLET_KEY, provider);
+  // const walletSigner = wallet.getSi
 
   const initialETH = parseEther('444').toHexString(10);
 
@@ -380,36 +256,62 @@ async function initializeSimulation(walletAddress) {
   await generateToken(
     provider,
     ADDRESSES[Network.MAINNET].DAI,
-    parseFixed('444', 18).toHexString(10),
+    parseFixed('4444', 18).toHexString(10),
     walletAddress
   );
+  await approveToken(
+    ADDRESSES[Network.MAINNET].DAI,
+    MaxUint256.toString(),
+    signer
+  );
+
   await generateToken(
     provider,
     ADDRESSES[Network.MAINNET].USDC,
-    parseFixed('444', 6).toHexString(10),
+    parseFixed('4444', 6).toHexString(10),
     walletAddress
+  );
+  await approveToken(
+    ADDRESSES[Network.MAINNET].USDC,
+    MaxUint256.toString(),
+    signer
   );
 
   await printBalances(provider, walletAddress);
 
-  let sorSwapData;
+  let sorSwapInfo;
   try {
     const data = await axios.post(`${ENDPOINT_URL}/sor/1`, sorRequest);
-    sorSwapData = data.data;
+    sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);
     process.exit(1);
   }
 
-  console.log('Got swap data: ', sorSwapData);
+  console.log('Got swap info: ', sorSwapInfo);
 
-  console.log('Creating batch swap');
-  const encodedBatchSwapData = encodeSorResultAsBatchSwap(
+  // console.log('Swap converted to batch swap: ', convertSwapInfoToBatchSwap(
+  //   walletAddress,
+  //   sorSwapInfo
+  // ));
+
+  // sorSwapInfo = mockSwapFromFrontend();
+
+  // console.log('Mock swap info from Frontend: ', sorSwapInfo);
+
+
+  const batchSwapData = convertSwapInfoToBatchSwap(
     walletAddress,
-    sorSwapData
+    sorSwapInfo
   );
 
-  console.log('Encoded data: ', encodedBatchSwapData);
+  console.log('Swap converted to batch swap: ', batchSwapData);
+
+  console.log('Encoding batch swap');
+
+  const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
+
+  // console.log('Encoded data: ', encodedBatchSwapData);
 
   const batchSwapParams = [
     {
@@ -421,13 +323,14 @@ async function initializeSimulation(walletAddress) {
       value: BigNumber.from('20000000000000000').toHexString(10),
     },
   ];
-  console.log('Sending batch swap of params: ', batchSwapParams);
+  console.log('Sending batch swap');
+
   const batchSwapTx: TransactionResponse = await provider.send(
     'eth_sendTransaction',
     batchSwapParams
   );
 
-  console.log('Batch swap complete. Details: ', batchSwapTx);
+  console.log('Batch swap complete');
 
   await printBalances(provider, walletAddress);
 

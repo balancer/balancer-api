@@ -12,7 +12,7 @@ export const sorRequest: SorRequest = {
   gasPrice: BigNumber.from('0x174876e800').toString(),
 };
 
-export const sorResponse: SerializedSwapInfo = {
+export const sorResponse: SwapInfo = {
   tokenAddresses: [
     '0x6b175474e89094c44da98b954eedeac495271d0f',
     '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9',

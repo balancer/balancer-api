@@ -142,27 +142,26 @@ function convertSwapInfoToBatchSwap(userAddress: string, swapType: SwapType, swa
 
 
 
-async function initializeSimulation(walletAddress) {
+async function runTests(walletAddress) {
   const provider = new JsonRpcProvider(rpcUrl, Network.MAINNET);
-  const signer = provider.getSigner();
+  // const signer = provider.getSigner();
+
+
+  console.log(`Addresses:\nSigner: ${await signer.getAddress()}\nAdmin: ${ADMIN_ADDRESS}\nWallet: ${WALLET_ADDRESS}`);
 
   const initialETH = parseEther('444').toHexString(10);
 
   const params = [
-    [walletAddress],
+    walletAddress,
     hexValue(initialETH), // hex encoded wei amount
   ];
 
-  // console.log('Adding balance, params: ', params);
+  console.log('Adding balance, params: ', params);
 
-  // await provider.send('tenderly_addBalance', params);
-
-  // console.log('Added balance, now doing DAI');
-
-  // converts 1 ether into wei, stripping the leading zeros
-  const tokenAmount = hexValue(parseEther('1').toHexString(10));
+  await provider.send('hardhat_setBalance', params);
 
   await provider.send('hardhat_impersonateAccount', [ADMIN_ADDRESS]);
+  const signer = await provider.getSigner(ADMIN_ADDRESS);
 
   await generateToken(
     provider,
@@ -171,9 +170,11 @@ async function initializeSimulation(walletAddress) {
     walletAddress
   );
   await approveToken(
+    provider,
     ADDRESSES[Network.MAINNET].DAI,
     MaxUint256.toString(),
-    signer
+    walletAddress,
+    ADDRESSES[Network.MAINNET].contracts.vault
   );
 
   await generateToken(
@@ -183,9 +184,11 @@ async function initializeSimulation(walletAddress) {
     walletAddress
   );
   await approveToken(
-    ADDRESSES[Network.MAINNET].USDC,
+    provider,
+    ADDRESSES[Network.MAINNET].DAI,
     MaxUint256.toString(),
-    signer
+    walletAddress,
+    ADDRESSES[Network.MAINNET].contracts.vault
   );
 
   await printBalances(provider, walletAddress);
@@ -245,4 +248,4 @@ async function initializeSimulation(walletAddress) {
   // await axios.delete(TENDERLY_FORK_ACCESS_URL, opts)
 }
 
-initializeSimulation(WALLET_ADDRESS);
+runTests(WALLET_ADDRESS);

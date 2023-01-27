@@ -29,6 +29,8 @@ const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000001';
 const GWEI = 10 ** 9;
 const GAS_PRICE = 500 * GWEI;
 
+type Address = string;
+
 export async function printBalances(provider: JsonRpcProvider, walletAddress: string) {
   const daiContract = new Contract(
     ADDRESSES[Network.MAINNET].DAI,
@@ -59,27 +61,21 @@ export async function printBalances(provider: JsonRpcProvider, walletAddress: st
 
 export async function generateToken(
   provider: JsonRpcProvider,
-  tokenAddress: string,
-  tokenAmount: string,
-  walletAddress: string
+  token: Address,
+  amount: string,
+  wallet: Address
 ) {
-  console.log(
-    'Generating ',
-    tokenAddress,
-    ' amount: ',
-    tokenAmount,
-    ' to wallet: ',
-    walletAddress
-  );
+  approveToken(provider, token, amount, ADMIN_ADDRESS, token)
 
-  const signer = provider.getSigner();
-  const tokenContract = new Contract(tokenAddress, ERC20_ABI, signer);
+  const tokenContract = new Contract(token, ERC20_ABI);
 
-  const unsignedTx = await tokenContract.populateTransaction.approve(
-    // ADMIN_ADDRESS,
-    await signer.getAddress(),
-    tokenAmount,
-    // MaxUint256.toString()
+  console.log(`Transferring ${amount} from ${AddressZero} to ${wallet}`)
+
+  // console.log('Transferring ', parseFixed(BigNumber.from(tokenAmount).toString(), 18), ' to ', walletAddress);
+  const unsignedTx = await tokenContract.populateTransaction.transferFrom(
+    AddressZero,
+    wallet,
+    amount
   );
 
   const transactionParameters = [
@@ -92,31 +88,58 @@ export async function generateToken(
       value: hexValue(0),
     },
   ];
-  const txHash: TransactionResponse = await provider.send(
+
+  await provider.send(
     'eth_sendTransaction',
     transactionParameters
   );
-
-  console.log('Transferring ', parseFixed(BigNumber.from(tokenAmount).toString(), 18), ' to ', walletAddress);
-  const respTxTransfer = await tokenContract.transferFrom(
-    ADMIN_ADDRESS,
-    walletAddress,
-    tokenAmount
-  );
-
-  await respTxTransfer.wait();
-
-  console.log('Transfer: ', respTxTransfer);
 }
 
 export async function approveToken (
-  token: string,
+  provider: JsonRpcProvider,
+  token: Address,
   amount: string,
-  signer: JsonRpcSigner
-): Promise<boolean> {
-  console.log('Approving token ', token);
-  const tokenContract = new Contract(token, ERC20_ABI, signer);
-  return await tokenContract
-    .connect(signer)
-    .approve(ADDRESSES[Network.MAINNET].contracts.vault, amount);
+  wallet: Address,
+  spender: Address,
+): Promise<void> {
+
+  console.log(`Approving token ${token} for wallet ${wallet} to spender ${spender}`)
+  
+  const tokenContract = new Contract(token, ERC20_ABI);
+
+  const unsignedTx = await tokenContract.populateTransaction.approve(
+    spender,
+    amount,
+  );
+
+  const transactionParameters = [
+    {
+      to: tokenContract.address,
+      from: ADMIN_ADDRESS,
+      data: unsignedTx.data,
+      gas: hexValue(3000000),
+      gasPrice: hexValue(GAS_PRICE),
+      value: hexValue(0),
+    },
+  ];
+
+  await provider.send(
+    'eth_sendTransaction',
+    transactionParameters
+  );
 }
+
+
+// export async function approveTokenBasic (
+//   token: string,
+//   amount: string,
+//   signer: JsonRpcSigner
+// ): Promise<boolean> {
+//   console.log('Approving token ', token);
+//   const tokenContract = new Contract(token, ERC20_ABI, signer);
+
+  
+//   return await tokenContract
+//     .connect(signer)
+//     .approve(ADDRESSES[Network.MAINNET].contracts.vault, amount);
+// }

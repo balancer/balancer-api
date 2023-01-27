@@ -59,74 +59,43 @@ export async function printBalances(provider: JsonRpcProvider, walletAddress: st
   console.log(`USDC: ${usdcBalance.toString()}`);
 }
 
-export async function generateToken(
-  provider: JsonRpcProvider,
-  token: Address,
-  amount: string,
-  wallet: Address
-) {
-  approveToken(provider, token, amount, ADMIN_ADDRESS, token)
-
-  const tokenContract = new Contract(token, ERC20_ABI);
-
-  console.log(`Transferring ${amount} from ${AddressZero} to ${wallet}`)
-
-  // console.log('Transferring ', parseFixed(BigNumber.from(tokenAmount).toString(), 18), ' to ', walletAddress);
-  const unsignedTx = await tokenContract.populateTransaction.transferFrom(
-    AddressZero,
-    wallet,
-    amount
-  );
-
-  const transactionParameters = [
-    {
-      to: tokenContract.address,
-      from: ADMIN_ADDRESS,
-      data: unsignedTx.data,
-      gas: hexValue(3000000),
-      gasPrice: hexValue(GAS_PRICE),
-      value: hexValue(0),
-    },
-  ];
-
-  await provider.send(
-    'eth_sendTransaction',
-    transactionParameters
-  );
-}
-
-export async function approveToken (
+export async function mintToken(
   provider: JsonRpcProvider,
   token: Address,
   amount: string,
   wallet: Address,
+) {
+  const signerZero = provider.getSigner(AddressZero);
+  const signer = provider.getSigner(wallet);
+
+  const tokenContract = new Contract(token, ERC20_ABI, signerZero);
+
+  console.log(`Transferring ${amount} from ${AddressZero} to ${await signer.getAddress()}`)
+  const tx = await tokenContract.transfer(
+    await signer.getAddress(),
+    amount
+  );
+
+  await tx.wait();
+
+}
+
+export async function approveToken (
+  signer: JsonRpcSigner,
+  token: Address,
+  amount: string,
   spender: Address,
 ): Promise<void> {
-
-  console.log(`Approving token ${token} for wallet ${wallet} to spender ${spender}`)
+  console.log(`Approving ${amount} of token ${token} for wallet ${await signer.getAddress()} to spender ${spender}`)
   
-  const tokenContract = new Contract(token, ERC20_ABI);
+  const tokenContract = new Contract(token, ERC20_ABI, signer);
 
-  const unsignedTx = await tokenContract.populateTransaction.approve(
+  const tx = await tokenContract.approve(
     spender,
     amount,
   );
 
-  const transactionParameters = [
-    {
-      to: tokenContract.address,
-      from: ADMIN_ADDRESS,
-      data: unsignedTx.data,
-      gas: hexValue(3000000),
-      gasPrice: hexValue(GAS_PRICE),
-      value: hexValue(0),
-    },
-  ];
-
-  await provider.send(
-    'eth_sendTransaction',
-    transactionParameters
-  );
+  await tx.wait();
 }
 
 

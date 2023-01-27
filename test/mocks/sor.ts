@@ -8,7 +8,7 @@ export const sorRequest: SorRequest = {
   sellToken: '0x6b175474e89094c44da98b954eedeac495271d0f',
   buyToken: '0xba100000625a3754423978a60c9317c58a424e3d',
   orderKind: 'sell',
-  amount: parseFixed('1000', 18).toString(),
+  amount: parseFixed('100', 18).toString(),
   gasPrice: BigNumber.from('0x174876e800').toString(),
 };
 

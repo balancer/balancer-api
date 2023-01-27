@@ -35,7 +35,7 @@ import {
 import {
   printBalances,
   approveToken,
-  generateToken,
+  mintToken,
 } from './helpers';
 
 const ERC20_ABI = require('../../src/lib/abi/ERC20.json');
@@ -144,8 +144,10 @@ function convertSwapInfoToBatchSwap(userAddress: string, swapType: SwapType, swa
 
 async function runTests(walletAddress) {
   const provider = new JsonRpcProvider(rpcUrl, Network.MAINNET);
-  // const signer = provider.getSigner();
 
+  await provider.send('hardhat_impersonateAccount', [AddressZero]);
+  await provider.send('hardhat_impersonateAccount', [walletAddress]);
+  const signer = await provider.getSigner(walletAddress);
 
   console.log(`Addresses:\nSigner: ${await signer.getAddress()}\nAdmin: ${ADMIN_ADDRESS}\nWallet: ${WALLET_ADDRESS}`);
 
@@ -160,36 +162,38 @@ async function runTests(walletAddress) {
 
   await provider.send('hardhat_setBalance', params);
 
-  await provider.send('hardhat_impersonateAccount', [ADMIN_ADDRESS]);
-  const signer = await provider.getSigner(ADMIN_ADDRESS);
 
-  await generateToken(
+  // Give the user some DAI and USDC
+
+  await mintToken(
     provider,
     ADDRESSES[Network.MAINNET].DAI,
-    parseFixed('4444', 18).toHexString(10),
-    walletAddress
+    parseFixed('100', 18).toHexString(10),
+    walletAddress,
   );
+
+  // await mintToken(
+  //   provider,
+  //   ADDRESSES[Network.MAINNET].USDC,
+  //   parseFixed('4444', 6).toHexString(10),
+  //   walletAddress,
+  // );
+
+  // Allow the vault to spend wallets tokens
+
   await approveToken(
-    provider,
+    signer,
     ADDRESSES[Network.MAINNET].DAI,
     MaxUint256.toString(),
-    walletAddress,
     ADDRESSES[Network.MAINNET].contracts.vault
   );
 
-  await generateToken(
-    provider,
-    ADDRESSES[Network.MAINNET].USDC,
-    parseFixed('4444', 6).toHexString(10),
-    walletAddress
-  );
-  await approveToken(
-    provider,
-    ADDRESSES[Network.MAINNET].DAI,
-    MaxUint256.toString(),
-    walletAddress,
-    ADDRESSES[Network.MAINNET].contracts.vault
-  );
+  // await approveToken(
+  //   signer,
+  //   ADDRESSES[Network.MAINNET].USDC,
+  //   MaxUint256.toString(),
+  //   ADDRESSES[Network.MAINNET].contracts.vault
+  // );
 
   await printBalances(provider, walletAddress);
 

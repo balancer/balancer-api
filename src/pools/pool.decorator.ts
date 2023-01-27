@@ -19,7 +19,8 @@ import util from 'util';
 
 const log = debug('balancer:pool-decorator');
 
-const IGNORED_POOL_TYPES = [PoolType.Element, PoolType.Gyro2, PoolType.Gyro3];
+const UNKNOWN_POOL_TYPES = ['GyroE', 'FX']
+const IGNORED_POOL_TYPES = [...UNKNOWN_POOL_TYPES, PoolType.Element, PoolType.Gyro2, PoolType.Gyro3];
 
 export interface PoolDecoratorOptions {
   chainId?: number;

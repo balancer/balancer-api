@@ -97,18 +97,3 @@ export async function approveToken (
 
   await tx.wait();
 }
-
-
-// export async function approveTokenBasic (
-//   token: string,
-//   amount: string,
-//   signer: JsonRpcSigner
-// ): Promise<boolean> {
-//   console.log('Approving token ', token);
-//   const tokenContract = new Contract(token, ERC20_ABI, signer);
-
-  
-//   return await tokenContract
-//     .connect(signer)
-//     .approve(ADDRESSES[Network.MAINNET].contracts.vault, amount);
-// }

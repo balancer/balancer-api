@@ -1,203 +1,213 @@
-﻿type Pool @key(name: "byTotalLiquidity",fields: ["chainId","totalLiquidity"],queryField: "poolsByTotalLiquidity") {
-	chainId: Int!
-	id: String!
-	address: String
-	poolType: String
-	factory: String
-	symbol: String
-	name: String
-	swapEnabled: Boolean
-	swapFee: String
-	owner: String
-	tokens: [PoolToken]
-	tokensList: [String]
-	totalWeight: String
-	totalSwapVolume: String
-	totalSwapFee: String
-	totalLiquidity: String
-	totalShares: String
-	volumeSnapshot: String
-	feesSnapshot: String
-	createTime: Int
-	swapsCount: String
-	holdersCount: String
-	amp: String
-	expiryTime: String
-	unitSeconds: String
-	managementFee: String
-	mainIndex: Int
-	wrappedIndex: Int
-	lowerTarget: String
-	upperTarget: String
-	apr: AprBreakdown
-	isNew: Boolean
-	protocolYieldFeeCache: String
-	priceRateProviders: [PriceRateProvider]
+﻿type Pool
+  @key(
+    name: "byTotalLiquidity",
+    fields: ["chainId", "totalLiquidity"],
+    queryField: "poolsByTotalLiquidity"
+  )
+  @key(
+    name: "byVolume",
+    fields: ["chainId", "volumeSnapshot"],
+    queryField: "poolsByVolume"
+  ) {
+  chainId: Int!
+  id: String!
+  address: String
+  poolType: String
+  factory: String
+  symbol: String
+  name: String
+  swapEnabled: Boolean
+  swapFee: String
+  owner: String
+  tokens: [PoolToken]
+  tokensList: [String]
+  totalWeight: String
+  totalSwapVolume: String
+  totalSwapFee: String
+  totalLiquidity: String
+  totalShares: String
+  volumeSnapshot: String
+  feesSnapshot: String
+  createTime: Int
+  swapsCount: String
+  holdersCount: String
+  amp: String
+  expiryTime: String
+  unitSeconds: String
+  managementFee: String
+  mainIndex: Int
+  wrappedIndex: Int
+  lowerTarget: String
+  upperTarget: String
+  apr: AprBreakdown
+  isNew: Boolean
+  protocolYieldFeeCache: String
+  priceRateProviders: [PriceRateProvider]
 }
 
 type PoolConnection {
-	pools: [Pool]
-	nextToken: String
+  pools: [Pool]
+  nextToken: String
 }
 
 type PoolToken @entity {
-	id: String
-	symbol: String
-	name: String
-	decimals: Int
-	address: String
-	priceRate: String
-	balance: String
-	weight: String
-	token: SubPoolMeta
+  id: String
+  symbol: String
+  name: String
+  decimals: Int
+  address: String
+  priceRate: String
+  balance: String
+  weight: String
+  token: SubPoolMeta
 }
 
 type SubPoolMeta @entity {
-	pool: SubPool
-	latestUSDPrice: String
+  pool: SubPool
+  latestUSDPrice: String
 }
 
 type SubPool @entity {
-	id: String
-	address: String
-	poolType: String
-	totalShares: String
-	mainIndex: Int
-	tokens: [PoolToken]
+  id: String
+  address: String
+  poolType: String
+  totalShares: String
+  mainIndex: Int
+  tokens: [PoolToken]
 }
 
 type PriceRateProvider @entity {
-	address: String
-	token: PriceRateProviderToken
+  address: String
+  token: PriceRateProviderToken
 }
 
 type PriceRateProviderToken @entity {
-	address: String
+  address: String
 }
 
 type AprBreakdown @entity {
-	swapFees: Float
-	tokenAprs: TokenAprs
-	stakingApr: StakingApr
-	rewardAprs: RewardAprs
-	protocolApr: Float
-	min: Float
-	max: Float
+  swapFees: Float
+  tokenAprs: TokenAprs
+  stakingApr: StakingApr
+  rewardAprs: RewardAprs
+  protocolApr: Float
+  min: Float
+  max: Float
 }
 
 type TokenAprs @entity {
-	total: Float
-	breakdown: AWSJSON 
+  total: Float
+  breakdown: AWSJSON
 }
 
 type StakingApr @entity {
-	min: Float
-	max: Float
+  min: Float
+  max: Float
 }
 
 type RewardAprs @entity {
-	total: Float
-	breakdown: AWSJSON 
+  total: Float
+  breakdown: AWSJSON
 }
 
 type Query {
-	pools(
-		first: Int, 
-		chainId: Int!, 
-		where: TablePoolsFilterInput, 
-		orderBy: String, 
-		orderDirection: String
-		nextToken: String
-	): PoolConnection
+  pools(
+    first: Int
+    chainId: Int!
+    where: TablePoolsFilterInput
+    orderBy: String
+    orderDirection: String
+    nextToken: String
+  ): PoolConnection
 }
 
 input TableBooleanFilterInput {
-	ne: Boolean
-	eq: Boolean
+  ne: Boolean
+  eq: Boolean
 }
 
 input TableFloatFilterInput {
-	ne: Float
-	eq: Float
-	le: Float
-	lt: Float
-	ge: Float
-	gt: Float
-	contains: Float
-	notContains: Float
-	between: [Float]
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  contains: Float
+  notContains: Float
+  between: [Float]
 }
 
 input TableIDFilterInput {
-	ne: ID
-	eq: ID
-	le: ID
-	lt: ID
-	ge: ID
-	gt: ID
-	contains: ID
-	notContains: ID
-	between: [ID]
-	beginsWith: ID
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
 }
 
 input TableIntFilterInput {
-	ne: Int
-	eq: Int
-	le: Int
-	lt: Int
-	ge: Int
-	gt: Int
-	contains: Int
-	notContains: Int
-	between: [Int]
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  contains: Int
+  notContains: Int
+  between: [Int]
 }
 
 input TablePoolsFilterInput {
-	chainId: TableIntFilterInput
-	id: TableStringFilterInput
-	address: TableStringFilterInput
-	poolType: TableStringFilterInput
-	swapFee: TableFloatFilterInput
-	owner: TableStringFilterInput
-	factory: TableStringFilterInput
-	tokensList: TableStringArrayFilterInput
-	totalWeight: TableFloatFilterInput
-	totalSwapVolume: TableFloatFilterInput
-	totalSwapFee: TableFloatFilterInput
-	totalLiquidity: TableFloatFilterInput
-	totalShares: TableFloatFilterInput
-	createTime: TableIntFilterInput
-	swapsCount: TableIntFilterInput
-	holdersCount: TableIntFilterInput
-	amp: TableIntFilterInput
-	swapEnabled: TableBooleanFilterInput
-	expiryTime: TableIntFilterInput
-	unitSeconds: TableIntFilterInput
-	managementFee: TableFloatFilterInput
-	mainIndex: TableIntFilterInput
-	wrappedIndex: TableIntFilterInput
-	lowerTarget: TableFloatFilterInput
-	upperTarget: TableFloatFilterInput
+  chainId: TableIntFilterInput
+  id: TableStringFilterInput
+  address: TableStringFilterInput
+  poolType: TableStringFilterInput
+  swapFee: TableFloatFilterInput
+  owner: TableStringFilterInput
+  factory: TableStringFilterInput
+  tokensList: TableStringArrayFilterInput
+  totalWeight: TableFloatFilterInput
+  totalSwapVolume: TableFloatFilterInput
+  totalSwapFee: TableFloatFilterInput
+  totalLiquidity: TableFloatFilterInput
+  totalShares: TableFloatFilterInput
+  createTime: TableIntFilterInput
+  swapsCount: TableIntFilterInput
+  holdersCount: TableIntFilterInput
+  amp: TableIntFilterInput
+  swapEnabled: TableBooleanFilterInput
+  expiryTime: TableIntFilterInput
+  unitSeconds: TableIntFilterInput
+  managementFee: TableFloatFilterInput
+  mainIndex: TableIntFilterInput
+  wrappedIndex: TableIntFilterInput
+  lowerTarget: TableFloatFilterInput
+  upperTarget: TableFloatFilterInput
 }
 
 input TableStringArrayFilterInput {
-	ne: [String]
-	eq: [String]
-	contains: [String]
+  ne: [String]
+  eq: [String]
+  contains: [String]
 }
 
 input TableStringFilterInput {
-	ne: String
-	in: [String]
-	not_in: [String]
-	eq: String
-	le: String
-	lt: String
-	ge: String
-	gt: String
-	contains: [String]
-	notContains: String
-	between: [String]
-	beginsWith: String
+  ne: String
+  in: [String]
+  not_in: [String]
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: [String]
+  notContains: String
+  between: [String]
+  beginsWith: String
 }

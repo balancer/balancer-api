@@ -30,6 +30,6 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     return { statusCode: 200, body: JSON.stringify(swapInfo) };
   } catch (e) {
     captureException(e, { extra: { chainId, sorRequest }});
-    return { statusCode: 500, body: JSON.stringify(e) };
+    return { statusCode: 500, body: JSON.stringify({ error: 'SOR request failed' }) };
   }
 });

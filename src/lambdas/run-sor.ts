@@ -29,7 +29,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     const swapInfo = await getSorSwap(chainId, sorRequest);
     return { statusCode: 200, body: JSON.stringify(swapInfo) };
   } catch (e) {
-    captureException(e);
+    captureException(e, { extra: { chainId, sorRequest }});
     return { statusCode: 500, body: JSON.stringify(e) };
   }
 });

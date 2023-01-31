@@ -7,16 +7,15 @@ import { Network } from '../../src/constants/general';
 import { AddressZero, MaxUint256 } from '@ethersproject/constants';
 import {
   JsonRpcProvider,
-  JsonRpcSigner,
-  TransactionRequest,
   TransactionResponse,
 } from '@ethersproject/providers';
-import { SwapTokenType, SwapToken } from '../../src/types';
+import { SwapTokenType, SwapToken, SorRequest } from '../../src/types';
 import { hexValue } from '@ethersproject/bytes';
 import { parseEther } from '@ethersproject/units';
-import { parseFixed, formatFixed } from '@ethersproject/bignumber';
+import { parseFixed } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import {
+  Address,
   BalancerSDK,
   BatchSwap,
   SwapAttributes,
@@ -24,22 +23,12 @@ import {
   Swaps,
   SwapType,
 } from '@balancer-labs/sdk';
-import { BigNumber, Wallet } from 'ethers';
-import { String } from 'aws-sdk/clients/dynamodb';
-import { Json } from 'aws-sdk/clients/robomaker';
-import {
-  mockSimpleBatchSwap,
-  mockSwapFromFrontend,
-  sorRequest,
-} from '../mocks/sor';
+import { BigNumber } from 'ethers';
 import {
   printBalances,
   approveToken,
   mintToken,
 } from './helpers';
-
-const ERC20_ABI = require('../../src/lib/abi/ERC20.json');
-const { TENDERLY_USER, TENDERLY_PROJECT, TENDERLY_ACCESS_KEY } = process.env;
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 const WALLET_ADDRESS =
@@ -56,14 +45,116 @@ const sdk = new BalancerSDK({
 });
 
 
+export async function testSorRequest(walletAddress: Address, sorRequest: SorRequest) {
+  const provider = new JsonRpcProvider(rpcUrl, Network.MAINNET);
 
-/** Steps to be done
- *
- * - Trigger an update of the API so it fetches the latest pool info
- * - Go through a series of common SOR swaps, send to endpoint, receive response
- * - Turn response into a transaction
- * - Simulate transaction with Tenderly, make sure it completes correctly
- */
+  await provider.send('hardhat_impersonateAccount', [AddressZero]);
+  await provider.send('hardhat_impersonateAccount', [walletAddress]);
+  const signer = await provider.getSigner(walletAddress);
+
+  console.log(`Addresses:\nSigner: ${await signer.getAddress()}\nAdmin: ${ADMIN_ADDRESS}\nWallet: ${WALLET_ADDRESS}`);
+
+  const initialETH = parseEther('444').toHexString(10);
+
+  const params = [
+    walletAddress,
+    hexValue(initialETH), // hex encoded wei amount
+  ];
+
+  console.log('Adding balance, params: ', params);
+
+  await provider.send('hardhat_setBalance', params);
+
+
+  // Give the user some DAI and USDC
+
+  await mintToken(
+    provider,
+    ADDRESSES[Network.MAINNET].DAI,
+    parseFixed('100', 18).toHexString(10),
+    walletAddress,
+  );
+
+  // await mintToken(
+  //   provider,
+  //   ADDRESSES[Network.MAINNET].USDC,
+  //   parseFixed('4444', 6).toHexString(10),
+  //   walletAddress,
+  // );
+
+  // Allow the vault to spend wallets tokens
+
+  await approveToken(
+    signer,
+    ADDRESSES[Network.MAINNET].DAI,
+    MaxUint256.toString(),
+    ADDRESSES[Network.MAINNET].contracts.vault
+  );
+
+  // await approveToken(
+  //   signer,
+  //   ADDRESSES[Network.MAINNET].USDC,
+  //   MaxUint256.toString(),
+  //   ADDRESSES[Network.MAINNET].contracts.vault
+  // );
+
+  await printBalances(provider, walletAddress);
+
+  const sorSwapInfo = await querySorEndpoint(sorRequest);
+  const swapType = sorRequest.orderKind == 'sell' ? SwapType.SwapExactIn : SwapType.SwapExactOut;
+
+  const batchSwapData = convertSwapInfoToBatchSwap(
+    walletAddress,
+    swapType,
+    sorSwapInfo
+  );
+
+  console.log('Swap converted to batch swap: ', batchSwapData);
+
+  console.log('Encoding batch swap');
+
+  const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
+
+  // console.log('Encoded data: ', encodedBatchSwapData);
+
+  const batchSwapParams = [
+    {
+      to: ADDRESSES[Network.MAINNET].contracts.vault,
+      from: walletAddress,
+      data: encodedBatchSwapData,
+      gas: hexValue(3000000),
+      gasPrice: hexValue(GAS_PRICE),
+      value: BigNumber.from('20000000000000000').toHexString(10),
+    },
+  ];
+  console.log('Sending batch swap');
+
+  const batchSwapTx: TransactionResponse = await provider.send(
+    'eth_sendTransaction',
+    batchSwapParams
+  );
+
+  console.log('Batch swap complete');
+
+  await printBalances(provider, walletAddress);
+}
+
+export async function querySorEndpoint(sorRequest: SorRequest): Promise<SwapInfo> {
+
+  let sorSwapInfo: SwapInfo;
+  try {
+    const data = await axios.post(`${ENDPOINT_URL}/sor/1`, sorRequest);
+    sorSwapInfo = data.data;
+  } catch (e) {
+    console.error('Failed to fetch sor data. Error is: ', e);
+    process.exit(1);
+  }
+
+  console.log('Got swap info: ', sorSwapInfo);
+
+  return sorSwapInfo;
+}
+
 
 function calculateLimits(
   tokensIn: SwapToken[],
@@ -139,117 +230,3 @@ function convertSwapInfoToBatchSwap(userAddress: string, swapType: SwapType, swa
 
   return batchSwapData;
 }
-
-
-
-async function runTests(walletAddress) {
-  const provider = new JsonRpcProvider(rpcUrl, Network.MAINNET);
-
-  await provider.send('hardhat_impersonateAccount', [AddressZero]);
-  await provider.send('hardhat_impersonateAccount', [walletAddress]);
-  const signer = await provider.getSigner(walletAddress);
-
-  console.log(`Addresses:\nSigner: ${await signer.getAddress()}\nAdmin: ${ADMIN_ADDRESS}\nWallet: ${WALLET_ADDRESS}`);
-
-  const initialETH = parseEther('444').toHexString(10);
-
-  const params = [
-    walletAddress,
-    hexValue(initialETH), // hex encoded wei amount
-  ];
-
-  console.log('Adding balance, params: ', params);
-
-  await provider.send('hardhat_setBalance', params);
-
-
-  // Give the user some DAI and USDC
-
-  await mintToken(
-    provider,
-    ADDRESSES[Network.MAINNET].DAI,
-    parseFixed('100', 18).toHexString(10),
-    walletAddress,
-  );
-
-  // await mintToken(
-  //   provider,
-  //   ADDRESSES[Network.MAINNET].USDC,
-  //   parseFixed('4444', 6).toHexString(10),
-  //   walletAddress,
-  // );
-
-  // Allow the vault to spend wallets tokens
-
-  await approveToken(
-    signer,
-    ADDRESSES[Network.MAINNET].DAI,
-    MaxUint256.toString(),
-    ADDRESSES[Network.MAINNET].contracts.vault
-  );
-
-  // await approveToken(
-  //   signer,
-  //   ADDRESSES[Network.MAINNET].USDC,
-  //   MaxUint256.toString(),
-  //   ADDRESSES[Network.MAINNET].contracts.vault
-  // );
-
-  await printBalances(provider, walletAddress);
-
-  let sorSwapInfo: SwapInfo;
-  try {
-    const data = await axios.post(`${ENDPOINT_URL}/sor/1`, sorRequest);
-    sorSwapInfo = data.data;
-  } catch (e) {
-    console.error('Failed to fetch sor data. Error is: ', e);
-    process.exit(1);
-  }
-
-  console.log('Got swap info: ', sorSwapInfo);
-
-  // sorSwapInfo = mockSwapFromFrontend();
-  // console.log('Mock swap info from Frontend: ', sorSwapInfo);
-
-  const swapType = sorRequest.orderKind == 'sell' ? SwapType.SwapExactIn : SwapType.SwapExactOut;
-
-  const batchSwapData = convertSwapInfoToBatchSwap(
-    walletAddress,
-    swapType,
-    sorSwapInfo
-  );
-
-  console.log('Swap converted to batch swap: ', batchSwapData);
-
-  console.log('Encoding batch swap');
-
-  const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
-
-  // console.log('Encoded data: ', encodedBatchSwapData);
-
-  const batchSwapParams = [
-    {
-      to: ADDRESSES[Network.MAINNET].contracts.vault,
-      from: walletAddress,
-      data: encodedBatchSwapData,
-      gas: hexValue(3000000),
-      gasPrice: hexValue(GAS_PRICE),
-      value: BigNumber.from('20000000000000000').toHexString(10),
-    },
-  ];
-  console.log('Sending batch swap');
-
-  const batchSwapTx: TransactionResponse = await provider.send(
-    'eth_sendTransaction',
-    batchSwapParams
-  );
-
-  console.log('Batch swap complete');
-
-  await printBalances(provider, walletAddress);
-
-  // const TENDERLY_FORK_ACCESS_URL = `https://api.tenderly.co/api/v1/account/${TENDERLY_USER}/project/${TENDERLY_PROJECT}/fork/${forkId}`
-  // await axios.delete(TENDERLY_FORK_ACCESS_URL, opts)
-}
-
-runTests(WALLET_ADDRESS);

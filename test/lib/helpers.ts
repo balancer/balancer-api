@@ -1,31 +1,14 @@
 
-import axios from 'axios';
 import { ADDRESSES } from '../../src/constants/addresses';
 import { Network } from '../../src/constants/general';
 import { AddressZero, MaxUint256 } from '@ethersproject/constants';
 import {
   JsonRpcProvider,
   JsonRpcSigner,
-  TransactionRequest,
-  TransactionResponse,
 } from '@ethersproject/providers';
-import { SwapTokenType, SwapToken } from '../../src/types';
-import { hexValue } from '@ethersproject/bytes';
-import { parseEther } from '@ethersproject/units';
-import { parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
-import {
-  BalancerSDK,
-  BatchSwap,
-  SwapAttributes,
-  SwapInfo,
-  Swaps,
-  SwapType,
-} from '@balancer-labs/sdk';
-import { BigNumber, Wallet } from 'ethers';
 
-const ERC20_ABI = require('../../src/lib/abi/ERC20.json');
-const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000001';
+const ERC20_ABI = require('./ERC20.json');
 const GWEI = 10 ** 9;
 const GAS_PRICE = 500 * GWEI;
 
@@ -77,7 +60,6 @@ export async function mintToken(
   );
 
   await tx.wait();
-
 }
 
 export async function approveToken (

@@ -86,6 +86,12 @@ export async function updatePools(pools: Pool[], options?: UpdatePoolOptions) {
               );
               return;
             }
+            if (e.code === 'TransactionCanceledException' && e.message.includes('TransactionConflict')) {
+              console.error(
+                'Unable to update pools - Conflict with concurrent update'
+              );
+              return;
+            }
             captureException(e, { extra: { poolUpdateRequests }});
             console.error(
               `Unable to update pools ${JSON.stringify(

@@ -4,7 +4,6 @@ require('dotenv').config();
 import axios from 'axios';
 import { ADDRESSES, TOKENS } from '../../src/constants/addresses';
 import { Network } from '../../src/constants/general';
-import { AddressZero } from '@ethersproject/constants';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { SwapTokenType, SwapToken, SorRequest } from '../../src/types';
 import { hexValue } from '@ethersproject/bytes';
@@ -32,8 +31,6 @@ export async function testSorRequest(
 ) {
   const { DAI, BAL } = TOKENS[network];
 
-  await provider.send('hardhat_impersonateAccount', [AddressZero]);
-  await provider.send('hardhat_impersonateAccount', [walletAddress]);
   const signer = await provider.getSigner(walletAddress);
 
   const initialETH = parseEther('444').toHexString(10);
@@ -169,19 +166,6 @@ function convertSwapInfoToBatchSwap(
     limits: limits,
     deadline: '999999999999999999',
   };
-
-  // const encodedBatchSwapData = Swaps.encodeBatchSwap(mockSimpleBatchSwap(userAddress));
-
-  // const swapAttributes: SwapAttributes = sdk.swaps.buildSwap({
-  //   userAddress,
-  //   swapInfo,
-  //   kind: SwapType.SwapExactIn,
-  //   deadline: BigNumber.from(Date.now() + (1000 * 60)),
-  //   maxSlippage: 100
-  // });
-  // console.log("Swap attributes: ", swapAttributes);
-
-  // const encodedBatchSwapData = Swaps.encodeBatchSwap(swapAttributes.attributes as BatchSwap)
 
   return batchSwapData;
 }

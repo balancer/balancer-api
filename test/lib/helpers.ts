@@ -75,7 +75,6 @@ export const forkSetup = async (
   blockNumber?: number,
   isVyperMapping = false
 ): Promise<void> => {
-  console.log("Resetting hardhat")
   await signer.provider.send('hardhat_reset', [
     {
       forking: {
@@ -84,8 +83,6 @@ export const forkSetup = async (
       },
     },
   ]);
-
-  console.log("Hardhat has been reset")
 
   for (let i = 0; i < tokens.length; i++) {
     // Set initial account balance for each token that will be used to join pool

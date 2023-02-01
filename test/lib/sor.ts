@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 import axios from 'axios';
-import { ADDRESSES } from '../../src/constants/addresses';
+import { ADDRESSES, TOKENS } from '../../src/constants/addresses';
 import { Network } from '../../src/constants/general';
 import { AddressZero, MaxUint256 } from '@ethersproject/constants';
 import {
@@ -30,6 +30,7 @@ import {
   mintToken,
 } from './helpers';
 
+
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 const WALLET_ADDRESS =
   process.env.WALLET_ADDRESS || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
@@ -37,16 +38,9 @@ const WALLET_ADDRESS =
 const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000001';
 const GWEI = 10 ** 9;
 const GAS_PRICE = 500 * GWEI;
-const rpcUrl = `http://127.0.0.1:8545`;
 
-const sdk = new BalancerSDK({
-  network: Network.MAINNET,
-  rpcUrl,
-});
-
-
-export async function testSorRequest(walletAddress: Address, sorRequest: SorRequest) {
-  const provider = new JsonRpcProvider(rpcUrl, Network.MAINNET);
+export async function testSorRequest(provider: JsonRpcProvider, walletAddress: Address, network: number, sorRequest: SorRequest) {
+  const { DAI, BAL } = TOKENS[network];
 
   await provider.send('hardhat_impersonateAccount', [AddressZero]);
   await provider.send('hardhat_impersonateAccount', [walletAddress]);
@@ -65,20 +59,14 @@ export async function testSorRequest(walletAddress: Address, sorRequest: SorRequ
 
   await provider.send('hardhat_setBalance', params);
 
+  await printBalances(provider, walletAddress, [DAI, BAL]);
 
-  // Give the user some DAI and USDC
-
-  await mintToken(
-    provider,
-    ADDRESSES[Network.MAINNET].DAI,
-    parseFixed('100', 18).toHexString(10),
-    walletAddress,
-  );
+  const tokenToMint = sorRequest.orderKind === 'sell' ? sorRequest.sellToken : sorRequest.buyToken;
 
   // await mintToken(
   //   provider,
-  //   ADDRESSES[Network.MAINNET].USDC,
-  //   parseFixed('4444', 6).toHexString(10),
+  //   tokenToMint,
+  //   sorRequest.amount,
   //   walletAddress,
   // );
 
@@ -86,19 +74,12 @@ export async function testSorRequest(walletAddress: Address, sorRequest: SorRequ
 
   await approveToken(
     signer,
-    ADDRESSES[Network.MAINNET].DAI,
-    MaxUint256.toString(),
+    tokenToMint,
+    sorRequest.amount,
     ADDRESSES[Network.MAINNET].contracts.vault
   );
 
-  // await approveToken(
-  //   signer,
-  //   ADDRESSES[Network.MAINNET].USDC,
-  //   MaxUint256.toString(),
-  //   ADDRESSES[Network.MAINNET].contracts.vault
-  // );
-
-  await printBalances(provider, walletAddress);
+  await printBalances(provider, walletAddress, [DAI, BAL]);
 
   const sorSwapInfo = await querySorEndpoint(sorRequest);
   const swapType = sorRequest.orderKind == 'sell' ? SwapType.SwapExactIn : SwapType.SwapExactOut;
@@ -136,7 +117,7 @@ export async function testSorRequest(walletAddress: Address, sorRequest: SorRequ
 
   console.log('Batch swap complete');
 
-  await printBalances(provider, walletAddress);
+  await printBalances(provider, walletAddress, [DAI, BAL]);
 }
 
 export async function querySorEndpoint(sorRequest: SorRequest): Promise<SwapInfo> {

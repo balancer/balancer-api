@@ -20,10 +20,7 @@ import { BigNumber } from 'ethers';
 import { printBalances, approveToken } from './helpers';
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
-const WALLET_ADDRESS =
-  process.env.WALLET_ADDRESS || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
 
-const ADMIN_ADDRESS = '0x0000000000000000000000000000000000000001';
 const GWEI = 10 ** 9;
 const GAS_PRICE = 500 * GWEI;
 
@@ -39,10 +36,6 @@ export async function testSorRequest(
   await provider.send('hardhat_impersonateAccount', [walletAddress]);
   const signer = await provider.getSigner(walletAddress);
 
-  console.log(
-    `Addresses:\nSigner: ${await signer.getAddress()}\nAdmin: ${ADMIN_ADDRESS}\nWallet: ${WALLET_ADDRESS}`
-  );
-
   const initialETH = parseEther('444').toHexString(10);
 
   const params = [
@@ -50,29 +43,19 @@ export async function testSorRequest(
     hexValue(initialETH), // hex encoded wei amount
   ];
 
-  console.log('Adding balance, params: ', params);
-
   await provider.send('hardhat_setBalance', params);
 
   await printBalances(provider, walletAddress, [DAI, BAL]);
 
-  const tokenToMint =
+  const tokenToDispose =
     sorRequest.orderKind === 'sell'
       ? sorRequest.sellToken
       : sorRequest.buyToken;
 
-  // await mintToken(
-  //   provider,
-  //   tokenToMint,
-  //   sorRequest.amount,
-  //   walletAddress,
-  // );
-
   // Allow the vault to spend wallets tokens
-
   await approveToken(
     signer,
-    tokenToMint,
+    tokenToDispose,
     sorRequest.amount,
     ADDRESSES[Network.MAINNET].contracts.vault
   );
@@ -91,13 +74,7 @@ export async function testSorRequest(
     sorSwapInfo
   );
 
-  console.log('Swap converted to batch swap: ', batchSwapData);
-
-  console.log('Encoding batch swap');
-
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
-
-  // console.log('Encoded data: ', encodedBatchSwapData);
 
   const batchSwapParams = [
     {
@@ -109,12 +86,8 @@ export async function testSorRequest(
       value: BigNumber.from('20000000000000000').toHexString(10),
     },
   ];
-  console.log('Sending batch swap');
 
   await provider.send('eth_sendTransaction', batchSwapParams);
-
-  console.log('Batch swap complete');
-
   await printBalances(provider, walletAddress, [DAI, BAL]);
 }
 

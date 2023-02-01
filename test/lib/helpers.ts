@@ -1,7 +1,6 @@
 
-import { ADDRESSES, TOKENS, TokenWithSlot } from '../../src/constants/addresses';
-import { Network } from '../../src/constants/general';
-import { AddressZero, MaxUint256 } from '@ethersproject/constants';
+import { TokenWithSlot } from '../../src/constants/addresses';
+import { AddressZero } from '@ethersproject/constants';
 import { hexlify, zeroPad } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/solidity';
 import {
@@ -9,15 +8,10 @@ import {
   JsonRpcSigner,
 } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { Token } from '@balancer-labs/sdk';
-import { BigNumber, BigNumberish, parseFixed } from '@ethersproject/bignumber';
+import { Token, Address } from '@balancer-labs/sdk';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 
 const ERC20_ABI = require('./ERC20.json');
-const GWEI = 10 ** 9;
-const GAS_PRICE = 500 * GWEI;
-
-type Address = string;
-
 
 export async function getBalances(provider: JsonRpcProvider, walletAddress: string, tokens: Token[]): Promise<Record<string, string>> {
   const balances = await Promise.all(tokens.map(async (token) => {

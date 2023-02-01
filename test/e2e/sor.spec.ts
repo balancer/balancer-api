@@ -19,8 +19,8 @@ jest.setTimeout(30000);
 
 let provider, signer; 
 
-const rpcUrl = process.env.RPC_URL || `http://127.0.0.1:8545`;
-const nodeRpcUrl = process.env.PROVIDER_RPC_URL || `http://192.168.50.104:8545`;
+const hardhatUrl = process.env.HARDHAT_URL || `http://127.0.0.1:8545`;
+const rpcUrl = process.env.RPC_URL || `http://192.168.50.104:8545`;
 
 /**
  * These tests do the following:
@@ -36,7 +36,7 @@ describe('SOR Endpoint E2E tests', () => {
 
   describe('Mainnet Tests', () => {
     beforeAll(async () => {
-      provider = new JsonRpcProvider(rpcUrl, Network.MAINNET);
+      provider = new JsonRpcProvider(hardhatUrl, Network.MAINNET);
       await provider.send('hardhat_impersonateAccount', [WALLET_ADDRESS]);
       signer = provider.getSigner(WALLET_ADDRESS)
     });
@@ -50,7 +50,7 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', 18).toString(),
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
-      await forkSetup(signer, [DAI], [sorRequest.amount], nodeRpcUrl);
+      await forkSetup(signer, [DAI], [sorRequest.amount], rpcUrl);
       const balances = await getBalances(provider, WALLET_ADDRESS, [BAL]);
       await testSorRequest(provider, WALLET_ADDRESS, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(provider, WALLET_ADDRESS, [BAL]);
@@ -66,7 +66,7 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', 18).toString(),
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
-      await forkSetup(signer, [BAL], [sorRequest.amount], nodeRpcUrl)
+      await forkSetup(signer, [BAL], [sorRequest.amount], rpcUrl)
       const balances = await getBalances(provider, WALLET_ADDRESS, [BAL, USDC]);
       await testSorRequest(provider, WALLET_ADDRESS, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(provider, WALLET_ADDRESS, [BAL, USDC]);

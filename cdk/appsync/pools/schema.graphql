@@ -1,12 +1,12 @@
 ﻿type Pool
   @key(
-    name: "byTotalLiquidity",
-    fields: ["chainId", "totalLiquidity"],
+    name: "byTotalLiquidity"
+    fields: ["chainId", "totalLiquidity"]
     queryField: "poolsByTotalLiquidity"
   )
   @key(
-    name: "byVolume",
-    fields: ["chainId", "volumeSnapshot"],
+    name: "byVolume"
+    fields: ["chainId", "volumeSnapshot"]
     queryField: "poolsByVolume"
   ) {
   chainId: Int!

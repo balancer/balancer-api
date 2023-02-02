@@ -13,7 +13,7 @@
     "init": "node dist/scripts/init.js",
     "lint": "eslint . --ext .ts --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
-    "node": "npx hardhat node --tsconfig tsconfig.testing.json --fork $(. ./.env && echo $RPC_URL)",
+    "node": "npx hardhat node --tsconfig tsconfig.testing.json",
     "prepare": "node ./prepare.js",
     "prettier": "prettier --check '**/*.*(md|json|yaml|ts)' --loglevel warn",
     "prettier:fix": "npm run prettier -- --write",

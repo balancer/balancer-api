@@ -1,4 +1,5 @@
 import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
+import { BigNumberish } from '@ethersproject/bignumber';
 
 export interface Token extends SDKToken {
   chainId: number;
@@ -96,6 +97,6 @@ export enum SwapTokenType {
 
 export interface SwapToken {
   address: string;
-  amount: BigNumber;
+  amount: BigNumberish;
   type: SwapTokenType;
 }

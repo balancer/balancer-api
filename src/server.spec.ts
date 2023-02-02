@@ -1,6 +1,6 @@
 import { parseUnits } from 'ethers/lib/utils';
 import supertest from 'supertest';
-import { Network, TOKEN_ADDRESSES } from './constants';
+import { Network, TOKENS } from './constants';
 import { SorRequest, SerializedSwapInfo, Token } from './types';
 import {
   createPoolsTable,
@@ -13,8 +13,8 @@ import {
   getPools,
   getTokens,
 } from './data-providers/dynamodb';
-import TOKENS from '../test/mocks/tokens.json';
-import POOLS from '../test/mocks/pools';
+import DBTOKENS from '../test/mocks/tokens.json';
+import DBPOOLS from '../test/mocks/pools';
 import server from './server';
 import { localAWSConfig } from './utils';
 
@@ -36,13 +36,13 @@ beforeAll(async () => {
   await createPoolsTable();
   await createTokensTable();
   console.log('Populating Tables...');
-  await updateTokens(TOKENS);
-  await updatePools(POOLS);
+  await updateTokens(DBTOKENS);
+  await updatePools(DBPOOLS);
   console.log('Checking tables were populated...');
   const pools = await getPools(1);
-  expect(pools.length).toEqual(POOLS.length);
+  expect(pools.length).toEqual(DBPOOLS.length);
   const tokens = await getTokens(1);
-  expect(tokens.length).toEqual(TOKENS.length);
+  expect(tokens.length).toEqual(DBTOKENS.length);
   console.log('Running tests...');
 });
 
@@ -56,7 +56,7 @@ describe('server.ts', () => {
         .expect(200)
         .then(res => {
           const pools = res.body;
-          expect(pools.length).toEqual(POOLS.length);
+          expect(pools.length).toEqual(DBPOOLS.length);
         });
     });
 
@@ -103,8 +103,8 @@ describe('server.ts', () => {
       it('Should return BAL to DAI swap information', async () => {
         const sorRequest: SorRequest = {
           ...defaultSorRequest,
-          sellToken: TOKEN_ADDRESSES[Network.MAINNET].BAL,
-          buyToken: TOKEN_ADDRESSES[Network.MAINNET].DAI,
+          sellToken: TOKENS[Network.MAINNET].BAL.address,
+          buyToken: TOKENS[Network.MAINNET].DAI.address,
         };
 
         await supertest(server)
@@ -115,10 +115,10 @@ describe('server.ts', () => {
             const response = res.body as SerializedSwapInfo;
             expect(response.tokenAddresses.length).toBeGreaterThanOrEqual(2);
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].BAL
+              TOKENS[Network.MAINNET].BAL.address
             );
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].DAI
+              TOKENS[Network.MAINNET].DAI.address
             );
             expect(response.swaps.length).toBeGreaterThanOrEqual(1);
             expect(response.swapAmount).toBe(defaultSwapAmount);
@@ -129,8 +129,8 @@ describe('server.ts', () => {
         const USDCSwapAmount = parseUnits('1', 6).toString();
         const sorRequest: SorRequest = {
           ...defaultSorRequest,
-          sellToken: TOKEN_ADDRESSES[Network.MAINNET].USDC,
-          buyToken: TOKEN_ADDRESSES[Network.MAINNET].DAI,
+          sellToken: TOKENS[Network.MAINNET].USDC.address,
+          buyToken: TOKENS[Network.MAINNET].DAI.address,
           amount: USDCSwapAmount,
         };
 
@@ -142,10 +142,10 @@ describe('server.ts', () => {
             const response = res.body as SerializedSwapInfo;
             expect(response.tokenAddresses.length).toBeGreaterThanOrEqual(2);
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].USDC
+              TOKENS[Network.MAINNET].USDC.address
             );
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].DAI
+              TOKENS[Network.MAINNET].DAI.address
             );
             expect(response.swaps.length).toBeGreaterThanOrEqual(1);
             expect(response.swapAmount).toBe(USDCSwapAmount);
@@ -155,8 +155,8 @@ describe('server.ts', () => {
       it('Should return WETH to USDT swap information', async () => {
         const sorRequest: SorRequest = {
           ...defaultSorRequest,
-          sellToken: TOKEN_ADDRESSES[Network.MAINNET].WETH,
-          buyToken: TOKEN_ADDRESSES[Network.MAINNET].USDT,
+          sellToken: TOKENS[Network.MAINNET].WETH.address,
+          buyToken: TOKENS[Network.MAINNET].USDT.address,
           amount: defaultSwapAmount,
         };
 
@@ -168,10 +168,10 @@ describe('server.ts', () => {
             const response = res.body as SerializedSwapInfo;
             expect(response.tokenAddresses.length).toBeGreaterThanOrEqual(2);
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].WETH
+              TOKENS[Network.MAINNET].WETH.address
             );
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].USDT
+              TOKENS[Network.MAINNET].USDT.address
             );
             expect(response.swaps.length).toBeGreaterThanOrEqual(1);
             expect(response.swapAmount).toBe(defaultSwapAmount);
@@ -181,8 +181,8 @@ describe('server.ts', () => {
       it('Should return ETH to BAL swap information', async () => {
         const sorRequest: SorRequest = {
           ...defaultSorRequest,
-          sellToken: TOKEN_ADDRESSES[Network.MAINNET].ETH,
-          buyToken: TOKEN_ADDRESSES[Network.MAINNET].BAL,
+          sellToken: TOKENS[Network.MAINNET].ETH.address,
+          buyToken: TOKENS[Network.MAINNET].BAL.address,
           amount: defaultSwapAmount,
         };
 
@@ -194,10 +194,10 @@ describe('server.ts', () => {
             const response = res.body as SerializedSwapInfo;
             expect(response.tokenAddresses.length).toBeGreaterThanOrEqual(2);
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].ETH
+              TOKENS[Network.MAINNET].ETH.address
             );
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].BAL
+              TOKENS[Network.MAINNET].BAL.address
             );
             expect(response.swaps.length).toBeGreaterThanOrEqual(1);
             expect(response.swapAmount).toBe(defaultSwapAmount);
@@ -207,8 +207,8 @@ describe('server.ts', () => {
       it('Should return bb-a-USD to USDT swap information', async () => {
         const sorRequest: SorRequest = {
           ...defaultSorRequest,
-          sellToken: TOKEN_ADDRESSES[Network.MAINNET].BBAUSD,
-          buyToken: TOKEN_ADDRESSES[Network.MAINNET].USDT,
+          sellToken: TOKENS[Network.MAINNET].bbausd.address,
+          buyToken: TOKENS[Network.MAINNET].USDT.address,
           amount: defaultSwapAmount,
         };
 
@@ -220,10 +220,10 @@ describe('server.ts', () => {
             const response = res.body as SerializedSwapInfo;
             expect(response.tokenAddresses.length).toBeGreaterThanOrEqual(2);
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].BBAUSD
+              TOKENS[Network.MAINNET].bbausd.address
             );
             expect(response.tokenAddresses).toContain(
-              TOKEN_ADDRESSES[Network.MAINNET].USDT
+              TOKENS[Network.MAINNET].USDT.address
             );
             expect(response.swaps.length).toBeGreaterThanOrEqual(1);
             expect(response.swapAmount).toBe(defaultSwapAmount);
@@ -247,7 +247,7 @@ describe('server.ts', () => {
         const sorRequest: SorRequest = {
           ...defaultSorRequest,
           sellToken: '0xa7fD7D83E2d63f093b71C5F3B84c27cFF66A7802',
-          buyToken: TOKEN_ADDRESSES[Network.MAINNET].DAI,
+          buyToken: TOKENS[Network.MAINNET].DAI.address,
         };
 
         await supertest(server)
@@ -272,7 +272,7 @@ describe('server.ts', () => {
         .expect(200)
         .then(res => {
           const tokens = res.body;
-          expect(tokens.length).toEqual(TOKENS.length);
+          expect(tokens.length).toEqual(DBTOKENS.length);
         });
     });
 
@@ -284,7 +284,7 @@ describe('server.ts', () => {
   describe('GET /tokens/:chainId/:tokenId', () => {
     it('Should return a single tokens information', async () => {
       await supertest(server)
-        .get(`/tokens/1/${TOKEN_ADDRESSES[Network.MAINNET].DAI}`)
+        .get(`/tokens/1/${TOKENS[Network.MAINNET].DAI.address}`)
         .expect(200)
         .then(res => {
           const token = res.body;

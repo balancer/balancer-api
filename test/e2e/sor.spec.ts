@@ -47,7 +47,7 @@ describe('SOR Endpoint E2E tests', () => {
       await setEthBalance(signer, parseFixed('100', 18));
     });
 
-    it('Should be able to swap DAI for BAL', async () => {
+    it('Should be able to sell DAI for BAL', async () => {
       const { DAI, BAL } = TOKENS[Network.MAINNET];
       const sorRequest: SorRequest = {
         sellToken: DAI.address,
@@ -63,7 +63,7 @@ describe('SOR Endpoint E2E tests', () => {
       expect(BigNumber.from(newBalances.BAL).gt(balances.BAL));
     });
 
-    it('Should be able to swap BAL for USDC', async () => {
+    it('Should be able to sell BAL for USDC', async () => {
       const { BAL, USDC } = TOKENS[Network.MAINNET];
       const sorRequest: SorRequest = {
         sellToken: BAL.address,
@@ -77,6 +77,54 @@ describe('SOR Endpoint E2E tests', () => {
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [BAL, USDC]);
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
+    });
+
+    it('Should be able to buy DAI with USDC', async () => {
+      const { USDC, DAI } = TOKENS[Network.MAINNET];
+      const sorRequest: SorRequest = {
+        sellToken: USDC.address,
+        buyToken: DAI.address,
+        orderKind: 'buy',
+        amount: parseFixed('100', 18).toString(),
+        gasPrice: BigNumber.from('0x174876e800').toString(),
+      };
+      await setTokenBalance(signer, USDC, BigNumber.from(sorRequest.amount).mul(2))
+      const balances = await getBalances(signer, [USDC, DAI]);
+      await testSorRequest(signer, Network.MAINNET, sorRequest);
+      const newBalances = await getBalances(signer, [USDC, DAI]);
+      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI));
+    });
+
+    it('Should be able to sell waUSDC for DAI', async () => {
+      const { waUSDC, DAI } = TOKENS[Network.MAINNET];
+      const sorRequest: SorRequest = {
+        sellToken: waUSDC.address,
+        buyToken: DAI.address,
+        orderKind: 'sell',
+        amount: parseFixed('100', 18).toString(),
+        gasPrice: BigNumber.from('0x174876e800').toString(),
+      };
+      await setTokenBalance(signer, waUSDC, sorRequest.amount)
+      const balances = await getBalances(signer, [waUSDC, DAI]);
+      await testSorRequest(signer, Network.MAINNET, sorRequest);
+      const newBalances = await getBalances(signer, [waUSDC, DAI]);
+      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI));
+    });
+
+    it('Should be able to sell WETH for bbausd', async () => {
+      const { WETH, bbausd2 } = TOKENS[Network.MAINNET];
+      const sorRequest: SorRequest = {
+        sellToken: WETH.address,
+        buyToken: bbausd2.address,
+        orderKind: 'sell',
+        amount: parseFixed('10', 18).toString(),
+        gasPrice: BigNumber.from('0x174876e800').toString(),
+      };
+      await setTokenBalance(signer, WETH, sorRequest.amount)
+      const balances = await getBalances(signer, [WETH, bbausd2]);
+      await testSorRequest(signer, Network.MAINNET, sorRequest);
+      const newBalances = await getBalances(signer, [WETH, bbausd2]);
+      expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2));
     });
   });
 });

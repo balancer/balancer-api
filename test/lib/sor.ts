@@ -4,6 +4,7 @@ require('dotenv').config();
 import axios from 'axios';
 import { ADDRESSES } from '../../src/constants/addresses';
 import { JsonRpcSigner } from '@ethersproject/providers';
+import { MaxUint256 } from '@ethersproject/constants';
 import { SwapTokenType, SwapToken, SorRequest } from '../../src/types';
 import { hexValue } from '@ethersproject/bytes';
 import {
@@ -28,16 +29,11 @@ export async function testSorRequest(
 ) {
   const walletAddress: Address = await signer.getAddress();
 
-  const tokenToDispose =
-    sorRequest.orderKind === 'sell'
-      ? sorRequest.sellToken
-      : sorRequest.buyToken;
-
   // Allow the vault to spend wallets tokens
   await approveToken(
     signer,
-    tokenToDispose,
-    sorRequest.amount,
+    sorRequest.sellToken,
+    MaxUint256,
     ADDRESSES[network].contracts.vault
   );
 

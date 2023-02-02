@@ -7,7 +7,7 @@ import { BigNumber } from 'ethers';
 import { testSorRequest } from '../lib/sor';
 import { Network } from '../../src/constants/general';
 import { getInfuraUrl } from '../../src/utils';
-import { forkSetup, getBalances, setTokenBalance } from '../lib/helpers';
+import { forkSetup, getBalances, setEthBalance, setTokenBalance } from '../lib/helpers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { TOKENS } from '../../src/constants/addresses';
 
@@ -28,8 +28,6 @@ if (!rpcUrl) {
   process.exit(1);
 }
 
-console.log("RPC URL is ", rpcUrl);
-
 /**
  * These tests do the following:
  * - Make a request to the /sor endpoint
@@ -44,9 +42,9 @@ describe('SOR Endpoint E2E tests', () => {
 
   describe('Mainnet Tests', () => {
     beforeEach(async () => {
-      console.log(`Impersonating ${WALLET_ADDRESS}`)
       await provider.send('hardhat_impersonateAccount', [WALLET_ADDRESS]);
       signer = await provider.getSigner(WALLET_ADDRESS);
+      await setEthBalance(signer, parseFixed('100', 18));
     });
 
     it('Should be able to swap DAI for BAL', async () => {
@@ -59,9 +57,9 @@ describe('SOR Endpoint E2E tests', () => {
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
       await setTokenBalance(signer, DAI, sorRequest.amount)
-      const balances = await getBalances(signer, WALLET_ADDRESS, [BAL]);
-      await testSorRequest(signer, WALLET_ADDRESS, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, WALLET_ADDRESS, [BAL]);
+      const balances = await getBalances(signer, [BAL]);
+      await testSorRequest(signer, Network.MAINNET, sorRequest);
+      const newBalances = await getBalances(signer, [BAL]);
       expect(BigNumber.from(newBalances.BAL).gt(balances.BAL));
     });
 
@@ -75,9 +73,9 @@ describe('SOR Endpoint E2E tests', () => {
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
       await setTokenBalance(signer, BAL, sorRequest.amount)
-      const balances = await getBalances(signer, WALLET_ADDRESS, [BAL, USDC]);
-      await testSorRequest(signer, WALLET_ADDRESS, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, WALLET_ADDRESS, [BAL, USDC]);
+      const balances = await getBalances(signer, [BAL, USDC]);
+      await testSorRequest(signer, Network.MAINNET, sorRequest);
+      const newBalances = await getBalances(signer, [BAL, USDC]);
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
     });
   });

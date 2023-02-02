@@ -2,12 +2,10 @@
 require('dotenv').config();
 
 import axios from 'axios';
-import { ADDRESSES, TOKENS } from '../../src/constants/addresses';
-import { Network } from '../../src/constants/general';
+import { ADDRESSES } from '../../src/constants/addresses';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { SwapTokenType, SwapToken, SorRequest } from '../../src/types';
 import { hexValue } from '@ethersproject/bytes';
-import { parseEther } from '@ethersproject/units';
 import {
   Address,
   BatchSwap,
@@ -16,7 +14,7 @@ import {
   SwapType,
 } from '@balancer-labs/sdk';
 import { BigNumber } from 'ethers';
-import { printBalances, approveToken } from './helpers';
+import { approveToken } from './helpers';
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 
@@ -25,22 +23,10 @@ const GAS_PRICE = 500 * GWEI;
 
 export async function testSorRequest(
   signer: JsonRpcSigner,
-  walletAddress: Address,
   network: number,
   sorRequest: SorRequest
 ) {
-  const { DAI, BAL } = TOKENS[network];
-
-  const initialETH = parseEther('444').toHexString(10);
-
-  const params = [
-    walletAddress,
-    hexValue(initialETH), // hex encoded wei amount
-  ];
-
-  await signer.provider.send('hardhat_setBalance', params);
-
-  await printBalances(signer, walletAddress, [DAI, BAL]);
+  const walletAddress: Address = await signer.getAddress();
 
   const tokenToDispose =
     sorRequest.orderKind === 'sell'
@@ -52,12 +38,10 @@ export async function testSorRequest(
     signer,
     tokenToDispose,
     sorRequest.amount,
-    ADDRESSES[Network.MAINNET].contracts.vault
+    ADDRESSES[network].contracts.vault
   );
 
-  await printBalances(signer, walletAddress, [DAI, BAL]);
-
-  const sorSwapInfo = await querySorEndpoint(sorRequest);
+  const sorSwapInfo = await querySorEndpoint(network, sorRequest);
   const swapType =
     sorRequest.orderKind == 'sell'
       ? SwapType.SwapExactIn
@@ -73,32 +57,30 @@ export async function testSorRequest(
 
   const batchSwapParams = [
     {
-      to: ADDRESSES[Network.MAINNET].contracts.vault,
+      to: ADDRESSES[network].contracts.vault,
       from: walletAddress,
       data: encodedBatchSwapData,
       gas: hexValue(3000000),
       gasPrice: hexValue(GAS_PRICE),
-      value: BigNumber.from('20000000000000000').toHexString(10),
+      value: BigNumber.from('20000000000000000').toHexString(),
     },
   ];
 
   await signer.provider.send('eth_sendTransaction', batchSwapParams);
-  await printBalances(signer, walletAddress, [DAI, BAL]);
 }
 
 export async function querySorEndpoint(
+  network: number,
   sorRequest: SorRequest
 ): Promise<SwapInfo> {
   let sorSwapInfo: SwapInfo;
   try {
-    const data = await axios.post(`${ENDPOINT_URL}/sor/1`, sorRequest);
+    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}`, sorRequest);
     sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);
     process.exit(1);
   }
-
-  console.log('Got swap info: ', sorSwapInfo);
 
   return sorSwapInfo;
 }
@@ -126,12 +108,11 @@ function calculateLimits(
     }
   });
 
-  console.log('Limits', limits);
   return limits;
 }
 
 function convertSwapInfoToBatchSwap(
-  userAddress: string,
+  userAddress: Address,
   swapType: SwapType,
   swapInfo: SwapInfo
 ): BatchSwap {

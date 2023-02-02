@@ -1,5 +1,5 @@
 import { TokenWithSlot } from '../../src/constants/addresses';
-import { hexlify, zeroPad } from '@ethersproject/bytes';
+import { hexlify, hexValue, zeroPad } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/solidity';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
@@ -10,13 +10,12 @@ const ERC20_ABI = require('./ERC20.json');
 
 export async function getBalances(
   signer: JsonRpcSigner,
-  walletAddress: string,
   tokens: Token[]
 ): Promise<Record<string, string>> {
   const balances = await Promise.all(
     tokens.map(async token => {
       const contract = new Contract(token.address, ERC20_ABI, signer);
-      const balance = await contract.balanceOf(walletAddress);
+      const balance = await contract.balanceOf(await signer.getAddress());
       return [token.symbol, balance];
     })
   );
@@ -29,10 +28,9 @@ export async function getBalances(
 
 export async function printBalances(
   signer: JsonRpcSigner,
-  walletAddress: string,
   tokens: Token[]
 ): Promise<void> {
-  const balances = await getBalances(signer, walletAddress, tokens);
+  const balances = await getBalances(signer, tokens);
   console.log('Token Balances:');
   Object.entries(balances).forEach(([symbol, balance]) => {
     console.log(`${symbol}: ${balance}`);
@@ -63,6 +61,20 @@ export const forkSetup = async (
     },
   ]);
 };
+
+export async function setEthBalance(
+  signer: JsonRpcSigner,
+  balance: BigNumberish
+) {
+  const walletAddress = await signer.getAddress();
+
+  const params = [
+    walletAddress,
+    hexValue(balance), // hex encoded wei amount
+  ];
+
+  await signer.provider.send('hardhat_setBalance', params);
+}
 
 /**
  * Set token balance for a given account
@@ -117,10 +129,6 @@ export async function approveToken(
   amount: BigNumberish,
   spender: Address
 ): Promise<void> {
-  console.log(
-    `Approving ${amount} of token ${token} for wallet ${await signer.getAddress()} to spender ${spender}`
-  );
-
   const tokenContract = new Contract(token, ERC20_ABI, signer);
 
   const tx = await tokenContract.approve(spender, amount);

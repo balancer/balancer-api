@@ -11,7 +11,6 @@ import debug from 'debug';
 import { isEqual } from 'lodash';
 import { isValidApr } from '../utils';
 import { WEEK_IN_MS } from '../constants';
-import BigNumber from 'bignumber.js';
 
 const log = debug('balancer:pools');
 
@@ -137,7 +136,7 @@ export class PoolService {
       this.pool.lastUpdate = Date.now();
     }
 
-    this.pool.maxApr = Number(this.absMaxApr(poolApr, this.pool.boost));
+    this.pool.maxApr = poolApr.max;
     return (this.pool.apr = poolApr);
   }
 
@@ -198,25 +197,5 @@ export class PoolService {
     const isNew = Date.now() - this.pool.createTime * 1000 < WEEK_IN_MS;
 
     return (this.pool.isNew = isNew);
-  }
-
-  /**
-   * @summary Calculates absolute max APR given boost or not.
-   * If given boost returns user's max APR.
-   * If not given boost returns pool absolute max assuming 2.5x boost.
-   * Used primarily for sorting tables by the APR column.
-   */
-  absMaxApr(aprs: AprBreakdown, boost?: string): string {
-    if (boost) {
-      const nonStakingApr = new BigNumber(aprs.swapFees)
-        .plus(aprs.tokenAprs.total)
-        .plus(aprs.rewardAprs.total);
-      const stakingApr = new BigNumber(aprs.stakingApr.min)
-        .times(boost)
-        .toString();
-      return nonStakingApr.plus(stakingApr).toString();
-    }
-
-    return aprs.max.toString();
   }
 }

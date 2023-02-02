@@ -51,9 +51,9 @@ describe('SOR Endpoint E2E tests', () => {
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
       await forkSetup(signer, [DAI], [sorRequest.amount], rpcUrl);
-      const balances = await getBalances(provider, WALLET_ADDRESS, [BAL]);
-      await testSorRequest(provider, WALLET_ADDRESS, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(provider, WALLET_ADDRESS, [BAL]);
+      const balances = await getBalances(signer, WALLET_ADDRESS, [BAL]);
+      await testSorRequest(signer, WALLET_ADDRESS, Network.MAINNET, sorRequest);
+      const newBalances = await getBalances(signer, WALLET_ADDRESS, [BAL]);
       expect(BigNumber.from(newBalances.BAL).gt(balances.BAL));
     });
 
@@ -67,9 +67,9 @@ describe('SOR Endpoint E2E tests', () => {
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
       await forkSetup(signer, [BAL], [sorRequest.amount], rpcUrl)
-      const balances = await getBalances(provider, WALLET_ADDRESS, [BAL, USDC]);
-      await testSorRequest(provider, WALLET_ADDRESS, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(provider, WALLET_ADDRESS, [BAL, USDC]);
+      const balances = await getBalances(signer, WALLET_ADDRESS, [BAL, USDC]);
+      await testSorRequest(signer, WALLET_ADDRESS, Network.MAINNET, sorRequest);
+      const newBalances = await getBalances(signer, WALLET_ADDRESS, [BAL, USDC]);
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
     });
   });

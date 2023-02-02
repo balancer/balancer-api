@@ -13,48 +13,29 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 
 const ERC20_ABI = require('./ERC20.json');
 
-export async function getBalances(provider: JsonRpcProvider, walletAddress: string, tokens: Token[]): Promise<Record<string, string>> {
+export async function getBalances(signer: JsonRpcSigner, walletAddress: string, tokens: Token[]): Promise<Record<string, string>> {
   const balances = await Promise.all(tokens.map(async (token) => {
     const contract = new Contract(
       token.address,
       ERC20_ABI,
-      provider
+      signer
     );
     const balance = await contract.balanceOf(walletAddress);
     return [token.symbol, balance];
   }));
 
-  const ethBalance = await provider.getBalance(walletAddress);
+  const ethBalance = await signer.getBalance();
   balances.unshift(['ETH', ethBalance]);
 
   return Object.fromEntries(balances);
 }
 
-export async function printBalances(provider: JsonRpcProvider, walletAddress: string, tokens: Token[]): Promise<void> {
-  const balances = await getBalances(provider, walletAddress, tokens);
+export async function printBalances(signer: JsonRpcSigner, walletAddress: string, tokens: Token[]): Promise<void> {
+  const balances = await getBalances(signer, walletAddress, tokens);
   console.log('Token Balances:')
   Object.entries(balances).forEach(([symbol, balance]) => {
     console.log(`${symbol}: ${balance}`);
   });
-}
-
-export async function mintToken(
-  provider: JsonRpcProvider,
-  token: Address,
-  amount: BigNumberish,
-  wallet: Address,
-) {
-  const signerZero = provider.getSigner(AddressZero);
-  const signer = provider.getSigner(wallet);
-  const tokenContract = new Contract(token, ERC20_ABI, signerZero);
-
-  console.log(`Transferring ${amount} of ${token} from ${AddressZero} to ${await signer.getAddress()}`)
-  const tx = await tokenContract.transfer(
-    await signer.getAddress(),
-    amount
-  );
-
-  await tx.wait();
 }
 
 /**

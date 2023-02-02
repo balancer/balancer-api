@@ -4,7 +4,7 @@ require('dotenv').config();
 import axios from 'axios';
 import { ADDRESSES, TOKENS } from '../../src/constants/addresses';
 import { Network } from '../../src/constants/general';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { JsonRpcSigner } from '@ethersproject/providers';
 import { SwapTokenType, SwapToken, SorRequest } from '../../src/types';
 import { hexValue } from '@ethersproject/bytes';
 import { parseEther } from '@ethersproject/units';
@@ -24,14 +24,12 @@ const GWEI = 10 ** 9;
 const GAS_PRICE = 500 * GWEI;
 
 export async function testSorRequest(
-  provider: JsonRpcProvider,
+  signer: JsonRpcSigner,
   walletAddress: Address,
   network: number,
   sorRequest: SorRequest
 ) {
   const { DAI, BAL } = TOKENS[network];
-
-  const signer = await provider.getSigner(walletAddress);
 
   const initialETH = parseEther('444').toHexString(10);
 
@@ -40,9 +38,9 @@ export async function testSorRequest(
     hexValue(initialETH), // hex encoded wei amount
   ];
 
-  await provider.send('hardhat_setBalance', params);
+  await signer.provider.send('hardhat_setBalance', params);
 
-  await printBalances(provider, walletAddress, [DAI, BAL]);
+  await printBalances(signer, walletAddress, [DAI, BAL]);
 
   const tokenToDispose =
     sorRequest.orderKind === 'sell'
@@ -57,7 +55,7 @@ export async function testSorRequest(
     ADDRESSES[Network.MAINNET].contracts.vault
   );
 
-  await printBalances(provider, walletAddress, [DAI, BAL]);
+  await printBalances(signer, walletAddress, [DAI, BAL]);
 
   const sorSwapInfo = await querySorEndpoint(sorRequest);
   const swapType =
@@ -84,8 +82,8 @@ export async function testSorRequest(
     },
   ];
 
-  await provider.send('eth_sendTransaction', batchSwapParams);
-  await printBalances(provider, walletAddress, [DAI, BAL]);
+  await signer.provider.send('eth_sendTransaction', batchSwapParams);
+  await printBalances(signer, walletAddress, [DAI, BAL]);
 }
 
 export async function querySorEndpoint(

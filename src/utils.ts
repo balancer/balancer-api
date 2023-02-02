@@ -111,6 +111,8 @@ export function orderKindToSwapType(orderKind: string): SwapTypes {
 }
 
 export function getInfuraUrl(chainId: number): string {
+  if (!INFURA_PROJECT_ID) return '';
+
   switch (chainId) {
     case Network.KOVAN:
       return `https://kovan.infura.io/v3/${INFURA_PROJECT_ID}`;

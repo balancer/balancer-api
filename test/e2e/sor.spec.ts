@@ -6,6 +6,7 @@ import { parseFixed } from '@ethersproject/bignumber';
 import { BigNumber } from 'ethers';
 import { testSorRequest } from '../lib/sor';
 import { Network } from '../../src/constants/general';
+import { getInfuraUrl } from '../../src/utils';
 import { forkSetup, getBalances } from '../lib/helpers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { TOKENS } from '../../src/constants/addresses';
@@ -20,7 +21,14 @@ jest.setTimeout(30000);
 let provider, signer; 
 
 const hardhatUrl = process.env.HARDHAT_URL || `http://127.0.0.1:8545`;
-const rpcUrl = process.env.RPC_URL || `http://192.168.50.104:8545`;
+const rpcUrl = process.env.RPC_URL || getInfuraUrl(Network.MAINNET);
+
+if (!rpcUrl) {
+  console.error('Env variable RPC_URL or INFURA_PROJECT_ID must be set to run these tests')
+  process.exit(1);
+}
+
+console.log("RPC URL is ", rpcUrl);
 
 /**
  * These tests do the following:
@@ -37,8 +45,9 @@ describe('SOR Endpoint E2E tests', () => {
   describe('Mainnet Tests', () => {
     beforeAll(async () => {
       provider = new JsonRpcProvider(hardhatUrl, Network.MAINNET);
+      console.log(`Impersonating ${WALLET_ADDRESS}`)
       await provider.send('hardhat_impersonateAccount', [WALLET_ADDRESS]);
-      signer = provider.getSigner(WALLET_ADDRESS)
+      signer = await provider.getSigner(WALLET_ADDRESS);
     });
 
     it('Should be able to swap DAI for BAL', async () => {

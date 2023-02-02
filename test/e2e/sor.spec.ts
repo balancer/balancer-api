@@ -7,7 +7,7 @@ import { BigNumber } from 'ethers';
 import { testSorRequest } from '../lib/sor';
 import { Network } from '../../src/constants/general';
 import { getInfuraUrl } from '../../src/utils';
-import { forkSetup, getBalances } from '../lib/helpers';
+import { forkSetup, getBalances, setTokenBalance } from '../lib/helpers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { TOKENS } from '../../src/constants/addresses';
 
@@ -37,14 +37,13 @@ console.log("RPC URL is ", rpcUrl);
  * - Simulate that transaction with Hardhat and ensure it completes correctly
  */
 describe('SOR Endpoint E2E tests', () => {
-  beforeEach(() => {
-    // Update API
-    // Update hardhat to latest block number
+  beforeEach(async () => {
+    provider = new JsonRpcProvider(hardhatUrl, Network.MAINNET);
+    await forkSetup(provider.getSigner(), rpcUrl);
   });
 
   describe('Mainnet Tests', () => {
-    beforeAll(async () => {
-      provider = new JsonRpcProvider(hardhatUrl, Network.MAINNET);
+    beforeEach(async () => {
       console.log(`Impersonating ${WALLET_ADDRESS}`)
       await provider.send('hardhat_impersonateAccount', [WALLET_ADDRESS]);
       signer = await provider.getSigner(WALLET_ADDRESS);
@@ -59,7 +58,7 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', 18).toString(),
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
-      await forkSetup(signer, [DAI], [sorRequest.amount], rpcUrl);
+      await setTokenBalance(signer, DAI, sorRequest.amount)
       const balances = await getBalances(signer, WALLET_ADDRESS, [BAL]);
       await testSorRequest(signer, WALLET_ADDRESS, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, WALLET_ADDRESS, [BAL]);
@@ -75,7 +74,7 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', 18).toString(),
         gasPrice: BigNumber.from('0x174876e800').toString(),
       };
-      await forkSetup(signer, [BAL], [sorRequest.amount], rpcUrl)
+      await setTokenBalance(signer, BAL, sorRequest.amount)
       const balances = await getBalances(signer, WALLET_ADDRESS, [BAL, USDC]);
       await testSorRequest(signer, WALLET_ADDRESS, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, WALLET_ADDRESS, [BAL, USDC]);

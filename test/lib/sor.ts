@@ -84,7 +84,7 @@ export async function querySorEndpoint(
 ): Promise<SwapInfo> {
   let sorSwapInfo: SwapInfo;
   try {
-    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}`, sorRequest);
+    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}/?useDb=1`, sorRequest);
     sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);

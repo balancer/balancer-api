@@ -117,6 +117,7 @@ export const POOL_SCHEMA: Schema = {
 
   volumeSnapshot: { type: 'BigDecimal', static: false },
   feesSnapshot: { type: 'BigDecimal', static: false },
+  maxApr: { type: 'BigDecimal', static: false },
 
   createTime: { type: 'Int', static: true },
   swapsCount: { type: 'BigInt', static: false },

@@ -45,6 +45,7 @@
   lowerTarget: String
   upperTarget: String
   apr: AprBreakdown
+  maxApr: Int
   isNew: Boolean
   protocolYieldFeeCache: String
   priceRateProviders: [PriceRateProvider]

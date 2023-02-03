@@ -22,11 +22,14 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
       body: 'invalid request, you are missing the parameter body',
     };
   }
+
+  const useDb = !!event.queryStringParameters?.useDb;
+
   const sorRequest =
     typeof event.body == 'object' ? event.body : JSON.parse(event.body);
 
   try {
-    const swapInfo = await getSorSwap(chainId, sorRequest);
+    const swapInfo = await getSorSwap(chainId, sorRequest, useDb);
     return { statusCode: 200, body: JSON.stringify(swapInfo) };
   } catch (e) {
     captureException(e, { extra: { chainId, sorRequest }});

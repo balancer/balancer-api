@@ -36,6 +36,7 @@ export interface Pool extends SDKPool {
   managementFee?: string;
   mainIndex?: number;
   wrappedIndex?: number;
+  maxApr?: number;
 }
 
 export interface SorRequest {

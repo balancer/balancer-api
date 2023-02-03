@@ -136,6 +136,7 @@ export class PoolService {
       this.pool.lastUpdate = Date.now();
     }
 
+    this.pool.maxApr = poolApr.max;
     return (this.pool.apr = poolApr);
   }
 

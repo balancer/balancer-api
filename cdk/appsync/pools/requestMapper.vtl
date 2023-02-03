@@ -7,8 +7,10 @@
             ":chainId" : $util.dynamodb.toDynamoDBJson($ctx.args.chainId)
         }
     },
-    #if( ${context.arguments.orderBy} == "volume")
+    #if(${context.arguments.orderBy} == "volume")
         "index": "byVolume",
+    #elseif(${context.arguments.orderBy} == "apr")
+        "index": "byApr",
     #else
         "index": "byTotalLiquidity",
     #end

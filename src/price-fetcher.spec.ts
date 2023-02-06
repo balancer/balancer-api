@@ -35,6 +35,10 @@ TOKEN_ADDRESSES[Network.ARBITRUM] = {
   BAL: '0x040d1edc9569d4bab2d15287dc5a4f10f56a56b8',
   DAI: '0xda10009cbd5d07dd0cecc66161fc93d7c9000da1',
 };
+TOKEN_ADDRESSES[Network.GNOSIS] = {
+  BAL: '0x7eF541E2a22058048904fE5744f9c7E4C57AF717',
+  XDAI: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+};
 
 const TOKEN_PRICE_BASEURL = COINGECKO_BASEURL + '/simple/token_price';
 
@@ -275,7 +279,7 @@ describe('Price Fetcher', () => {
   });
 
   describe('Cross Network', () => {
-    it('Should fetch three tokens from Ethereum, Polygon, Arbitrum', async () => {
+    it('Should fetch three tokens from Ethereum, Polygon, Arbitrum, Gnosis', async () => {
       const mainnetTokens: Token[] = [
         {
           symbol: 'BAL',
@@ -315,6 +319,20 @@ describe('Price Fetcher', () => {
           symbol: 'DAI',
           address: TOKEN_ADDRESSES[Network.ARBITRUM].DAI,
           chainId: Network.ARBITRUM,
+          decimals: 18,
+        },
+      ];
+      const gnosisTokens: Token[] = [
+        {
+          symbol: 'BAL',
+          address: TOKEN_ADDRESSES[Network.GNOSIS].BAL,
+          chainId: Network.GNOSIS,
+          decimals: 18,
+        },
+        {
+          symbol: 'XDAI',
+          address: TOKEN_ADDRESSES[Network.GNOSIS].XDAI,
+          chainId: Network.GNOSIS,
           decimals: 18,
         },
       ];
@@ -364,10 +382,26 @@ describe('Price Fetcher', () => {
           },
         });
 
+      nock(TOKEN_PRICE_BASEURL)
+        .get(
+          `/xdai?contract_addresses=${gnosisTokens
+            .map(t => t.address)
+            .join(',')}&vs_currencies=usd`
+        )
+        .reply(200, {
+          [TOKEN_ADDRESSES[Network.GNOSIS].BAL]: {
+            usd: 25,
+          },
+          [TOKEN_ADDRESSES[Network.GNOSIS].DAI]: {
+            usd: 1,
+          },
+        });
+
       const tokens = ([] as Token[])
         .concat(mainnetTokens)
         .concat(polygonTokens)
-        .concat(arbitrumTokens);
+        .concat(arbitrumTokens)
+        .concat(gnosisTokens);
       const tokensWithPrices = await priceFetcher.fetch(tokens);
       expect(tokensWithPrices[0].price).toEqual({ usd: '25', eth: '0.01' });
       expect(tokensWithPrices[1].price).toEqual({ usd: '1', eth: '0.0004' });

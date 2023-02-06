@@ -12,7 +12,7 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
     { AttributeName: 'chainId', AttributeType: 'N' },
     { AttributeName: 'totalLiquidity', AttributeType: 'N' },
     { AttributeName: 'volumeSnapshot', AttributeType: 'N' },
-    // { AttributeName: 'maxApr', AttributeType: 'N' },
+    { AttributeName: 'maxApr', AttributeType: 'N' },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,
@@ -47,20 +47,20 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
         WriteCapacityUnits: 5,
       },
     },
-    // {
-    //   IndexName: 'byApr',
-    //   KeySchema: [
-    //     { AttributeName: 'chainId', KeyType: 'HASH' },
-    //     { AttributeName: 'maxApr', KeyType: 'RANGE' },
-    //   ],
-    //   Projection: {
-    //     ProjectionType: 'ALL',
-    //   },
-    //   ProvisionedThroughput: {
-    //     ReadCapacityUnits: 5,
-    //     WriteCapacityUnits: 5,
-    //   },
-    // },
+    {
+      IndexName: 'byApr',
+      KeySchema: [
+        { AttributeName: 'chainId', KeyType: 'HASH' },
+        { AttributeName: 'maxApr', KeyType: 'RANGE' },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+    },
   ],
 };
 

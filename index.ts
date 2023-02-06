@@ -147,20 +147,20 @@ export class BalancerPoolsAPI extends Stack {
       projectionType: ProjectionType.ALL,
     });
 
-    // poolsTable.addGlobalSecondaryIndex({
-    //   indexName: 'byApr',
-    //   partitionKey: {
-    //     name: 'chainId',
-    //     type: AttributeType.NUMBER,
-    //   },
-    //   sortKey: {
-    //     name: 'maxApr',
-    //     type: AttributeType.NUMBER,
-    //   },
-    //   readCapacity: POOLS_IDX_READ_CAPACITY,
-    //   writeCapacity: POOLS_IDX_WRITE_CAPACITY,
-    //   projectionType: ProjectionType.ALL,
-    // });
+    poolsTable.addGlobalSecondaryIndex({
+      indexName: 'byApr',
+      partitionKey: {
+        name: 'chainId',
+        type: AttributeType.NUMBER,
+      },
+      sortKey: {
+        name: 'maxApr',
+        type: AttributeType.NUMBER,
+      },
+      readCapacity: POOLS_IDX_READ_CAPACITY,
+      writeCapacity: POOLS_IDX_WRITE_CAPACITY,
+      projectionType: ProjectionType.ALL,
+    });
 
     const tokensTable = new Table(this, 'tokens', {
       partitionKey: {

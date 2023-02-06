@@ -409,6 +409,8 @@ describe('Price Fetcher', () => {
       expect(tokensWithPrices[3].price).toEqual({ usd: '1', matic: '0.5' });
       expect(tokensWithPrices[4].price).toEqual({ usd: '25', eth: '0.01' });
       expect(tokensWithPrices[5].price).toEqual({ usd: '1', eth: '0.0004' });
+      expect(tokensWithPrices[4].price).toEqual({ usd: '25', eth: '0.01' });
+      expect(tokensWithPrices[5].price).toEqual({ usd: '1', eth: '0.0004' });
     });
 
     it('Should handle tokens with an invalid chainID gracefully', async () => {

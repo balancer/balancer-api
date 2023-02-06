@@ -109,6 +109,7 @@ export class PoolService {
       log(
         `Pool only has ${this.pool.totalLiquidity} liquidity. Not processing`
       );
+      this.pool.maxApr = poolApr.max;
       return (this.pool.apr = poolApr); // Don't bother calculating APR for pools with super low liquidity
     }
 
@@ -136,6 +137,7 @@ export class PoolService {
       this.pool.lastUpdate = Date.now();
     }
 
+    this.pool.maxApr = poolApr.max;
     return (this.pool.apr = poolApr);
   }
 

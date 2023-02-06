@@ -7,8 +7,18 @@
             ":chainId" : $util.dynamodb.toDynamoDBJson($ctx.args.chainId)
         }
     },
-    "index": "byTotalLiquidity",
-    "scanIndexForward": false,
+    #if(${context.arguments.orderBy} == "volume")
+        "index": "byVolume",
+    #elseif(${context.arguments.orderBy} == "apr")
+        "index": "byApr",
+    #else
+        "index": "byTotalLiquidity",
+    #end
+    #if( ${context.arguments.orderDirection} == "asc")
+        "scanIndexForward": true,
+    #else
+        "scanIndexForward": false,
+    #end
     #if( ${context.arguments.first} )
         "limit": ${ctx.args.first},
     #end

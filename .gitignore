@@ -6,3 +6,5 @@ docker/
 cdk.out/
 index.js
 src/**/*.js
+.eslintcache
+cdk/*.js

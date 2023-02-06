@@ -1,5 +1,6 @@
 const axios = require('axios');
 const util = require('util');
+require('dotenv').config();
 
 const { ENDPOINT_URL } = process.env;
 

@@ -263,3 +263,10 @@ You can customize your deployment with env variables. See .env.example for all p
 
 - AWS error `Specified ReservedConcurrentExecutions for function decreases account's UnreservedConcurrentExecution below its minimum value of [10]`
   - By default this package creates 13 lambdas while new AWS accounts are limited to 10. You can fix this by changing the `NETWORKS` environment variable to just `1` to only deploy lambdas for Mainnet instead of all networks.
+
+## Tips
+
+If you encounter any unexpected issues during deployment, please ensure that:
+
+- you are using NodeJS version 14.X
+- the AWS region you are trying to deploy is exactly the same one that was used during the bootstrapping process.

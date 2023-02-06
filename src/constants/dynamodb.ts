@@ -11,6 +11,8 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
     { AttributeName: 'id', AttributeType: 'S' },
     { AttributeName: 'chainId', AttributeType: 'N' },
     { AttributeName: 'totalLiquidity', AttributeType: 'N' },
+    { AttributeName: 'volumeSnapshot', AttributeType: 'N' },
+    { AttributeName: 'maxApr', AttributeType: 'N' },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 10,
@@ -22,6 +24,34 @@ export const POOLS_TABLE_SCHEMA: DynamoDB.Types.CreateTableInput = {
       KeySchema: [
         { AttributeName: 'chainId', KeyType: 'HASH' },
         { AttributeName: 'totalLiquidity', KeyType: 'RANGE' },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+    },
+    {
+      IndexName: 'byVolume',
+      KeySchema: [
+        { AttributeName: 'chainId', KeyType: 'HASH' },
+        { AttributeName: 'volumeSnapshot', KeyType: 'RANGE' },
+      ],
+      Projection: {
+        ProjectionType: 'ALL',
+      },
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 5,
+        WriteCapacityUnits: 5,
+      },
+    },
+    {
+      IndexName: 'byApr',
+      KeySchema: [
+        { AttributeName: 'chainId', KeyType: 'HASH' },
+        { AttributeName: 'maxApr', KeyType: 'RANGE' },
       ],
       Projection: {
         ProjectionType: 'ALL',
@@ -87,6 +117,7 @@ export const POOL_SCHEMA: Schema = {
 
   volumeSnapshot: { type: 'BigDecimal', static: false },
   feesSnapshot: { type: 'BigDecimal', static: false },
+  maxApr: { type: 'BigDecimal', static: false },
 
   createTime: { type: 'Int', static: true },
   swapsCount: { type: 'BigInt', static: false },

@@ -13,11 +13,13 @@
     "init": "node dist/scripts/init.js",
     "lint": "eslint . --ext .ts --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
+    "node": "npx hardhat node --tsconfig tsconfig.testing.json",
     "prepare": "node ./prepare.js",
     "prettier": "prettier --check '**/*.*(md|json|yaml|ts)' --loglevel warn",
     "prettier:fix": "npm run prettier -- --write",
     "start": "node dist/server.js",
-    "test": "jest",
+    "test": "jest -- src",
+    "test:e2e": "jest -- test/e2e",
     "update-schemas": "node dist/scripts/update-schemas.ts",
     "watch": "tsc -w",
     "worker": "node dist/worker.js"
@@ -44,9 +46,11 @@
     "express": "^4.17.1",
     "isomorphic-fetch": "^3.0.0",
     "json-to-graphql-query": "^2.2.4",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "tsx": "^3.12.2"
   },
   "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@types/express": "^4.17.13",
     "@types/jest": "^27.4.1",
     "@types/node": "*",
@@ -55,6 +59,7 @@
     "aws-cdk": "^2.32.1",
     "esbuild": "*",
     "eslint": "^8.3.0",
+    "hardhat": "^2.12.6",
     "husky": "^8.0.3",
     "jest": "^27.5.1",
     "lint-staged": "^13.1.0",

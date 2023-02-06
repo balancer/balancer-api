@@ -5,6 +5,6 @@ module.exports = {
       isolatedModules: true,
     },
   },
-  roots: ['./src'],
+  roots: ['./src', './test'],
   setupFiles: ['<rootDir>/.jest/setEnvVars.ts'],
 };

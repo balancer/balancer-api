@@ -1,4 +1,3 @@
-import { Order } from './types';
 import { getSorSwap, _setLogger } from './sor';
 import { mockSwapCostCalculator } from '@balancer-labs/sdk';
 
@@ -14,7 +13,7 @@ _setLogger(() => {});
 
 describe('SOR', () => {
   describe('getSorSwap', () => {
-    let order: Order;
+    let order;
 
     beforeEach(() => {
       jest.clearAllMocks();

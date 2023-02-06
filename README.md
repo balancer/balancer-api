@@ -95,6 +95,34 @@ npm run deploy # Run CDK to create/update your infrastructure
 After the deployment you will get an API URL that looks similar to `https://gtrabwaex9.execute-api.ap-southeast-2.amazonaws.com/prod/` this is
 your API Gateway URL, all endpoints below should be appended to this. Run `export ENDPOINT_URL=<your API url>` to be able to copy and paste the example queries below.
 
+## Tests
+
+### Unit Tests
+
+```
+npm run test
+```
+
+### E2E Tests
+
+These E2E tests perform SOR requests to the /sor endpoint, then run that swap on-chain using a Hardhat forked environment. They require you to have the
+API running somewhere, and a Hardhat network running.
+
+Before Starting set the following variables in your .env file:
+
+- `RPC_URL` - URL to your ETH node or Infura/Alchemy/etc. Will use infura with `INFURA_PROJECT_ID` if set.
+- `ENDPOINT_URL` - URL of your API instance - Defaults to `https://api.balancer.fi/`
+
+Then run the following:
+
+```
+# This starts the forked hardhat
+npm run node
+
+# In another terminal
+npm run test:e2e
+```
+
 ## Infrastructure Overview
 
 Note: Everything inside the AWS container is setup by the CDK scripts in this repository. You'll need to manually configure any external services, such as Alchemy event triggers.
@@ -241,19 +269,33 @@ You can run `npm run build` then run the script `node dist/scripts/graphql-query
 
 You can customize your deployment with env variables. See .env.example for all possible variables. They are described below:
 
+#### General Settings
+
 - DEBUG - Used by the [npm debug package](https://www.npmjs.com/package/debug) Can be used for showing debug information.
 - PORT - default: 8090 - Port to run the local server on
+- INFURA_PROJECT_ID - Your infura project ID. Used for loading data across all networks.
 - NETWORKS - default: 1,137,42161 - A comma separated list of networks ID's or names to run the API on.
-- INFURA_PROJECT_ID - Your infura project ID. Used for loading data across all networks
+
+#### Testing Related
+
+- RPC_URL - Used for E2E tests. This can be a local node or an Infura/Alchemy like service.
+- ENDPOINT_URL - Used for E2E tests. Specifies the API URL you'll be running the tests against.
+- HARDHAT_URL - Used for E2E tests. Defaults to 127.0.0.1.
+
+#### Capacity Related
+
+- DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda.
 - DYNAMODB_POOLS_READ_CAPACITY - default: 25 - The read capacity of the `pools` DynamoDB table.
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 25 - The write capacity of the `pools` DynamoDB table.
 - DYNAMODB_POOLS_IDX_READ_CAPACITY - default: 10 - The read capacity of the secondary indexes on the `pools` DynamoDB table.
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 10 - The write capacity of the secondary indexes on the `pools` DynamoDB table.
 - DYNAMODB_TOKENS_READ_CAPACITY - default: 10 - The read capcity of the `tokens` DynamoDB table.
 - DYNAMODB_TOKENS_WRITE_CAPACITY - default: 10 - The write capacity of the `tokens` DynamoDB tbale.
+
+#### Additional Settings - Rarely used
+
 - DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created.
 - SANCTIONS_API_KEY - TRM API key for running sanction checks.
-- DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda.
 - TENDERLY_USER - Your Tenderly user id, used by the `/tenderly` endpoints.
 - TENDERLY_PROJECT - Your Tenderly project id, used by the `/tenderly` endpoints.
 - TENDERLY_ACCESS_KEY - Your tenderly access key, used by the `/tenderly` endpoints.

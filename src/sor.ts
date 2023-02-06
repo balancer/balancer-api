@@ -1,5 +1,5 @@
 import { BalancerSDK, SwapInfo } from '@balancer-labs/sdk';
-import { Order, Token, SerializedSwapInfo } from './types';
+import { SorRequest, Token, SerializedSwapInfo } from './types';
 import {
   orderKindToSwapType,
   getInfuraUrl,
@@ -39,7 +39,7 @@ function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
 
 export async function getSorSwap(
   chainId: number,
-  order: Order
+  order: SorRequest
 ): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);

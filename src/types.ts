@@ -1,12 +1,5 @@
 import { Pool as SDKPool, SwapV2, Token as SDKToken } from '@balancer-labs/sdk';
-
-export interface Order {
-  sellToken: string;
-  buyToken: string;
-  orderKind: string;
-  amount: string;
-  gasPrice: string;
-}
+import { BigNumberish } from '@ethersproject/bignumber';
 
 export interface Token extends SDKToken {
   chainId: number;
@@ -95,4 +88,16 @@ export interface TRMEntity {
   riskScoreLevelLabel: string;
   trmAppUrl: string;
   trmUrn: string;
+}
+
+export enum SwapTokenType {
+  fixed,
+  min,
+  max,
+}
+
+export interface SwapToken {
+  address: string;
+  amount: BigNumberish;
+  type: SwapTokenType;
 }

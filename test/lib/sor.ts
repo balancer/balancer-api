@@ -27,21 +27,34 @@ export async function testSorRequest(
   network: number,
   sorRequest: SorRequest
 ) {
-  const walletAddress: Address = await signer.getAddress();
-
-  // Allow the vault to spend wallets tokens
-  await approveToken(
-    signer,
-    sorRequest.sellToken,
-    MaxUint256,
-    ADDRESSES[network].contracts.vault
-  );
-
   const sorSwapInfo = await querySorEndpoint(network, sorRequest);
   const swapType =
     sorRequest.orderKind == 'sell'
       ? SwapType.SwapExactIn
       : SwapType.SwapExactOut;
+
+  if (sorSwapInfo.swaps.length === 0) {
+    throw new Error('Failed to find a valid swap');
+  }
+
+  return testSorSwap(signer, network, swapType, sorSwapInfo);
+}
+
+export async function testSorSwap(
+  signer: JsonRpcSigner,
+  network: number,
+  swapType: SwapType,
+  sorSwapInfo: SwapInfo
+) {
+  const walletAddress: Address = await signer.getAddress();
+
+  // Allow the vault to spend wallets tokens
+  await approveToken(
+    signer,
+    sorSwapInfo.tokenIn,
+    MaxUint256,
+    ADDRESSES[network].contracts.vault
+  );
 
   const batchSwapData = convertSwapInfoToBatchSwap(
     walletAddress,
@@ -84,7 +97,8 @@ export async function querySorEndpoint(
 function calculateLimits(
   tokensIn: SwapToken[],
   tokensOut: SwapToken[],
-  tokenAddresses: string[]
+  tokenAddresses: string[],
+  slippageBps = 0,
 ): string[] {
   const limits: string[] = [];
 
@@ -96,9 +110,9 @@ function calculateLimits(
       swapToken => token.toLowerCase() === swapToken.address.toLowerCase()
     );
     if (tokenIn) {
-      limits[i] = tokenIn.amount.toString();
+      limits[i] = BigNumber.from(tokenIn.amount).mul(10000 + slippageBps).div(10000).toString();
     } else if (tokenOut) {
-      limits[i] = '0'; //tokenOut.amount.mul(-1).toString();
+      limits[i] = BigNumber.from(tokenOut.amount).mul(-10000).div(10000 + slippageBps).toString();
     } else {
       limits[i] = '0';
     }

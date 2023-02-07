@@ -61,7 +61,7 @@ describe('Price Fetcher', () => {
       });
 
     nock(COINGECKO_BASEURL)
-      .get(`/simple/price?ids=ethereum,matic-network&vs_currencies=usd`)
+      .get(`/simple/price?ids=ethereum,matic-network,xdai&vs_currencies=usd`)
       .reply(200, {
         ethereum: {
           usd: 2500,
@@ -69,6 +69,9 @@ describe('Price Fetcher', () => {
         'matic-network': {
           usd: 2,
         },
+        'xdai': {
+          usd: 1
+        }
       });
   });
 

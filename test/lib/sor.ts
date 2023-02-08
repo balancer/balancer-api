@@ -84,7 +84,7 @@ export async function querySorEndpoint(
 ): Promise<SwapInfo> {
   let sorSwapInfo: SwapInfo;
   try {
-    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}/?useDb=1`, sorRequest);
+    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}/?useDb=1&minLiquidity=100`, sorRequest);
     sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);
@@ -98,7 +98,7 @@ function calculateLimits(
   tokensIn: SwapToken[],
   tokensOut: SwapToken[],
   tokenAddresses: string[],
-  slippageBps = 0,
+  slippageBps = 10, // 0.1% slippage
 ): string[] {
   const limits: string[] = [];
 

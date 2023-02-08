@@ -387,6 +387,8 @@ export class BalancerPoolsAPI extends Stack {
         'integration.request.path.chainId': 'method.request.path.chainId',
         'integration.request.querystring.useDb':
           'method.request.querystring.useDb',
+          'integration.request.querystring.minLiquidity':
+          'method.request.querystring.minLiquidity',
       },
     });
     const updateTokenPricesIntegration = new LambdaIntegration(
@@ -499,6 +501,7 @@ export class BalancerPoolsAPI extends Stack {
       requestParameters: {
         'method.request.path.chainId': true,
         'method.request.querystring.useDb': false,
+        'method.request.querystring.minLiquidity': false,
       },
     });
     addCorsOptions(sor);

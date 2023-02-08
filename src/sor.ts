@@ -38,13 +38,21 @@ function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
   return serializedSwapInfo;
 }
 
+interface SorSwapOptions {
+  useDb?: boolean;
+  minLiquidity?: string;
+}
+
 export async function getSorSwap(
   chainId: number,
   order: SorRequest,
-  useDb = false
+  options: SorSwapOptions,
 ): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);
+
+  const useDb = options.useDb || false;
+  const minLiquidity = options.minLiquidity;
 
   let sorSettings;
   if (useDb) {
@@ -52,7 +60,8 @@ export async function getSorSwap(
 
     // SDK/SOR will use this to retrieve pool list from db (default uses onchain call which will be slow)
     const dbPoolDataService = new DatabasePoolDataService({
-      chainId: chainId,
+      chainId,
+      minLiquidity
     });
 
     sorSettings = {

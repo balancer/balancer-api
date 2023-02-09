@@ -46,7 +46,7 @@ interface SorSwapOptions {
 export async function getSorSwap(
   chainId: number,
   order: SorRequest,
-  options: SorSwapOptions,
+  options: SorSwapOptions = {},
 ): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);

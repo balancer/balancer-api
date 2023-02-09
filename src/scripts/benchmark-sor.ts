@@ -7,27 +7,35 @@ import { parseFixed } from '@ethersproject/bignumber';
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 const NETWORK = 1;
 
-const { DAI, BAL, USDC, WETH, auraBal } = TOKENS[Network.MAINNET];
+const { DAI, BAL, USDC, WETH, waUSDC, waUSDT } = TOKENS[Network.MAINNET];
 
 const GAS_PRICE = parseFixed('50', 9).toString();
 
+interface SorPayload {
+  name: string,
+  payload: SorRequest
+}
 
-function createSorPayload(sellToken: TokenWithSlot, buyToken: TokenWithSlot): SorRequest {
+function createSorPayload(sellToken: TokenWithSlot, buyToken: TokenWithSlot): SorPayload {
   return {
-    sellToken: sellToken.address,
-    buyToken: buyToken.address,
-    orderKind: 'sell',
-    amount: parseFixed('100', sellToken.decimals).toString(),
-    gasPrice: GAS_PRICE,
+    name: `${sellToken.symbol} -> ${buyToken.symbol}`,
+    payload: {
+      sellToken: sellToken.address,
+      buyToken: buyToken.address,
+      orderKind: 'sell',
+      amount: parseFixed('100', sellToken.decimals).toString(),
+      gasPrice: GAS_PRICE,
+    }
   }
 }
 
 
-const sorPayloads: SorRequest[] = [
+const sorPayloads: SorPayload[] = [
   createSorPayload(BAL, DAI),
   createSorPayload(USDC, DAI),
   createSorPayload(WETH, BAL),
-  createSorPayload(WETH, auraBal),
+  createSorPayload(waUSDC, WETH),
+  createSorPayload(waUSDT, USDC),
 ];
 
 
@@ -39,22 +47,10 @@ function createRoute(minLiquidity: number, payload: SorRequest) {
   };
 }
 
-function createSubgraphRoutes() {
-  return Object.fromEntries(sorPayloads.map((payload, idx) => {
-    const key = `subgraph-${idx}`;
-    return [key, {
-      method: 'post',
-      route: '',
-      data: payload
-    }];
-  }));
-}
-
-
 function createRoutes(minLiquidity: number) {
-  return Object.fromEntries(sorPayloads.map((payload, idx) => {
-    const key = `${minLiquidity}-${idx}`;
-    return [key, createRoute(minLiquidity, payload)];
+  return Object.fromEntries(sorPayloads.map((payload) => {
+    const key = `${payload.name} >$${minLiquidity}`;
+    return [key, createRoute(minLiquidity, payload.payload)];
   }));
 }
 
@@ -64,7 +60,6 @@ const service = {
 };
 
 const routes = { 
-  ...createSubgraphRoutes(),
   ...createRoutes(0.001),
   ...createRoutes(0.01),
   ...createRoutes(0.1),
@@ -72,23 +67,45 @@ const routes = {
   ...createRoutes(10),
   ...createRoutes(100),
   ...createRoutes(1000),
+  ...createRoutes(10000),
+  ...createRoutes(100000),
 };
 
 const options = {
   debug: true,
   stopOnError: true,
-  minSamples: 5
+  minSamples: 20
 };
 
 
 
 apiBenchmark.compare(service, routes, options, async (err, results) => {
-  console.log("Spot prices");
+  console.log("\nResults");
+
+  const resultsTable = {};
+  Object.values(results.api).forEach((result: any) => {
+    const name = result.name.replace(/^api\//, '');
+    const tokenSymbols = name.match(/^[a-zA-Z]+ -> [a-zA-Z]+/)[0];
+    const minLiquidity = name.match(/\$[0-9.]+/)[0];
+    resultsTable[minLiquidity] = resultsTable[minLiquidity] || {};
+    const responseTime = Math.round(result.stats.mean * 1000); 
+    resultsTable[minLiquidity][tokenSymbols] = `${responseTime}ms`;
+  });
+
+  console.table(resultsTable);
+
+  console.log("\nSpot prices");
+  const spotPricesTable = {};
   // Print market spot price for each min liquidity
   Object.values(results.api).forEach((result: any) => {
-    const name = result.name;
+    const name = result.name.replace(/^api\//, '');
+    const tokenSymbols = name.match(/^[a-zA-Z]+ -> [a-zA-Z]+/)[0];
+    const minLiquidity = name.match(/\$[0-9.]+/)[0];
+    spotPricesTable[minLiquidity] = spotPricesTable[minLiquidity] || {};
     const body = JSON.parse(result.response.body);
     const spotPrice = body.marketSp; 
-    console.log(`${name}: ${spotPrice}`);
+    spotPricesTable[minLiquidity][tokenSymbols] = spotPrice;
   });
+
+  console.table(spotPricesTable)
 });

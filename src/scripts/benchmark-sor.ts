@@ -66,12 +66,12 @@ const service = {
 
 const routes = { 
   ...createSubgraphRoutes(),
-  // ...createRoutes(0.001),
-  // ...createRoutes(0.01),
-  // ...createRoutes(0.1),
-  // ...createRoutes(1),
-  // ...createRoutes(10),
-  // ...createRoutes(100),
+  ...createRoutes(0.001),
+  ...createRoutes(0.01),
+  ...createRoutes(0.1),
+  ...createRoutes(1),
+  ...createRoutes(10),
+  ...createRoutes(100),
   ...createRoutes(1000),
 };
 
@@ -81,6 +81,19 @@ const options = {
   minSamples: 5
 };
 
-apiBenchmark.compare(service, routes, options, (err, results) => {
-  console.log(util.inspect(results, false, null));
+
+
+apiBenchmark.compare(service, routes, options, async (err, results) => {
+  const inspectedResults = util.inspect(results, false, null);
+  console.log(inspectedResults);
+
+  
+  console.log("Spot prices");
+  // Print market spot price for each min liquidity
+  Object.values(results.api).forEach((result: any) => {
+    const name = result.name;
+    const body = JSON.parse(result.response.body);
+    const spotPrice = body.marketSp; 
+    console.log(`${name}: ${spotPrice}`);
+  });
 });

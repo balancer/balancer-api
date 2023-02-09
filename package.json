@@ -56,6 +56,7 @@
     "@types/node": "*",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "api-benchmark": "^1.0.1",
     "aws-cdk": "^2.32.1",
     "esbuild": "*",
     "eslint": "^8.3.0",

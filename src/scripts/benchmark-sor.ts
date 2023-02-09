@@ -3,7 +3,6 @@ import apiBenchmark from 'api-benchmark';
 import { SorRequest } from '../types';
 import { TOKENS, Network, TokenWithSlot } from '../constants';
 import { parseFixed } from '@ethersproject/bignumber';
-import util from 'util';
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 const NETWORK = 1;
@@ -84,10 +83,6 @@ const options = {
 
 
 apiBenchmark.compare(service, routes, options, async (err, results) => {
-  const inspectedResults = util.inspect(results, false, null);
-  console.log(inspectedResults);
-
-  
   console.log("Spot prices");
   // Print market spot price for each min liquidity
   Object.values(results.api).forEach((result: any) => {

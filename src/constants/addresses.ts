@@ -38,7 +38,7 @@ export const TOKENS: Record<number, Record<string, TokenWithSlot>>  = {
       slot: 9,
     },
     USDT: {
-      address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
       decimals: 6,
       symbol: 'USDT',
       slot: 2,
@@ -89,7 +89,7 @@ export const TOKENS: Record<number, Record<string, TokenWithSlot>>  = {
       symbol: 'bbausd2',
     },
     bbausdc: {
-      address: '0x9210F1204b5a24742Eba12f710636D76240dF3d0',
+      address: '0x9210f1204b5a24742eba12f710636d76240df3d0',
       decimals: 18,
       symbol: 'bbausdc',
     },
@@ -106,7 +106,7 @@ export const TOKENS: Record<number, Record<string, TokenWithSlot>>  = {
       slot: 52,
     },
     waUSDT: {
-      address: '0xf8Fd466F12e236f4c96F7Cce6c79EAdB819abF58',
+      address: '0xf8fd466f12e236f4c96f7cce6c79eadb819abf58',
       decimals: 6,
       symbol: 'waUSDT',
       slot: 52,

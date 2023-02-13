@@ -23,7 +23,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     };
   }
 
-  const useDb = !!event.queryStringParameters?.useDb;
+  const useDb = !['0', 'false'].includes(event.queryStringParameters?.useDb);
   const minLiquidity = event.queryStringParameters?.minLiquidity;
 
   const sorRequest =

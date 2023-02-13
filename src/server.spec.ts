@@ -1,4 +1,4 @@
-import { parseUnits } from 'ethers/lib/utils';
+import { parseUnits } from '@ethersproject/units';
 import supertest from 'supertest';
 import { Network, TOKENS } from './constants';
 import { SorRequest, SerializedSwapInfo, Token } from './types';
@@ -89,7 +89,7 @@ describe('server.ts', () => {
     });
   });
 
-  describe.skip('POST /sor/:chainId', () => {
+  describe('POST /sor/:chainId', () => {
     const defaultSwapAmount = parseUnits('1', 18).toString();
     const defaultSorRequest: SorRequest = {
       sellToken: '',

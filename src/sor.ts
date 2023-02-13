@@ -51,8 +51,8 @@ export async function getSorSwap(
   log(`Getting swap: ${JSON.stringify(order)}`);
   const infuraUrl = getInfuraUrl(chainId);
 
-  const useDb = options.useDb || false;
-  const minLiquidity = options.minLiquidity;
+  const useDb = options.useDb ?? true;
+  const minLiquidity = options.minLiquidity ?? '100';
 
   let sorSettings;
   if (useDb) {

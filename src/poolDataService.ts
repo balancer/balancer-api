@@ -8,7 +8,7 @@ const log = debug('balancer:pool-data-service');
 
 interface DatabasePoolDataServiceConfig {
   chainId: number;
-  minLiquidity?: string;
+  minLiquidity: string;
 }
 
 export class DatabasePoolDataService implements PoolDataService {
@@ -16,7 +16,7 @@ export class DatabasePoolDataService implements PoolDataService {
   filterParams;
 
   constructor(readonly config: DatabasePoolDataServiceConfig) {
-    const minLiquidity = config.minLiquidity || '0.00000001';
+    const minLiquidity = config.minLiquidity;
     this.chainId = config.chainId;
     this.filterParams = {
       IndexName: 'byTotalLiquidity',

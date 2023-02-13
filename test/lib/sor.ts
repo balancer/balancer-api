@@ -16,18 +16,25 @@ import {
 } from '@balancer-labs/sdk';
 import { BigNumber } from 'ethers';
 import { approveToken } from './helpers';
+import _ from 'lodash';
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 
 const GWEI = 10 ** 9;
 const GAS_PRICE = 500 * GWEI;
 
+export interface SorOptions {
+  useDb?: string;
+  minLiquidity?: string;
+}
+
 export async function testSorRequest(
   signer: JsonRpcSigner,
   network: number,
-  sorRequest: SorRequest
+  sorRequest: SorRequest,
+  sorOptions?: SorOptions,
 ) {
-  const sorSwapInfo = await querySorEndpoint(network, sorRequest);
+  const sorSwapInfo = await querySorEndpoint(network, sorRequest, sorOptions);
   const swapType =
     sorRequest.orderKind == 'sell'
       ? SwapType.SwapExactIn
@@ -80,11 +87,13 @@ export async function testSorSwap(
 
 export async function querySorEndpoint(
   network: number,
-  sorRequest: SorRequest
+  sorRequest: SorRequest,
+  sorOptions?: SorOptions
 ): Promise<SwapInfo> {
   let sorSwapInfo: SwapInfo;
   try {
-    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}/?useDb=1&minLiquidity=100`, sorRequest);
+    const params = new URLSearchParams(_.omitBy(sorOptions, _.isUndefined)).toString();
+    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}/?${params}`, sorRequest);
     sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);

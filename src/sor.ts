@@ -9,6 +9,7 @@ import { getToken } from './data-providers/dynamodb';
 import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './poolDataService';
 import debug from 'debug';
+import { SOR_MIN_LIQUIDITY } from './constants/general';
 
 let log = debug('balancer:sor');
 
@@ -52,7 +53,7 @@ export async function getSorSwap(
   const infuraUrl = getInfuraUrl(chainId);
 
   const useDb = options.useDb ?? true;
-  const minLiquidity = options.minLiquidity ?? '100';
+  const minLiquidity = options.minLiquidity ?? SOR_MIN_LIQUIDITY;
 
   let sorSettings;
   if (useDb) {

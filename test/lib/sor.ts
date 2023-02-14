@@ -44,6 +44,8 @@ export async function testSorRequest(
     throw new Error('Failed to find a valid swap');
   }
 
+  console.log("Swap info: ", sorSwapInfo);
+
   return testSorSwap(signer, network, swapType, sorSwapInfo);
 }
 

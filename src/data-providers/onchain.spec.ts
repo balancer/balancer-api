@@ -1,10 +1,51 @@
-import { fetchTokens } from './onchain';
+import { PoolType, SubgraphPoolBase } from '@balancer-labs/sdk';
+import { Pool } from '../types';
+import { fetchTokens, fetchPoolsFromChain } from './onchain';
+import { subgraphPoolBase } from '../../test/factories/sor';
+import { poolBase } from '../../test/factories/pools';
 
 jest.mock('@balancer-labs/sdk');
 jest.mock('@ethersproject/providers');
 jest.mock('@ethersproject/contracts');
 
 describe('onchain data-provider', () => {
+  describe('fetchPoolsFromChain', () => {
+    it('Should return a list of pools from SOR, even if subgraph has none', async () => {
+      const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
+      require('@balancer-labs/sdk')._setSorPools(sorPools);
+      const pools = await fetchPoolsFromChain(1);
+      expect(pools.length).toBe(1);
+      expect(pools[0].id).toBe(sorPools[0].id);
+    });
+
+    it('Should add subgraph information if there is a subgraph pools', async () => {
+      const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
+      require('@balancer-labs/sdk')._setSorPools(sorPools);
+      const subgraphPools: Pool[] = [
+        poolBase.build(),
+      ];
+      require('@balancer-labs/sdk')._setSubgraphPools(subgraphPools);
+      const pools = await fetchPoolsFromChain(1);
+      expect(pools.length).toBe(1);
+      expect(pools[0].protocolSwapFeeCache).toBe('0');
+      expect(pools[0].poolType).toBe(PoolType.Weighted);
+    });
+
+    it('Should over-write token priceRates with subgraph data', async () => {
+      const newPriceRate = "1.15";
+      const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
+      sorPools[0].tokens[0].priceRate = newPriceRate;
+      require('@balancer-labs/sdk')._setSorPools(sorPools);
+      const subgraphPools: Pool[] = [
+        poolBase.build(),
+      ];
+      require('@balancer-labs/sdk')._setSubgraphPools(subgraphPools);
+      const pools = await fetchPoolsFromChain(1);
+      expect(pools.length).toBe(1);
+      expect(pools[0].tokens[0].priceRate).toBe(newPriceRate);
+    });
+  });
+
   describe('fetchTokens', () => {
     it('Should return 6 decimals when fetching a token that has that many', async () => {
       require('@ethersproject/contracts')._setDecimalsMethod(() =>

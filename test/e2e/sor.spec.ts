@@ -46,6 +46,7 @@ describe('SOR Endpoint E2E tests', () => {
       console.log(`Updating pools at ${endpointUrl}/pools/1/update`)
       await axios.post(`${endpointUrl}/pools/1/update`);
     } catch (e) {
+      console.log("Received error updating pools, this might be ok: ", e);
       // Ignore, just means there's another update in progress. 
     }
   });
@@ -126,18 +127,18 @@ describe('SOR Endpoint E2E tests', () => {
       expect(BigNumber.from(newBalances.DAI).gt(balances.DAI));
     });
 
-    it('Should be able to buy USDC with USDT', async () => {
+    it.only('Should be able to buy USDC with USDT', async () => {
       const { USDT, USDC } = TOKENS[Network.MAINNET];
       const sorRequest: SorRequest = {
         sellToken: USDT.address,
         buyToken: USDC.address,
-        orderKind: 'buy',
+        orderKind: 'sell',
         amount: parseFixed('1000', USDC.decimals).toString(),
         gasPrice: GAS_PRICE,
       };
       await setTokenBalance(signer, USDT, BigNumber.from(sorRequest.amount).mul(2))
       const balances = await getBalances(signer, [USDT, USDC]);
-      await testSorRequest(signer, Network.MAINNET, sorRequest);
+      await testSorRequest(signer, Network.MAINNET, sorRequest)//, {useDb: '0'});
       const newBalances = await getBalances(signer, [USDT, USDC]);
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
     });

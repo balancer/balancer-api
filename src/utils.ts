@@ -120,6 +120,8 @@ export function getInfuraUrl(chainId: number): string {
       return `https://polygon-mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
     case Network.ARBITRUM:
       return `https://arbitrum-mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
+    case Network.GNOSIS:
+      return `https://poa-xdai.gateway.pokt.network/v1/lb/91bc0e12a76e7a84dd76189d`;
     case Network.MAINNET:
     default:
       return `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`;
@@ -134,6 +136,8 @@ export function getSubgraphURL(chainId: number): string {
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2';
     case Network.ARBITRUM:
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2-beta';
+    case Network.GNOSIS:
+      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2';
     case Network.MAINNET:
     default:
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2';
@@ -150,6 +154,7 @@ export function getPlatformId(chainId: string | number): string | undefined {
     '42': 'ethereum',
     '137': 'polygon-pos',
     '42161': 'arbitrum-one',
+    '100': 'xdai',
   };
 
   return mapping[chainId.toString()];
@@ -163,6 +168,7 @@ export function getNativeAssetAddress(chainId: string | number): string {
     // TODO: convert through ETH as intermediary
     '137': NativeAssetAddress.MATIC,
     '42161': NativeAssetAddress.ETH,
+    '100': NativeAssetAddress.XDAI,
   };
 
   return mapping[chainId.toString()] || 'eth';
@@ -176,6 +182,7 @@ export function getNativeAssetPriceSymbol(chainId: string | number): string {
     // TODO: convert through ETH as intermediary
     '137': NativeAssetPriceSymbol.MATIC,
     '42161': NativeAssetPriceSymbol.ETH,
+    '100': NativeAssetPriceSymbol.ETH,
   };
 
   return mapping[chainId.toString()] || 'eth';

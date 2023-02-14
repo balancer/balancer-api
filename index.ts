@@ -330,7 +330,7 @@ export class BalancerPoolsAPI extends Stack {
       ),
     });
 
-    Object.values(updatePoolsRule).forEach(updatePoolsLambda => {
+    Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
       updatePoolsRule.addTarget(new LambdaFunction(updatePoolsLambda));
     });
     Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {

@@ -284,6 +284,7 @@ You can customize your deployment with env variables. See .env.example for all p
 
 #### Capacity Related
 
+- UPDATE_POOLS_INTERVAL_IN_MINUTES - default: 1 - How frequently to run the update pools lambda.
 - DECORATE_POOLS_INTERVAL_IN_MINUTES - default: 5 - How frequently to run the decorate pools lambda.
 - DYNAMODB_POOLS_READ_CAPACITY - default: 25 - The read capacity of the `pools` DynamoDB table.
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 25 - The write capacity of the `pools` DynamoDB table.

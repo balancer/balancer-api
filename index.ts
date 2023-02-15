@@ -43,6 +43,7 @@ const {
   DYNAMODB_POOLS_IDX_WRITE_CAPACITY,
   DYNAMODB_TOKENS_READ_CAPACITY,
   DYNAMODB_TOKENS_WRITE_CAPACITY,
+  UPDATE_POOLS_INTERVAL_IN_MINUTES,
   DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
   SANCTIONS_API_KEY,
@@ -88,6 +89,9 @@ const TOKENS_WRITE_CAPACITY = Number.parseInt(
   DYNAMODB_TOKENS_WRITE_CAPACITY || '10'
 );
 
+const UPDATE_POOLS_INTERVAL = Number.parseInt(
+  UPDATE_POOLS_INTERVAL_IN_MINUTES || '5'
+);
 const DECORATE_POOLS_INTERVAL = Number.parseInt(
   DECORATE_POOLS_INTERVAL_IN_MINUTES || '5'
 );
@@ -312,13 +316,23 @@ export class BalancerPoolsAPI extends Stack {
       new LambdaFunction(updateTokenPricesLambda)
     );
 
-    const periodWord = DECORATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
-    const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
+    const updatePeriodWord = UPDATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
+    const updatePoolsRule = new Rule(this, 'updatePoolsInterval', {
       schedule: Schedule.expression(
-        `rate(${DECORATE_POOLS_INTERVAL} ${periodWord})`
+        `rate(${UPDATE_POOLS_INTERVAL} ${updatePeriodWord})`
       ),
     });
 
+    const decoratePeriodWord = DECORATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
+    const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
+      schedule: Schedule.expression(
+        `rate(${DECORATE_POOLS_INTERVAL} ${decoratePeriodWord})`
+      ),
+    });
+
+    Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
+      updatePoolsRule.addTarget(new LambdaFunction(updatePoolsLambda));
+    });
     Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
       decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda));
     });

@@ -11,18 +11,20 @@ import { getTokenInfo, getSubgraphURL, getInfuraUrl } from '../utils';
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const infuraUrl = getInfuraUrl(chainId);
+  const subgraphUrl = getSubgraphURL(chainId);
 
   // Uses default PoolDataService to retrieve onstored as Chain data
   const balancer = new BalancerSDK({
     network: chainId,
     rpcUrl: infuraUrl,
+    customSubgraphUrl: subgraphUrl
   });
 
   await balancer.sor.fetchPools();
   const sorPools: SubgraphPoolBase[] = balancer.sor.getPools();
 
   const subgraphPoolFetcher = new PoolsSubgraphRepository({
-    url: getSubgraphURL(chainId),
+    url: subgraphUrl,
     chainId,
     query: {
       args: {

@@ -46,6 +46,7 @@ describe('SOR Endpoint E2E tests', () => {
       console.log(`Updating pools at ${endpointUrl}/pools/1/update`)
       await axios.post(`${endpointUrl}/pools/1/update`);
     } catch (e) {
+      console.log("Received error updating pools, this might just be because another update is already in process. Error is: ", e);
       // Ignore, just means there's another update in progress. 
     }
   });
@@ -137,7 +138,7 @@ describe('SOR Endpoint E2E tests', () => {
       };
       await setTokenBalance(signer, USDT, BigNumber.from(sorRequest.amount).mul(2))
       const balances = await getBalances(signer, [USDT, USDC]);
-      await testSorRequest(signer, Network.MAINNET, sorRequest);
+      await testSorRequest(signer, Network.MAINNET, sorRequest)
       const newBalances = await getBalances(signer, [USDT, USDC]);
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
     });

@@ -1,10 +1,26 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { PoolsSubgraphRepository, PoolType } from '@balancer-labs/sdk';
+import {
+  PoolsSubgraphRepository,
+  PoolType,
+  BalancerSDK,
+  SubgraphPoolBase,
+} from '@balancer-labs/sdk';
 import { getToken } from './dynamodb';
 import { Pool, Token } from '../types';
 import { getTokenInfo, getSubgraphURL, getInfuraUrl } from '../utils';
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
+  const infuraUrl = getInfuraUrl(chainId);
+
+  // Uses default PoolDataService to retrieve onstored as Chain data
+  const balancer = new BalancerSDK({
+    network: chainId,
+    rpcUrl: infuraUrl,
+  });
+
+  await balancer.sor.fetchPools();
+  const sorPools: SubgraphPoolBase[] = balancer.sor.getPools();
+
   const subgraphPoolFetcher = new PoolsSubgraphRepository({
     url: getSubgraphURL(chainId),
     chainId,
@@ -20,24 +36,32 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     },
   });
 
-  let pools: Pool[] = [];
   let subgraphPools = [];
+  let poolBatch = [];
 
   const first = 1000;
   let skip = 0;
   do {
-    subgraphPools = await subgraphPoolFetcher.fetch({ first, skip });
+    poolBatch = await subgraphPoolFetcher.fetch({ first, skip });
     skip += first;
 
-    pools = pools.concat(
-      subgraphPools.map(subgraphPool => {
-        return Object.assign({ totalLiquidity: '0', name: '' }, subgraphPool, {
-          poolType: subgraphPool.poolType as PoolType,
-          chainId,
-        });
-      })
+    subgraphPools = subgraphPools.concat(poolBatch);
+  } while (poolBatch.length > 0);
+
+  const subgraphPoolsMap = Object.fromEntries(subgraphPools.map(pool => [pool.id, pool]));
+
+  const pools: Pool[] = sorPools.map(sorPool => {
+    const subgraphPool = subgraphPoolsMap[sorPool.id] || {};
+    return Object.assign(
+      { totalLiquidity: '0', name: '' },
+      subgraphPool,
+      sorPool,
+      {
+        poolType: sorPool.poolType as PoolType,
+        chainId,
+      }
     );
-  } while (subgraphPools.length > 0);
+  });
 
   return pools;
 }

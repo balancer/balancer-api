@@ -5,6 +5,8 @@ export const COINGECKO_MAX_TPS = 10;
 export const MAX_BATCH_WRITE_SIZE = 5;
 export const MAX_DYNAMODB_PRECISION = 38;
 
+export const SOR_MIN_LIQUIDITY = '100';
+
 export const HOUR_IN_MS = 60 * 60 * 1000;
 export const DAY_IN_MS = HOUR_IN_MS * 24;
 export const WEEK_IN_MS = DAY_IN_MS * 7;

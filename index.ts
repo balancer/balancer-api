@@ -52,6 +52,7 @@ const {
   TENDERLY_PROJECT,
   TENDERLY_ACCESS_KEY,
   SENTRY_DSN,
+  DEBUG,
 } = process.env;
 
 let SELECTED_NETWORKS: Record<string, number> = PRODUCTION_NETWORKS;
@@ -192,6 +193,7 @@ export class BalancerPoolsAPI extends Stack {
       environment: {
         INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
         SENTRY_DSN: SENTRY_DSN || '',
+        DEBUG: DEBUG || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15),
@@ -393,7 +395,16 @@ export class BalancerPoolsAPI extends Stack {
         'integration.request.path.chainId': 'method.request.path.chainId',
       },
     });
-    const runSORIntegration = new LambdaIntegration(runSORLambda);
+    const runSORIntegration = new LambdaIntegration(runSORLambda, {
+      proxy: true,
+      requestParameters: {
+        'integration.request.path.chainId': 'method.request.path.chainId',
+        'integration.request.querystring.useDb':
+          'method.request.querystring.useDb',
+          'integration.request.querystring.minLiquidity':
+          'method.request.querystring.minLiquidity',
+      },
+    });
     const updateTokenPricesIntegration = new LambdaIntegration(
       updateTokenPricesLambda,
       { timeout: Duration.seconds(29) }
@@ -500,14 +511,15 @@ export class BalancerPoolsAPI extends Stack {
 
     const sor = api.root.addResource('sor');
     const sorOnChain = sor.addResource('{chainId}');
-    sorOnChain.addMethod('POST', runSORIntegration);
+    sorOnChain.addMethod('POST', runSORIntegration, {
+      requestParameters: {
+        'method.request.path.chainId': true,
+        'method.request.querystring.useDb': false,
+        'method.request.querystring.minLiquidity': false,
+      },
+    });
     addCorsOptions(sor);
-
-    const gnosis = api.root.addResource('gnosis');
-    const gnosisOnChain = gnosis.addResource('{chainId}');
-    gnosisOnChain.addMethod('POST', runSORIntegration);
-    addCorsOptions(gnosis);
-
+  
     const checkWallet = api.root.addResource('check-wallet');
     checkWallet.addMethod('GET', checkWalletIntegration, {
       requestParameters: {

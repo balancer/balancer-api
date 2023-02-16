@@ -140,7 +140,7 @@ export function getSubgraphURL(chainId: number): string {
       return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2';
     case Network.MAINNET:
     default:
-      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2-beta';
+      return 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2';
   }
 }
 

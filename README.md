@@ -292,6 +292,7 @@ You can customize your deployment with env variables. See .env.example for all p
 - DYNAMODB_POOLS_WRITE_CAPACITY - default: 10 - The write capacity of the secondary indexes on the `pools` DynamoDB table.
 - DYNAMODB_TOKENS_READ_CAPACITY - default: 10 - The read capcity of the `tokens` DynamoDB table.
 - DYNAMODB_TOKENS_WRITE_CAPACITY - default: 10 - The write capacity of the `tokens` DynamoDB tbale.
+- DYNAMODB_AUTOSCALE_MAX_MULTIPLIER - default: 1 - Increasing this causes your tables to autoscale their capacity up to CAPACITY \* MULTIPLIER
 
 #### Additional Settings - Rarely used
 

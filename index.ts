@@ -34,6 +34,7 @@ import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { rateLimitSettings } from './cdk/waf';
+import { PredefinedMetric, ScalableTarget, ServiceNamespace } from 'aws-cdk-lib/aws-applicationautoscaling';
 
 const {
   INFURA_PROJECT_ID,
@@ -160,6 +161,32 @@ export class BalancerPoolsAPI extends Stack {
       projectionType: ProjectionType.ALL,
     });
 
+    const totalLiquidityReadScaling = new ScalableTarget(this, 'totalLiquidityReadScaling', {
+      serviceNamespace: ServiceNamespace.DYNAMODB,
+      minCapacity: POOLS_IDX_READ_CAPACITY,
+      maxCapacity: POOLS_IDX_READ_CAPACITY * AUTOSCALE_MAX_MULTIPLIER,
+      resourceId: 'table/pools/index/byTotalLiquidity',
+      scalableDimension: 'dynamodb:index:ReadCapacityUnits'
+    });
+
+    totalLiquidityReadScaling.scaleToTrackMetric('totalLiquidityReadScalingMetric', {
+      targetValue: 80,
+      predefinedMetric: PredefinedMetric.DYNAMODB_READ_CAPACITY_UTILIZATION
+    });
+
+    const totalLiquidityWriteScaling = new ScalableTarget(this, 'totalLiquidityWriteScaling', {
+      serviceNamespace: ServiceNamespace.DYNAMODB,
+      minCapacity: POOLS_IDX_WRITE_CAPACITY,
+      maxCapacity: POOLS_IDX_WRITE_CAPACITY * AUTOSCALE_MAX_MULTIPLIER,
+      resourceId: 'table/pools/index/byTotalLiquidity',
+      scalableDimension: 'dynamodb:index:WriteCapacityUnits'
+    });
+
+    totalLiquidityWriteScaling.scaleToTrackMetric('totalLiquidityWriteScalingMetric', {
+      targetValue: 80,
+      predefinedMetric: PredefinedMetric.DYNAMODB_WRITE_CAPACITY_UTILIZATION
+    });
+
     poolsTable.addGlobalSecondaryIndex({
       indexName: 'byVolume',
       partitionKey: {
@@ -175,6 +202,32 @@ export class BalancerPoolsAPI extends Stack {
       projectionType: ProjectionType.ALL,
     });
 
+    const byVolumeReadScaling = new ScalableTarget(this, 'byVolumeReadScaling', {
+      serviceNamespace: ServiceNamespace.DYNAMODB,
+      minCapacity: POOLS_IDX_READ_CAPACITY,
+      maxCapacity: POOLS_IDX_READ_CAPACITY * AUTOSCALE_MAX_MULTIPLIER,
+      resourceId: 'table/pools/index/byVolume',
+      scalableDimension: 'dynamodb:index:ReadCapacityUnits'
+    });
+
+    byVolumeReadScaling.scaleToTrackMetric('byVolumeReadScalingMetric', {
+      targetValue: 80,
+      predefinedMetric: PredefinedMetric.DYNAMODB_READ_CAPACITY_UTILIZATION
+    });
+
+    const byVolumeWriteScaling = new ScalableTarget(this, 'byVolumeWriteScaling', {
+      serviceNamespace: ServiceNamespace.DYNAMODB,
+      minCapacity: POOLS_IDX_WRITE_CAPACITY,
+      maxCapacity: POOLS_IDX_WRITE_CAPACITY * AUTOSCALE_MAX_MULTIPLIER,
+      resourceId: 'table/pools/index/byVolume',
+      scalableDimension: 'dynamodb:index:WriteCapacityUnits'
+    });
+
+    byVolumeWriteScaling.scaleToTrackMetric('byVolumeWriteScalingMetric', {
+      targetValue: 80,
+      predefinedMetric: PredefinedMetric.DYNAMODB_WRITE_CAPACITY_UTILIZATION
+    });
+
     poolsTable.addGlobalSecondaryIndex({
       indexName: 'byApr',
       partitionKey: {
@@ -188,6 +241,32 @@ export class BalancerPoolsAPI extends Stack {
       readCapacity: POOLS_IDX_READ_CAPACITY,
       writeCapacity: POOLS_IDX_WRITE_CAPACITY,
       projectionType: ProjectionType.ALL,
+    });
+
+    const byAprReadScaling = new ScalableTarget(this, 'byAprReadScaling', {
+      serviceNamespace: ServiceNamespace.DYNAMODB,
+      minCapacity: POOLS_IDX_READ_CAPACITY,
+      maxCapacity: POOLS_IDX_READ_CAPACITY * AUTOSCALE_MAX_MULTIPLIER,
+      resourceId: 'table/pools/index/byApr',
+      scalableDimension: 'dynamodb:index:ReadCapacityUnits'
+    });
+
+    byAprReadScaling.scaleToTrackMetric('byAprReadScalingMetric', {
+      targetValue: 80,
+      predefinedMetric: PredefinedMetric.DYNAMODB_READ_CAPACITY_UTILIZATION
+    });
+
+    const byAprWriteScaling = new ScalableTarget(this, 'byAprWriteScaling', {
+      serviceNamespace: ServiceNamespace.DYNAMODB,
+      minCapacity: POOLS_IDX_WRITE_CAPACITY,
+      maxCapacity: POOLS_IDX_WRITE_CAPACITY * AUTOSCALE_MAX_MULTIPLIER,
+      resourceId: 'table/pools/index/byApr',
+      scalableDimension: 'dynamodb:index:WriteCapacityUnits'
+    });
+
+    byAprWriteScaling.scaleToTrackMetric('byAprWriteScalingMetric', {
+      targetValue: 80,
+      predefinedMetric: PredefinedMetric.DYNAMODB_WRITE_CAPACITY_UTILIZATION
     });
 
     const tokensTable = new Table(this, 'tokens', {

@@ -13,7 +13,7 @@ export interface Capacities {
 }
 
 export function autoScaleSecondaryIndex(scope: Stack, indexName: string, capacities: Capacities, targetUtilizationPercent: number) {
-  const byVolumeReadScaling = new ScalableTarget(scope, `${indexName}ReadScaling`, {
+  const readScaling = new ScalableTarget(scope, `${indexName}ReadScaling`, {
     serviceNamespace: ServiceNamespace.DYNAMODB,
     minCapacity: capacities.read.min,
     maxCapacity: capacities.read.max,
@@ -21,12 +21,12 @@ export function autoScaleSecondaryIndex(scope: Stack, indexName: string, capacit
     scalableDimension: 'dynamodb:index:ReadCapacityUnits'
   });
 
-  byVolumeReadScaling.scaleToTrackMetric(`${indexName}ReadScalingMetric`, {
+  readScaling.scaleToTrackMetric(`${indexName}ReadScalingMetric`, {
     targetValue: targetUtilizationPercent,
     predefinedMetric: PredefinedMetric.DYNAMODB_READ_CAPACITY_UTILIZATION
   });
 
-  const byVolumeWriteScaling = new ScalableTarget(scope, `${indexName}WriteScaling`, {
+  const writeScaling = new ScalableTarget(scope, `${indexName}WriteScaling`, {
     serviceNamespace: ServiceNamespace.DYNAMODB,
     minCapacity: capacities.write.min,
     maxCapacity: capacities.write.max,
@@ -34,7 +34,7 @@ export function autoScaleSecondaryIndex(scope: Stack, indexName: string, capacit
     scalableDimension: 'dynamodb:index:WriteCapacityUnits'
   });
 
-  byVolumeWriteScaling.scaleToTrackMetric(`${indexName}WriteScalingMetric`, {
+  writeScaling.scaleToTrackMetric(`${indexName}WriteScalingMetric`, {
     targetValue: targetUtilizationPercent,
     predefinedMetric: PredefinedMetric.DYNAMODB_WRITE_CAPACITY_UTILIZATION
   });

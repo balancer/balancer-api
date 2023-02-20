@@ -34,6 +34,7 @@ import { PRODUCTION_NETWORKS } from './src/constants/general';
 import { join } from 'path';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { rateLimitSettings } from './cdk/waf';
+import { autoScaleSecondaryIndex, Capacities } from './cdk/dynamodb';
 
 const {
   INFURA_PROJECT_ID,
@@ -43,6 +44,7 @@ const {
   DYNAMODB_POOLS_IDX_WRITE_CAPACITY,
   DYNAMODB_TOKENS_READ_CAPACITY,
   DYNAMODB_TOKENS_WRITE_CAPACITY,
+  DYNAMODB_AUTOSCALE_MAX_MULTIPLIER,
   UPDATE_POOLS_INTERVAL_IN_MINUTES,
   DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
@@ -90,6 +92,10 @@ const TOKENS_WRITE_CAPACITY = Number.parseInt(
   DYNAMODB_TOKENS_WRITE_CAPACITY || '10'
 );
 
+const AUTOSCALE_MAX_MULTIPLIER = Number.parseInt(
+  DYNAMODB_AUTOSCALE_MAX_MULTIPLIER || '1'
+);
+
 const UPDATE_POOLS_INTERVAL = Number.parseInt(
   UPDATE_POOLS_INTERVAL_IN_MINUTES || '5'
 );
@@ -120,6 +126,24 @@ export class BalancerPoolsAPI extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       readCapacity: POOLS_READ_CAPACITY,
       writeCapacity: POOLS_WRITE_CAPACITY,
+    });
+
+    const poolsTableReadScaling = poolsTable.autoScaleReadCapacity({ 
+      minCapacity: POOLS_READ_CAPACITY,
+      maxCapacity: POOLS_READ_CAPACITY * AUTOSCALE_MAX_MULTIPLIER
+    });
+
+    poolsTableReadScaling.scaleOnUtilization({
+      targetUtilizationPercent: 80
+    });
+
+    const poolsTableWriteScaling = poolsTable.autoScaleWriteCapacity({ 
+      minCapacity: POOLS_WRITE_CAPACITY,
+      maxCapacity: POOLS_WRITE_CAPACITY * AUTOSCALE_MAX_MULTIPLIER
+    });
+
+    poolsTableWriteScaling.scaleOnUtilization({
+      targetUtilizationPercent: 80
     });
 
     poolsTable.addGlobalSecondaryIndex({
@@ -167,6 +191,21 @@ export class BalancerPoolsAPI extends Stack {
       projectionType: ProjectionType.ALL,
     });
 
+    const secondaryIndexCapacities: Capacities = {
+      read: {
+        min: POOLS_IDX_READ_CAPACITY,
+        max: POOLS_IDX_READ_CAPACITY * AUTOSCALE_MAX_MULTIPLIER
+      },
+      write: {
+        min: POOLS_IDX_WRITE_CAPACITY,
+        max: POOLS_IDX_WRITE_CAPACITY * AUTOSCALE_MAX_MULTIPLIER
+      }
+    }
+
+    autoScaleSecondaryIndex(this, 'byTotalLiquidity', secondaryIndexCapacities, 80)
+    autoScaleSecondaryIndex(this, 'byVolume', secondaryIndexCapacities, 80)
+    autoScaleSecondaryIndex(this, 'byApr', secondaryIndexCapacities, 80)
+
     const tokensTable = new Table(this, 'tokens', {
       partitionKey: {
         name: 'address',
@@ -180,6 +219,24 @@ export class BalancerPoolsAPI extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       readCapacity: TOKENS_READ_CAPACITY,
       writeCapacity: TOKENS_WRITE_CAPACITY,
+    });
+
+    const tokensTableReadScaling = tokensTable.autoScaleReadCapacity({ 
+      minCapacity: TOKENS_READ_CAPACITY,
+      maxCapacity: TOKENS_READ_CAPACITY * AUTOSCALE_MAX_MULTIPLIER
+    });
+
+    tokensTableReadScaling.scaleOnUtilization({
+      targetUtilizationPercent: 80
+    });
+
+    const tokensTableWriteScaling = tokensTable.autoScaleWriteCapacity({ 
+      minCapacity: TOKENS_WRITE_CAPACITY,
+      maxCapacity: TOKENS_WRITE_CAPACITY * AUTOSCALE_MAX_MULTIPLIER
+    });
+
+    tokensTableWriteScaling.scaleOnUtilization({
+      targetUtilizationPercent: 80
     });
 
     /**

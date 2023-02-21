@@ -1,18 +1,18 @@
 import { captureException } from '@sentry/serverless';
-import { wrapHandler } from '../plugins/sentry';
-import { getSorSwap } from '../sor';
-import { isValidChainId } from '../utils';
+import { wrapHandler } from '@/modules/sentry';
+import { getSorSwap } from '@/modules/sor';
+import { isValidNetworkId } from '@/modules/network';
 import {
   INVALID_CHAIN_ID_ERROR,
   MISSING_CHAIN_ID_ERROR,
-} from '../constants/errors';
+} from '@/constants/errors';
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);
   if (!chainId) {
     return MISSING_CHAIN_ID_ERROR;
   }
-  if (!isValidChainId(chainId)) {
+  if (!isValidNetworkId(chainId)) {
     return INVALID_CHAIN_ID_ERROR;
   }
 

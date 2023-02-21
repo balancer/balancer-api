@@ -5,6 +5,10 @@ module.exports = {
       isolatedModules: true,
     },
   },
-  roots: ['./src', './test'],
+  roots: ['./src', './tests'],
   setupFiles: ['<rootDir>/.jest/setEnvVars.ts'],
+  moduleNameMapper: {
+    "@/(.*)": "<rootDir>/src/$1",
+    "@tests/(.*)": "<rootDir>/tests/$1"
+  },
 };

@@ -1,5 +1,5 @@
 import { SubgraphPoolBase } from "@balancer-labs/sdk";
-import { Pool } from "../../types";
+import { Pool } from "@/modules/pools";
 
 export enum PoolType {
   Weighted = 'Weighted'

@@ -1,7 +1,7 @@
-import { wrapHandler } from '../plugins/sentry';
+import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
 import fetch from 'isomorphic-fetch';
-import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '../types';
+import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '@/modules/trm';
 import { formatResponse } from './utils';
 
 const SANCTIONS_ENDPOINT =

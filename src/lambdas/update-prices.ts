@@ -1,7 +1,7 @@
 import { captureException } from '@sentry/serverless';
-import { wrapHandler } from '../plugins/sentry';
-import { getTokens } from '../data-providers/dynamodb';
-import { updateTokenPrices } from '../tokens';
+import { wrapHandler } from '@/modules/sentry';
+import { getTokens } from '@/modules/dynamodb';
+import { updateTokenPrices } from '@/modules/tokens';
 
 export const handler = wrapHandler(async (): Promise<any> => {
   const log = console.log;

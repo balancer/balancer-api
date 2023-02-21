@@ -3,14 +3,17 @@
     "target": "es6",
     "module": "commonjs",
     "outDir": "./dist/",
-    "baseUrl": "src",
+    "baseUrl": "./",
     "esModuleInterop": true,
     "noImplicitAny": false,
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "strictNullChecks": false,
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@/*": ["src/*"],
+      "@tests/*": ["tests/*"]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/**/*.spec.ts"]
+  "include": ["src/**/*", "tests/**/*"]
 }

@@ -11,11 +11,11 @@ import {
   BalancerNetworkConfig,
   PoolType,
 } from '@balancer-labs/sdk';
-import { tokensToTokenPrices } from '../tokens';
-import { PoolService } from './pool.service';
 import debug from 'debug';
-import { getRpcUrl } from '../utils';
 import util from 'util';
+import { getRpcUrl } from '@/modules/network';
+import { tokensToTokenPrices } from '@/modules/tokens';
+import { PoolService } from './pool.service';
 
 const log = debug('balancer:pool-decorator');
 

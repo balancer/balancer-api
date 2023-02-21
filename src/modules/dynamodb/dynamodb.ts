@@ -3,10 +3,13 @@ import { captureException } from '@sentry/serverless';
 import AWS from 'aws-sdk';
 import {
   MAX_BATCH_WRITE_SIZE,
+} from '@/constants';
+import {
   POOLS_TABLE_SCHEMA,
   TOKENS_TABLE_SCHEMA,
-} from '../constants';
-import { Token, Pool } from '../types';
+} from './schemas';
+import { Token } from '@/modules/tokens';
+import { Pool } from '@/modules/pools';
 import {
   generateUpdateExpression,
   unmarshallPool,

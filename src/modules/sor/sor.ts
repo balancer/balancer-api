@@ -9,7 +9,7 @@ import { getToken } from '@/modules/dynamodb';
 import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './poolDataService';
 import debug from 'debug';
-import { SOR_MIN_LIQUIDITY } from '../../constants/general';
+import { SOR_MIN_LIQUIDITY } from '@/constants/general';
 
 let log = debug('balancer:sor');
 

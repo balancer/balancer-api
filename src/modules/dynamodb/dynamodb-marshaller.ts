@@ -1,8 +1,10 @@
-import { Pool, Schema, UpdateExpression } from '../types';
-import { POOL_SCHEMA, MAX_DYNAMODB_PRECISION } from '../constants';
-import { Marshaller, NumberValue } from '@aws/dynamodb-auto-marshaller';
 import BigNumber from 'bignumber.js';
+import { Marshaller, NumberValue } from '@aws/dynamodb-auto-marshaller';
 import { AttributeMap } from 'aws-sdk/clients/dynamodb';
+import { Pool } from '@/modules/pools';
+import { MAX_DYNAMODB_PRECISION } from '@/constants';
+import { Schema, UpdateExpression } from './types';
+import { POOL_SCHEMA } from './schemas';
 import { UpdatePoolOptions } from './dynamodb';
 
 /** Modify item to ensure it meets DynamoDB specifications */

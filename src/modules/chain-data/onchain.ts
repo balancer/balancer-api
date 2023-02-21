@@ -5,9 +5,10 @@ import {
   BalancerSDK,
   SubgraphPoolBase,
 } from '@balancer-labs/sdk';
-import { getToken } from './dynamodb';
-import { Pool, Token } from '../types';
-import { getTokenInfo, getSubgraphUrl, getRpcUrl } from '../utils';
+import { getToken } from '@/modules/dynamodb';
+import { Pool } from '@/modules/pools/types';
+import { Token, getTokenInfo } from '@/modules/tokens';
+import { getSubgraphUrl, getRpcUrl } from '@/modules/network';
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const infuraUrl = getRpcUrl(chainId);

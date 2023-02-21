@@ -5,7 +5,7 @@ import {
   marshallPool,
   unmarshallPool,
 } from './dynamodb-marshaller';
-import POOLS from '../../../test/mocks/pools';
+import POOLS from '../../../tests/mocks/pools';
 
 jest.unmock('@balancer-labs/sdk');
 

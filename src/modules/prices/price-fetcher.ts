@@ -1,8 +1,10 @@
+import fetch from 'isomorphic-fetch';
+import debug from 'debug';
 import { captureException } from '@sentry/serverless';
 import { Price, CoingeckoPriceRepository } from '@balancer-labs/sdk';
-import { getPlatformId, getNativeAssetPriceSymbol, formatPrice } from '@/modules/utils';
-import { Token } from '@/modules/tokens';
 import { BigNumber } from 'bignumber.js';
+import { getPlatformId, getNativeAssetPriceSymbol } from '@/modules/network';
+import { Token } from '@/modules/tokens';
 import {
   NativeAssetId,
   NativeAssetPriceSymbol,
@@ -10,9 +12,8 @@ import {
   COINGECKO_BASEURL,
   COINGECKO_MAX_TOKENS_PER_PAGE,
   COINGECKO_MAX_TPS,
-} from '../../constants';
-import fetch from 'isomorphic-fetch';
-import debug from 'debug';
+} from '@/constants';
+import { formatPrice } from './utils';
 
 const TOKEN_UPDATE_TIME = 60 * 15 * 1000; // 5 Minutes
 const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 60 * 7 * 1000; // 1 Week

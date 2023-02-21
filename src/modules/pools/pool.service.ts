@@ -1,16 +1,16 @@
+import util from 'util';
+import debug from 'debug';
+import { isEqual } from 'lodash';
 import { captureException } from '@sentry/serverless';
-import { Pool } from '../../src/types';
 import {
   Pools,
   BalancerNetworkConfig,
   BalancerDataRepositories,
   AprBreakdown,
 } from '@balancer-labs/sdk';
-import util from 'util';
-import debug from 'debug';
-import { isEqual } from 'lodash';
-import { isValidApr } from '../utils';
-import { WEEK_IN_MS } from '../constants';
+import { WEEK_IN_MS } from '@/constants';
+import { Pool } from './types';
+import { isValidApr } from './utils';
 
 const log = debug('balancer:pools');
 

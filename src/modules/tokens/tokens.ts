@@ -75,15 +75,6 @@ export async function getTokenInfo(
   return tokenInfo;
 }
 
-export function getTokenAddressesFromPools(pools: Pool[]): string[] {
-  const tokenAddressMap = {};
-  pools.forEach(pool => {
-    pool.tokensList.forEach(address => {
-      tokenAddressMap[address] = true;
-    });
-  });
-  return Object.keys(tokenAddressMap);
-}
 
 export async function getSymbol(
   provider,

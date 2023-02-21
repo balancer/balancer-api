@@ -5,29 +5,28 @@
 
 require('dotenv').config();
 import debug from 'debug';
+import { exit } from 'process';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Network } from '../../constants';
+import { Network } from '@/constants';
 import {
   fetchPoolsFromChain,
   fetchTokens,
   removeKnownTokens,
   sanitizePools,
-} from '@/chain-data/onchain';
+} from '@/modules/chain-data/onchain';
 import {
   getPools,
   getTokens,
   isAlive,
   updatePools,
   updateTokens,
-} from './data-providers/dynamodb';
+} from '@/modules/dynamodb';
+import { localAWSConfig } from '@/modules/aws';
 import {
-  localAWSConfig,
   getRpcUrl,
-  getTokenAddressesFromPools,
-} from '../utils/utils';
-import { updateTokenPrices } from '../tokens/tokens';
-import { PoolDecorator } from './pools/pool.decorator';
-import { exit } from 'process';
+} from '@/modules/network';
+import { getTokenAddressesFromPools, PoolDecorator } from '@/modules/pools';
+import { updateTokenPrices } from '@/modules/tokens';
 
 const log = debug('balancer:worker');
 

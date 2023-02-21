@@ -98,6 +98,8 @@ export async function testSorSwap(
 
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
 
+  console.log("Encoded data: ", encodedBatchSwapData);
+
   const batchSwapParams = [
     {
       to: ADDRESSES[network].contracts.vault,

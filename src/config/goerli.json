@@ -1,0 +1,4 @@
+{
+  "networkId": 5,
+  "rpc": "https://goerli.infura.io/v3/{{INFURA_KEY}}"
+}

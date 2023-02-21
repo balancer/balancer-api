@@ -1,17 +1,17 @@
-import { wrapHandler } from '../plugins/sentry';
+import { wrapHandler } from '../modules/sentry/sentry';
 import { captureException } from '@sentry/serverless';
-import { getChangedPools, getTokenAddressesFromPools } from '../utils';
+import { getChangedPools, getTokenAddressesFromPools } from '../modules/utils/utils';
 import {
   getPools,
   updatePools,
   updateTokens,
-} from '../data-providers/dynamodb';
+} from '../modules/dynamodb/dynamodb';
 import {
   fetchPoolsFromChain,
   fetchTokens,
   removeKnownTokens,
   sanitizePools,
-} from '../data-providers/onchain';
+} from '@/modules/chain-data';
 
 const { CHAIN_ID } = process.env;
 

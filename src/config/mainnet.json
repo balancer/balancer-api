@@ -1,0 +1,5 @@
+{
+  "networkId": 1,
+  "rpc": "https://mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
+  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
+}

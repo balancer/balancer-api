@@ -9,7 +9,10 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "strictNullChecks": false,
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.spec.ts"]

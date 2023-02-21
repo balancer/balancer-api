@@ -1,7 +1,7 @@
 import { captureException } from '@sentry/serverless';
-import { wrapHandler } from '../plugins/sentry';
-import { getPool } from '../data-providers/dynamodb';
-import { isValidChainId } from '../utils';
+import { wrapHandler } from '../modules/sentry/sentry';
+import { getPool } from '../modules/dynamodb/dynamodb';
+import { isValidNetworkId } from '../modules/utils/utils';
 import {
   INVALID_CHAIN_ID_ERROR,
   MISSING_CHAIN_ID_ERROR,
@@ -13,7 +13,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   if (!chainId) {
     return MISSING_CHAIN_ID_ERROR;
   }
-  if (!isValidChainId(chainId)) {
+  if (!isValidNetworkId(chainId)) {
     return INVALID_CHAIN_ID_ERROR;
   }
 

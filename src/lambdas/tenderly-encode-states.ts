@@ -1,5 +1,5 @@
 import { captureException } from '@sentry/serverless';
-import { wrapHandler } from '../plugins/sentry';
+import { wrapHandler } from '../modules/sentry/sentry';
 import fetch from 'isomorphic-fetch';
 import { formatResponse, isBodyValid } from './utils';
 

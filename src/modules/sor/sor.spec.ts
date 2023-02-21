@@ -4,7 +4,7 @@ import { mockSwapCostCalculator } from '@balancer-labs/sdk';
 jest.mock('@balancer-labs/sdk');
 jest.mock('@ethersproject/providers');
 jest.mock('@ethersproject/contracts');
-jest.mock('./data-providers/dynamodb');
+jest.mock('@/modules/dynamodb/dynamodb');
 
 const chainId = 1;
 
@@ -26,7 +26,7 @@ describe('SOR', () => {
         gasPrice: '100000',
       };
 
-      require('./data-providers/dynamodb')._setToken('0xABC', {
+      require('@/modules/dynamodb/dynamodb')._setToken('0xABC', {
         address: '0xABC',
         symbol: 'BAL',
         price: {
@@ -35,7 +35,7 @@ describe('SOR', () => {
         },
       });
 
-      require('./data-providers/dynamodb')._setToken('0xDEF', {
+      require('@/modules/dynamodb/dynamodb')._setToken('0xDEF', {
         address: '0xDEF',
         symbol: 'WETH',
         price: {
@@ -53,7 +53,7 @@ describe('SOR', () => {
     });
 
     it('Should call setNativeAssetPriceInToken with the price of the native asset in the token when the price is a string. For backwards compatability', async () => {
-      require('./data-providers/dynamodb')._setToken('0xABC', {
+      require('@/modules/dynamodb/dynamodb')._setToken('0xABC', {
         address: '0xABC',
         price: '444',
       });
@@ -64,7 +64,7 @@ describe('SOR', () => {
     });
 
     it('Should call setNativeAssetPriceInToken with the price of the native asset in the token when the price is a string. For backwards compatability', async () => {
-      require('./data-providers/dynamodb')._setToken('0xABC', {
+      require('@/modules/dynamodb/dynamodb')._setToken('0xABC', {
         address: '0xABC',
         price: 555,
       });
@@ -83,7 +83,7 @@ describe('SOR', () => {
     });
 
     it('Should call setNativeAssetPriceInToken with 0 if the token doesnt have a valid price', async () => {
-      require('./data-providers/dynamodb')._setToken('0xABC', {
+      require('@/modules/dynamodb/dynamodb')._setToken('0xABC', {
         address: '0xABC',
         price: undefined,
       });

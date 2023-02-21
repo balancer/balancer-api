@@ -3,9 +3,9 @@
  * based on the latest token prices + pool token values.
  */
 import { captureException } from '@sentry/serverless';
-import { wrapHandler } from '../modules/sentry/sentry';
-import { getPools, getTokens, updatePools } from '../modules/dynamodb/dynamodb';
-import { PoolDecorator } from '../pools/pool.decorator';
+import { wrapHandler } from '@/modules/sentry';
+import { getPools, getTokens, updatePools } from '@/modules/dynamodb';
+import { PoolDecorator } from '@/modules/pools';
 
 const { CHAIN_ID } = process.env;
 

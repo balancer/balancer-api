@@ -9,7 +9,7 @@
     "build-cdk": "tsc --project ./tsconfig-cdk.json",
     "cdk": "cdk",
     "deploy": "npm run build-cdk && cdk deploy",
-    "dynamodb": "docker-compose up -d",
+    "dynamodb": "docker compose up -d",
     "init": "node dist/scripts/init.js",
     "lint": "eslint . --ext .ts --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",

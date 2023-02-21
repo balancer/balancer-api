@@ -1,4 +1,4 @@
-import { Network } from '@balancer-labs/sdk';
+import { Network } from '@/constants';
 
 import arbitrum from './arbitrum.json';
 import goerli from './goerli.json';
@@ -7,12 +7,12 @@ import polygon from './polygon.json';
 import gnosis from './gnosis-chain.json';
 
 export interface Config {
-  networkId: Network;
+  networkId: number;
   rpc: string;
   subgraph: string;
 }
 
-const config: Record<Network | number, Config> = {
+const config: Record<number, Config> = {
   [Network.MAINNET]: mainnet,
   [Network.GOERLI]: goerli,
   [Network.POLYGON]: polygon,

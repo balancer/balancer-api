@@ -1,6 +1,6 @@
 import nock from 'nock';
 import { handler } from './check-wallet';
-import { TRMAccountDetails } from '../types';
+import { TRMAccountDetails } from '@/modules/trm';
 
 nock.disableNetConnect();
 

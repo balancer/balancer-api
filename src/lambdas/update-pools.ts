@@ -1,11 +1,11 @@
-import { wrapHandler } from '../modules/sentry/sentry';
+import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
-import { getChangedPools, getTokenAddressesFromPools } from '../modules/utils/utils';
+import { getChangedPools, getTokenAddressesFromPools } from '@/modules/pools';
 import {
   getPools,
   updatePools,
   updateTokens,
-} from '../modules/dynamodb/dynamodb';
+} from '@/modules/dynamodb';
 import {
   fetchPoolsFromChain,
   fetchTokens,

@@ -1,11 +1,11 @@
 import { captureException } from '@sentry/serverless';
-import { wrapHandler } from '@/modules/sentry/sentry';
+import { wrapHandler } from '@/modules/sentry';
 import { getTokens } from '@/modules/dynamodb/dynamodb';
 import { isValidNetworkId } from '@/modules/network';
 import {
   INVALID_CHAIN_ID_ERROR,
   MISSING_CHAIN_ID_ERROR,
-} from '../constants/errors';
+} from '@/constants/errors';
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   const chainId = parseInt(event.pathParameters.chainId);

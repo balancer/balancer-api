@@ -1,14 +1,13 @@
 import nock from 'nock';
 import { parseUnits } from '@ethersproject/units';
-import { SerializedSwapInfo, SorRequest } from '../types';
-import { Network, TOKENS } from '../constants';
+import { SerializedSwapInfo, SorRequest, getSorSwap } from '@/modules/sor';
+import { Network, TOKENS } from '@/constants';
 import { handler } from './run-sor';
-import { getSorSwap } from '../sor';
 
 nock.disableNetConnect();
 
 jest.mock(
-  '../sor.ts',
+  '@/modules/sor/sor',
   jest.fn().mockImplementation(() => {
     return {
       getSorSwap: jest.fn().mockImplementation(async () => {

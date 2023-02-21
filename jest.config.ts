@@ -7,4 +7,7 @@ module.exports = {
   },
   roots: ['./src', './tests'],
   setupFiles: ['<rootDir>/.jest/setEnvVars.ts'],
+  moduleNameMapper: {
+    "@/(.*)": "<rootDir>/src/$1"
+  },
 };

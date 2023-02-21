@@ -2,7 +2,7 @@ import nock from 'nock';
 
 import { Token } from '@/modules/tokens';
 import PriceFetcher from './price-fetcher';
-import { Network, COINGECKO_BASEURL } from '../../constants';
+import { Network, COINGECKO_BASEURL } from '@/constants';
 
 /**
  * Token Prices (USD)

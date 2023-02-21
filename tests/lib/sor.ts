@@ -2,22 +2,20 @@
 require('dotenv').config();
 
 import axios from 'axios';
+import _ from 'lodash';
+import { BigNumber } from '@ethersproject/bignumber';
+import { MaxUint256 } from '@ethersproject/constants';
+import { hexValue } from '@ethersproject/bytes';
 import { ADDRESSES } from '@/constants/addresses';
 import { JsonRpcSigner } from '@ethersproject/providers';
-import { MaxUint256 } from '@ethersproject/constants';
-import { SorRequest } from '@/modules/sor';
-import { SwapTokenType, SwapToken } from '@/modules/tokens';
-import { hexValue } from '@ethersproject/bytes';
+import { SorRequest, convertSwapInfoToBatchSwap } from '@/modules/sor';
+import { approveToken } from './helpers';
 import {
   Address,
-  BatchSwap,
   SwapInfo,
   Swaps,
   SwapType,
 } from '@balancer-labs/sdk';
-import { BigNumber } from 'ethers';
-import { approveToken } from './helpers';
-import _ from 'lodash';
 
 const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
 
@@ -72,6 +70,8 @@ export async function testSorSwap(
 
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
 
+  console.log("Encoded data: ", encodedBatchSwapData);
+
   const batchSwapParams = [
     {
       to: ADDRESSES[network].contracts.vault,
@@ -102,69 +102,4 @@ export async function querySorEndpoint(
   }
 
   return sorSwapInfo;
-}
-
-function calculateLimits(
-  tokensIn: SwapToken[],
-  tokensOut: SwapToken[],
-  tokenAddresses: string[],
-  slippageBps = 10, // 0.1% slippage
-): string[] {
-  const limits: string[] = [];
-
-  tokenAddresses.forEach((token, i) => {
-    const tokenIn = tokensIn.find(
-      swapToken => token.toLowerCase() === swapToken.address.toLowerCase()
-    );
-    const tokenOut = tokensOut.find(
-      swapToken => token.toLowerCase() === swapToken.address.toLowerCase()
-    );
-    if (tokenIn) {
-      limits[i] = BigNumber.from(tokenIn.amount).mul(10000 + slippageBps).div(10000).toString();
-    } else if (tokenOut) {
-      limits[i] = BigNumber.from(tokenOut.amount).mul(-10000).div(10000 + slippageBps).toString();
-    } else {
-      limits[i] = '0';
-    }
-  });
-
-  return limits;
-}
-
-function convertSwapInfoToBatchSwap(
-  userAddress: Address,
-  swapType: SwapType,
-  swapInfo: SwapInfo
-): BatchSwap {
-  const tokenIn: SwapToken = {
-    address: swapInfo.tokenIn,
-    amount: BigNumber.from(swapInfo.swapAmount),
-    type: SwapTokenType.max,
-  };
-  const tokenOut: SwapToken = {
-    address: swapInfo.tokenOut,
-    amount: BigNumber.from(swapInfo.returnAmount),
-    type: SwapTokenType.min,
-  };
-  const limits = calculateLimits(
-    [tokenIn],
-    [tokenOut],
-    swapInfo.tokenAddresses
-  );
-
-  const batchSwapData: BatchSwap = {
-    kind: swapType,
-    swaps: swapInfo.swaps,
-    assets: swapInfo.tokenAddresses,
-    funds: {
-      fromInternalBalance: false,
-      sender: userAddress,
-      recipient: userAddress,
-      toInternalBalance: false,
-    },
-    limits: limits,
-    deadline: '999999999999999999',
-  };
-
-  return batchSwapData;
 }

@@ -5,8 +5,8 @@
   "private": true,
   "repository": "balancer-labs/pools-api",
   "scripts": {
-    "build": "tsc",
-    "build-cdk": "tsc --project ./tsconfig-cdk.json",
+    "build": "tsc --project ./tsconfig.build.json",
+    "build-cdk": "tsc --project ./tsconfig.cdk.json",
     "cdk": "cdk",
     "deploy": "npm run build-cdk && cdk deploy",
     "dynamodb": "docker compose up -d",

@@ -1,5 +1,5 @@
 import { captureException } from '@sentry/serverless';
-import { Pool, Token } from '../types';
+import { Pool } from './types';
 import {
   BalancerDataRepositories,
   PoolsStaticRepository,
@@ -14,7 +14,7 @@ import {
 import debug from 'debug';
 import util from 'util';
 import { getRpcUrl } from '@/modules/network';
-import { tokensToTokenPrices } from '@/modules/tokens';
+import { Token, tokensToTokenPrices } from '@/modules/tokens';
 import { PoolService } from './pool.service';
 
 const log = debug('balancer:pool-decorator');

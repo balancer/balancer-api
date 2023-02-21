@@ -5,10 +5,10 @@ import {
   isValidApr,
 } from './utils';
 import { Pool } from './types';
-import { Schema } from '../dynamodb';
+import { Schema } from '@/modules/dynamodb';
 import _ from 'lodash';
 
-import POOLS from '../../../tests/mocks/pools';
+import POOLS from '@tests/mocks/pools';
 
 jest.unmock('@balancer-labs/sdk');
 

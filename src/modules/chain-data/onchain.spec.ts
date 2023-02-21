@@ -1,8 +1,8 @@
 import { PoolType, SubgraphPoolBase } from '@balancer-labs/sdk';
 import { Pool } from '@/modules/pools';
 import { fetchTokens, fetchPoolsFromChain } from './onchain';
-import { subgraphPoolBase } from '../../../tests/factories/sor';
-import { poolBase } from '../../../tests/factories/pools';
+import { subgraphPoolBase } from '@tests/factories/sor';
+import { poolBase } from '@tests/factories/pools';
 
 jest.mock('@balancer-labs/sdk');
 jest.mock('@ethersproject/providers');

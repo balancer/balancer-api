@@ -1,4 +1,4 @@
-import { TokenWithSlot } from '../../src/constants/addresses';
+import { TokenWithSlot } from '@/constants/addresses';
 import { hexlify, hexValue, zeroPad } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/solidity';
 import { JsonRpcSigner } from '@ethersproject/providers';

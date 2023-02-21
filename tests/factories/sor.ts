@@ -6,7 +6,7 @@ import {
   SwapV2,
 } from '@balancer-labs/sor';
 import { BigNumber } from '@ethersproject/bignumber';
-import { formatAddress } from '../lib/utils';
+import { formatAddress } from '@tests/lib/utils';
 import { namedTokens } from './named-tokens';
 
 const swapV2 = Factory.define<SwapV2>(() => ({

@@ -1,4 +1,4 @@
-import { Pool } from '../../src/types';
+import { Pool } from '@/modules/pools';
 import { PoolType } from '@balancer-labs/sdk';
 
 const pools: Pool[] = [

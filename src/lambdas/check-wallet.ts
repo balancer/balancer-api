@@ -1,4 +1,4 @@
-import { wrapHandler } from '../modules/sentry';
+import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
 import fetch from 'isomorphic-fetch';
 import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '@/modules/trm';

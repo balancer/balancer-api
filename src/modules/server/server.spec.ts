@@ -1,6 +1,6 @@
 import { parseUnits } from '@ethersproject/units';
 import supertest from 'supertest';
-import { Network, TOKENS } from '../../constants';
+import { Network, TOKENS } from '@/constants';
 import { SorRequest, SerializedSwapInfo } from '@/modules/sor';
 import { Token } from '@/modules/tokens';
 import {
@@ -15,8 +15,8 @@ import {
   getTokens,
 } from '@/modules/dynamodb';
 import { localAWSConfig } from '@/modules/aws';
-import DBTOKENS from '../../../tests/mocks/tokens.json';
-import DBPOOLS from '../../../tests/mocks/pools';
+import DBTOKENS from '@tests/mocks/tokens.json';
+import DBPOOLS from '@tests/mocks/pools';
 import server from './server';
 
 const AWS = require('aws-sdk');

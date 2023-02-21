@@ -1,9 +1,9 @@
 import { Factory } from 'fishery';
 import { BigNumber, formatFixed } from '@ethersproject/bignumber';
 import { PoolType, PoolToken } from '@balancer-labs/sdk';
-import { formatAddress, formatId } from '../lib/utils';
+import { formatAddress, formatId } from '@tests/lib/utils';
 import { Zero, WeiPerEther } from '@ethersproject/constants';
-import { Pool } from '../../src/types';
+import { Pool } from '@/modules/pools';
 import { namedTokens } from './named-tokens';
 
 export type PoolParams = {

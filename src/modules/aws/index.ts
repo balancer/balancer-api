@@ -1,6 +1,3 @@
-
-
-
 export const localAWSConfig = {
   accessKeyId: 'not-important',
   secretAccessKey: 'not-important',

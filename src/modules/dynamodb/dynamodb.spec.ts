@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 import { Pool } from '@/modules/pools';
-import POOLS from '../../../tests/mocks/pools';
+import POOLS from '@tests/mocks/pools';
 import { updatePools } from './dynamodb';
 import { generateUpdateExpression } from './dynamodb-marshaller';
 

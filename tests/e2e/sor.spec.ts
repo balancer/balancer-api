@@ -2,15 +2,15 @@
 require('dotenv').config();
 
 import axios from 'axios';
-import { SorRequest } from '../../src/modules/sor/types';
+import { SorRequest } from '@/modules/sor';
 import { parseFixed } from '@ethersproject/bignumber';
 import { BigNumber } from 'ethers';
-import { querySorEndpoint, testSorRequest, testSorSwap } from '../lib/sor';
-import { Network } from '../../src/constants/general';
-import { getRpcUrl } from '../../src/modules/network';
-import { forkSetup, getBalances, setEthBalance, setTokenBalance } from '../lib/helpers';
+import { querySorEndpoint, testSorRequest, testSorSwap } from '@tests/lib/sor';
+import { Network } from '@/constants/general';
+import { getRpcUrl } from '@/modules/network';
+import { forkSetup, getBalances, setEthBalance, setTokenBalance } from '@tests/lib/helpers';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { TOKENS } from '../../src/constants/addresses';
+import { TOKENS } from '@/constants/addresses';
 import { SwapInfo, SwapType } from '@balancer-labs/sdk';
 
 const WALLET_ADDRESS =

@@ -2,10 +2,11 @@
 require('dotenv').config();
 
 import axios from 'axios';
-import { ADDRESSES } from '../../src/constants/addresses';
+import { ADDRESSES } from '@/constants/addresses';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { MaxUint256 } from '@ethersproject/constants';
-import { SwapTokenType, SwapToken, SorRequest } from '../../src/types';
+import { SorRequest } from '@/modules/sor';
+import { SwapTokenType, SwapToken } from '@/modules/tokens';
 import { hexValue } from '@ethersproject/bytes';
 import {
   Address,

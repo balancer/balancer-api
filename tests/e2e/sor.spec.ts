@@ -46,7 +46,7 @@ describe('SOR Endpoint E2E tests', () => {
       console.log(`Updating pools at ${endpointUrl}/pools/1/update`)
       await axios.post(`${endpointUrl}/pools/1/update`);
     } catch (e) {
-      console.log("Received error updating pools, this might just be because another update is already in process. Error is: ", e);
+      console.log("Received error updating pools, this is probably because another update is already in process.");
       // Ignore, just means there's another update in progress. 
     }
   });

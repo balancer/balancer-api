@@ -76,7 +76,11 @@ describe('/order E2E tests', () => {
       const balances = await getBalances(signer, [BAL]);
       await testOrderRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [BAL]);
+<<<<<<< HEAD
       expect(BigNumber.from(newBalances.BAL).gt(balances.BAL)).toBeTruthy();
+=======
+      expect(BigNumber.from(newBalances.BAL).gt(balances.BAL));
+>>>>>>> 9253b97 (Add e2e tests for order endpoint, fix other tests)
     });
 
     it('Should be able to sell BAL for USDC', async () => {
@@ -93,7 +97,11 @@ describe('/order E2E tests', () => {
       const balances = await getBalances(signer, [BAL, USDC]);
       await testOrderRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [BAL, USDC]);
+<<<<<<< HEAD
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
+=======
+      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
+>>>>>>> 9253b97 (Add e2e tests for order endpoint, fix other tests)
     });
 
     it('Should be able to buy DAI with USDC', async () => {
@@ -110,7 +118,11 @@ describe('/order E2E tests', () => {
       const balances = await getBalances(signer, [USDC, DAI]);
       await testOrderRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [USDC, DAI]);
+<<<<<<< HEAD
       expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
+=======
+      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI));
+>>>>>>> 9253b97 (Add e2e tests for order endpoint, fix other tests)
     });
 
     it('Should be able to sell waUSDC for DAI', async () => {
@@ -127,7 +139,11 @@ describe('/order E2E tests', () => {
       const balances = await getBalances(signer, [waUSDC, DAI]);
       await testOrderRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [waUSDC, DAI]);
+<<<<<<< HEAD
       expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
+=======
+      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI));
+>>>>>>> 9253b97 (Add e2e tests for order endpoint, fix other tests)
     });
 
     it('Should be able to buy USDC with USDT', async () => {
@@ -144,7 +160,11 @@ describe('/order E2E tests', () => {
       const balances = await getBalances(signer, [USDT, USDC]);
       await testOrderRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [USDT, USDC]);
+<<<<<<< HEAD
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
+=======
+      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
+>>>>>>> 9253b97 (Add e2e tests for order endpoint, fix other tests)
     });
 
     it('Should be able to sell WETH for bbausd', async () => {
@@ -161,6 +181,7 @@ describe('/order E2E tests', () => {
       const balances = await getBalances(signer, [WETH, bbausd2]);
       await testOrderRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [WETH, bbausd2]);
+<<<<<<< HEAD
       expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)).toBeTruthy();
     });
 
@@ -186,6 +207,9 @@ describe('/order E2E tests', () => {
       const newSenderBalances = await getBalances(signer, [BAL, USDC]);
       expect(BigNumber.from(newSenderBalances.BAL).lt(senderBalances.BAL)).toBeTruthy();
       expect(BigNumber.from(newSenderBalances.USDC).eq(senderBalances.USDC)).toBeTruthy();
+=======
+      expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2));
+>>>>>>> 9253b97 (Add e2e tests for order endpoint, fix other tests)
     });
   });
 });

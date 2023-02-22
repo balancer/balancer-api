@@ -37,7 +37,7 @@ export function isValidNetworkId(networkId: number): boolean {
 }
 
 export function requireValidNetworkId(networkId: number): void {
-  if (!Object.values(Network).includes(networkId)) {
+  if (!isValidNetworkId(networkId)) {
     throw new Error(`Invalid network ID ${networkId}`)
   }
 }

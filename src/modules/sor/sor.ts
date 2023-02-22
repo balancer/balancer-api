@@ -65,7 +65,7 @@ export async function getSorSwap(
   chainId: number,
   request: SorRequest,
   options: SorSwapOptions = {},
-): Promise<SerializedSwapInfo> {
+): Promise<SwapInfo> {
   log(`Getting swap: ${JSON.stringify(request)}`);
   const rpcUrl = getRpcUrl(chainId);
   const subgraphUrl = getSubgraphUrl(chainId);

@@ -21,8 +21,7 @@ let provider, signer;
 const hardhatUrl = process.env.HARDHAT_URL || `http://127.0.0.1:8545`;
 const rpcUrl = process.env.RPC_URL || getRpcUrl(Network.MAINNET);
 const endpointUrl = process.env.ENDPOINT_URL || `https://api.balancer.fi`;
-const walletAddress =
-  process.env.WALLET_ADDRESS || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
+const walletAddress = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
 
 
 if (!rpcUrl) {

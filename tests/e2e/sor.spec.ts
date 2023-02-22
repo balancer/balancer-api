@@ -13,9 +13,6 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { TOKENS } from '@/constants/addresses';
 import { SwapInfo, SwapType } from '@balancer-labs/sdk';
 
-const WALLET_ADDRESS =
-  process.env.WALLET_ADDRESS || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
-
 jest.unmock('@ethersproject/contracts');
 jest.unmock('@balancer-labs/sdk');
 jest.setTimeout(30000);
@@ -25,6 +22,7 @@ let provider, signer;
 const hardhatUrl = process.env.HARDHAT_URL || `http://127.0.0.1:8545`;
 const rpcUrl = process.env.RPC_URL || getRpcUrl(Network.MAINNET);
 const endpointUrl = process.env.ENDPOINT_URL || `https://api.balancer.fi`;
+const walletAddress = '0x90F79bf6EB2c4f870365E785982E1f101E93b906';
 
 if (!rpcUrl) {
   console.error('Env variable RPC_URL or INFURA_PROJECT_ID must be set to run these tests')
@@ -58,8 +56,8 @@ describe('SOR Endpoint E2E tests', () => {
 
   describe('Mainnet Tests', () => {
     beforeEach(async () => {
-      await provider.send('hardhat_impersonateAccount', [WALLET_ADDRESS]);
-      signer = await provider.getSigner(WALLET_ADDRESS);
+      await provider.send('hardhat_impersonateAccount', [walletAddress]);
+      signer = await provider.getSigner(walletAddress);
       await setEthBalance(signer, parseFixed('100', 18));
     });
 

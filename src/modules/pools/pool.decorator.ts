@@ -13,7 +13,7 @@ import {
 } from '@balancer-labs/sdk';
 import debug from 'debug';
 import util from 'util';
-import { getRpcUrl } from '@/modules/network';
+import { getRpcUrl, getSubgraphUrl } from '@/modules/network';
 import { Token, tokensToTokenPrices } from '@/modules/tokens';
 import { PoolService } from './pool.service';
 
@@ -54,6 +54,7 @@ export class PoolDecorator {
     const balancerConfig: BalancerSdkConfig = {
       network: chainId,
       rpcUrl: getRpcUrl(chainId),
+      customSubgraphUrl: getSubgraphUrl(chainId),
     };
     const balancerSdk = new BalancerSDK(balancerConfig);
     const dataRepositories = balancerSdk.data;

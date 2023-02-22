@@ -3,6 +3,7 @@ import { SorRequest, SerializedSwapInfo } from './types';
 import { Token } from '@/modules/tokens';
 import {
   getRpcUrl,
+  getSubgraphUrl,
   getNativeAssetPriceSymbol,
 } from '@/modules/network';
 import { getToken } from '@/modules/dynamodb';
@@ -63,7 +64,8 @@ export async function getSorSwap(
   options: SorSwapOptions = {},
 ): Promise<SerializedSwapInfo> {
   log(`Getting swap: ${JSON.stringify(order)}`);
-  const infuraUrl = getRpcUrl(chainId);
+  const rpcUrl = getRpcUrl(chainId);
+  const subgraphUrl = getSubgraphUrl(chainId);
 
   const useDb = options.useDb ?? true;
   const minLiquidity = options.minLiquidity ?? SOR_MIN_LIQUIDITY;
@@ -86,7 +88,8 @@ export async function getSorSwap(
 
   const balancer = new BalancerSDK({
     network: chainId,
-    rpcUrl: infuraUrl,
+    rpcUrl: rpcUrl,
+    customSubgraphUrl: subgraphUrl,
     sor: sorSettings,
   });
 

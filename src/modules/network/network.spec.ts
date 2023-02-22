@@ -31,5 +31,11 @@ describe('network module', () => {
       delete process.env.INFURA_PROJECT_ID;
       expect(() => require('./network').getRpcUrl(1)).toThrow();
     });
+
+    it('Should work for networks that dont use infura without INFURA_PROJECT_ID set', () => {
+      jest.resetModules()
+      delete process.env.INFURA_PROJECT_ID;
+      expect(getRpcUrl(100)).toEqual('https://poa-xdai.gateway.pokt.network/v1/lb/888c0e12a76e7a84dd76189d');
+    });
   });
 });

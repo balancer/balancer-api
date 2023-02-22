@@ -35,6 +35,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     const serializedSwapInfo: SerializedSwapInfo = serializeSwapInfo(swapInfo);
     return { statusCode: 200, body: JSON.stringify(serializedSwapInfo) };
   } catch (e) {
+    console.log("Error: ", e);
     captureException(e, { extra: { chainId, sorRequest }});
     return { statusCode: 500, body: JSON.stringify({ error: 'SOR request failed' }) };
   }

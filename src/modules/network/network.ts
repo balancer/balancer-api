@@ -12,7 +12,7 @@ export default function template(templateString, templateVariables) {
 }
 
 export function getRpcUrl(networkId: number): string {
-  isValidNetworkId(networkId);
+  requireValidNetworkId(networkId);
 
   const templateUrl = configs[networkId].rpc;
   if (templateUrl.match(/INFURA_PROJECT_ID/) && INFURA_PROJECT_ID == null) {
@@ -27,12 +27,16 @@ export function getRpcUrl(networkId: number): string {
 }
 
 export function getSubgraphUrl(networkId: number): string {
-  isValidNetworkId(networkId);
+  requireValidNetworkId(networkId);
 
   return configs[networkId].subgraph;
 }
 
-export function isValidNetworkId(networkId: number): void {
+export function isValidNetworkId(networkId: number): boolean {
+  return Object.values(Network).includes(networkId);
+}
+
+export function requireValidNetworkId(networkId: number): void {
   if (!Object.values(Network).includes(networkId)) {
     throw new Error(`Invalid network ID ${networkId}`)
   }

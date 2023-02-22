@@ -3,12 +3,11 @@ require('dotenv').config();
 
 import axios from 'axios';
 import _ from 'lodash';
-import { BigNumber } from '@ethersproject/bignumber';
 import { MaxUint256 } from '@ethersproject/constants';
 import { hexValue } from '@ethersproject/bytes';
 import { ADDRESSES } from '@/constants/addresses';
 import { JsonRpcSigner } from '@ethersproject/providers';
-import { SorRequest, convertSwapInfoToBatchSwap } from '@/modules/sor';
+import { SorRequest, convertSwapInfoToBatchSwap, SorOrderResponse } from '@/modules/sor';
 import { approveToken } from './helpers';
 import {
   Address,
@@ -46,6 +45,34 @@ export async function testSorRequest(
   return testSorSwap(signer, network, swapType, sorSwapInfo);
 }
 
+export async function testOrderRequest(
+  signer: JsonRpcSigner,
+  network: number,
+  sorRequest: SorRequest,
+) {
+  const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(network, sorRequest);
+
+  // Allow the vault to spend wallets tokens
+  await approveToken(
+    signer,
+    sorRequest.sellToken,
+    MaxUint256,
+    sorOrderInfo.price.allowanceTarget
+  );
+  
+  const batchSwapParams = [
+    {
+      to: sorOrderInfo.to,
+      from: sorRequest.sender,
+      data: sorOrderInfo.data,
+      gas: hexValue(3000000),
+      gasPrice: hexValue(GAS_PRICE),
+    },
+  ];
+
+  await signer.provider.send('eth_sendTransaction', batchSwapParams);
+}
+
 export async function testSorSwap(
   signer: JsonRpcSigner,
   network: number,
@@ -70,8 +97,6 @@ export async function testSorSwap(
 
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
 
-  console.log("Encoded data: ", encodedBatchSwapData);
-
   const batchSwapParams = [
     {
       to: ADDRESSES[network].contracts.vault,
@@ -79,7 +104,6 @@ export async function testSorSwap(
       data: encodedBatchSwapData,
       gas: hexValue(3000000),
       gasPrice: hexValue(GAS_PRICE),
-      value: BigNumber.from('20000000000000000').toHexString(),
     },
   ];
 
@@ -95,6 +119,22 @@ export async function querySorEndpoint(
   try {
     const params = new URLSearchParams(_.omitBy(sorOptions, _.isUndefined)).toString();
     const data = await axios.post(`${ENDPOINT_URL}/sor/${network}/?${params}`, sorRequest);
+    sorSwapInfo = data.data;
+  } catch (e) {
+    console.error('Failed to fetch sor data. Error is: ', e);
+    process.exit(1);
+  }
+
+  return sorSwapInfo;
+}
+
+export async function queryOrderEndpoint(
+  network: number,
+  sorRequest: SorRequest,
+): Promise<SorOrderResponse> {
+  let sorSwapInfo: SorOrderResponse;
+  try {
+    const data = await axios.post(`${ENDPOINT_URL}/order/${network}/`, sorRequest);
     sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);

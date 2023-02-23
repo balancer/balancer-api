@@ -105,7 +105,7 @@ npm run test
 
 ### E2E Tests
 
-These E2E tests perform SOR requests to the /sor endpoint, then run that swap on-chain using a Hardhat forked environment. They require you to have the
+These E2E tests perform SOR requests to the /sor and /order endpoints, then run that swap on-chain using a Hardhat forked environment. They require you to have the
 API running somewhere, and a Hardhat network running.
 
 Before Starting set the following variables in your .env file:
@@ -137,7 +137,8 @@ The `{chainId}` in each endpoint is the chain/network number you wish to request
 - `/pools/{chainId}/update` - Runs the worker lambda that fetches the latest pool information from the graph and saves it in the database.
 - `/pools/{chainId}` - Returns a JSON array of all Balancer pools of that chain
 - `/pools/{chainId}/{id}` - Returns JSON information about a pool of a specific `id`.
-- `/sor/{chainId}` - Run a SOR (Smart Order Router) query against the balancer pools, more information below.
+- `/sor/{chainId}` - Run a SOR (Smart Order Router) query against the balancer pools and returns [SerializedSwapInfo](./src/modules/sor/types.ts).
+- `/order/{chainId}` - Run a SOR (Smart Order Router) query against the balancer pools and returns a [SorOrderResponse](./src/modules/sor/types.ts).
 - `/tokens/{chainId}` - Returns a JSON array of all known tokens of that chain
 - `/tokens/update/` - Runs the worker lambda that for every known token, fetches the latest price (in the chains native asset) from coingecko and saves it in the database.
 
@@ -213,7 +214,7 @@ The [Smart Order Router](https://github.com/balancer-labs/balancer-sor) is a pac
 input and output token, finds you the best trade path across all Balancer pools. It is used by the Balancer frontend to calculate
 trades.
 
-You can POST the following JSON content to the endpoint to return smart order router information.
+You can POST the following JSON content to the endpoints `/sor` or `/order` to return smart order router information.
 
 ```js
 {
@@ -222,10 +223,19 @@ You can POST the following JSON content to the endpoint to return smart order ro
     orderKind: string<buy|sell>, # Either 'buy' or 'sell', described further below
     amount: int, # The amount in sellToken or buyToken that you wish to sell/buy
     gasPrice: int, # The current gas price in wei, this is used to ensure your trade is most efficient considering the gas cost of performing multiple swaps.
+
+    # The following are for /order only
+    sender: string<Address>, # The address of the wallet sending sellToken.
+    receiver: string<Address>, # The address of the wallet which should receive buyToken.
 }
 ```
 
 Order Kind - Set to 'buy' to buy the exact amount of your `buyToken` and sell as little as possible to get that. Set to 'sell' to sell the exact amount of your `sellToken` and buy as much as you can with that.
+
+#### Return Values
+
+The `/sor` endpoint returns [SerializedSwapInfo](./src/modules/sor/types.ts) which contains all the swaps and order information, but you must assemble the transaction to make this swap yourself.
+The `/order` endpoint returns a [SorOrderResponse](./src/modules/sor/types.ts) which contains transaction data that you can immediately post to chain.
 
 ### Smart Order Router Examples
 
@@ -279,7 +289,7 @@ You can customize your deployment with env variables. See .env.example for all p
 #### Testing Related
 
 - RPC_URL - Used for E2E tests. This can be a local node or an Infura/Alchemy like service.
-- ENDPOINT_URL - Used for E2E tests. Specifies the API URL you'll be running the tests against.
+- ENDPOINT_URL - Used for E2E tests. Specifies the Balancer API URL you'll be running the tests against.
 - HARDHAT_URL - Used for E2E tests. Defaults to 127.0.0.1.
 
 #### Capacity Related

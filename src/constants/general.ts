@@ -6,10 +6,13 @@ export const MAX_BATCH_WRITE_SIZE = 5;
 export const MAX_DYNAMODB_PRECISION = 38;
 
 export const SOR_MIN_LIQUIDITY = '100';
+export const SOR_DEADLINE = 60; // Deadline in minutes for the swap to be valid
 
 export const HOUR_IN_MS = 60 * 60 * 1000;
 export const DAY_IN_MS = HOUR_IN_MS * 24;
 export const WEEK_IN_MS = DAY_IN_MS * 7;
+
+export const MAX_VALID_TO_EPOCH = 2 ** 32 - 1;
 
 export const Network: Record<string, number> = {
   MAINNET: 1,

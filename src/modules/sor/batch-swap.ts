@@ -6,6 +6,8 @@ import {
   SwapType,
 } from '@balancer-labs/sdk';
 import { SwapTokenType, SwapToken } from '@/modules/tokens';
+import { calculateDeadlineExpiry } from '@/modules/time';
+import { SOR_DEADLINE } from '@/constants';
 
 export function calculateLimits(
   tokensIn: SwapToken[],
@@ -85,7 +87,7 @@ export function convertSwapInfoToBatchSwap(
       toInternalBalance: false,
     },
     limits: limits,
-    deadline: '999999999999999999',
+    deadline: calculateDeadlineExpiry(SOR_DEADLINE),
   };
 
   return batchSwapData;

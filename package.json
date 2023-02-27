@@ -19,6 +19,8 @@
     "prettier:fix": "npm run prettier -- --write",
     "start": "node dist/server.js",
     "test": "jest -- src",
+    "test:unit": "jest -c jest.config.unit.ts -- src",
+    "test:integration": "jest -c jest.config.integration.ts -- src",
     "test:e2e": "jest -- tests/e2e",
     "update-schemas": "node dist/scripts/update-schemas.ts",
     "watch": "tsc -w",

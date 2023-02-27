@@ -50,3 +50,5 @@ export interface SorOrderResponse {
   // value to send with transaction
   value: BigNumberish;
 }
+
+export class SorError extends Error {}

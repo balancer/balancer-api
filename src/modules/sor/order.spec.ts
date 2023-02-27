@@ -49,6 +49,11 @@ describe('sor/order', () => {
       expect(sorOrder.value).toBe('0');
     });
 
+    it('Should throw an error if you pass slippagePercentage as a string', async () => {
+      sorRequest.slippagePercentage = "0.02";
+      expect(async() => { await createSorOrder(networkId, sorRequest) }).rejects.toThrow('slippagePercentage must be a number');
+    });
+
     it('Should throw an error if you pass a slippagePercentage greater than one', async () => {
       sorRequest.slippagePercentage = 1.1;
       expect(async() => { await createSorOrder(networkId, sorRequest) }).rejects.toThrow('Invalid slippage percentage. Must be 0 < n < 1.');

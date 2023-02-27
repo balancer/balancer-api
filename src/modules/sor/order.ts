@@ -1,9 +1,11 @@
-import { BatchSwap, buildRelayerCalls, canUseJoinExit, someJoinExit, SubgraphPoolBase, SwapInfo, Swaps, SwapType } from '@balancer-labs/sdk';
+import { BatchSwap, buildRelayerCalls, canUseJoinExit, someJoinExit, SwapInfo, Swaps, SwapType } from '@balancer-labs/sdk';
 import config  from '@/config';
 import { getPools } from '@/modules/dynamodb';
+import { convertPoolToSubgraphPoolBase } from '@/modules/pools';
 import { convertSwapInfoToBatchSwap } from './batch-swap';
 import { getSorSwap, orderKindToSwapType, sdkToSorSwapType } from './sor';
-import { SorRequest, SorOrderResponse, PriceResponse } from './types';
+import { SorRequest, SorOrderResponse, PriceResponse, SorError } from './types';
+import { SOR_DEFAULT_SLIPPAGE } from '@/constants';
 
 /**
  * Takes a SOR request and returns a SorOrder which contains a transaction that
@@ -15,7 +17,9 @@ export async function createSorOrder(
 ): Promise<SorOrderResponse> {
   validateSorRequest(request);
 
-  const swapInfo: SwapInfo = await getSorSwap(networkId, request);
+  const slippagePercentage = request.slippagePercentage ?? SOR_DEFAULT_SLIPPAGE;
+
+  const swapInfo: SwapInfo = await getSorSwap(networkId, request, { useJoinExitSwaps: true });
   const swapType: SwapType = orderKindToSwapType(request.orderKind);
 
   const priceResponse: PriceResponse = {
@@ -34,15 +38,20 @@ export async function createSorOrder(
 
   if (joinExitAvailable) {
     const pools = await getPools(networkId);
-    const hasJoinExit = someJoinExit(pools as SubgraphPoolBase[], swapInfo.swaps, swapInfo.tokenAddresses);
-
-    console.log("Has join exits: ", hasJoinExit);
+    const subgraphPools = pools.map(pool =>
+      convertPoolToSubgraphPoolBase(pool)
+    );
+    const hasJoinExit = someJoinExit(subgraphPools, swapInfo.swaps, swapInfo.tokenAddresses);
+    console.log("Has join exit: ", hasJoinExit);
     if (hasJoinExit) {
       // Convert slippage to basis points as that's what the SDK expects
-      const slippageBps = (request.slippagePercentage * 10_000).toString();
+      const slippageBps = (slippagePercentage * 10_000).toString();
+      console.log("Relayer data: ")
+      console.log(subgraphPools);
+      console.log(request.sender, config[networkId].addresses.batchRelayerV3, config[networkId].addresses.wrappedNativeAsset, slippageBps)
       const relayerCallData = buildRelayerCalls(
         swapInfo,
-        pools as SubgraphPoolBase[],
+        subgraphPools,
         request.sender,
         config[networkId].addresses.batchRelayerV3,
         config[networkId].addresses.wrappedNativeAsset,
@@ -68,7 +77,7 @@ export async function createSorOrder(
     swapInfo,
     request.sender,
     request.recipient || request.sender,
-    request.slippagePercentage
+    slippagePercentage
   );
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwap);
 
@@ -82,12 +91,20 @@ export async function createSorOrder(
 
 function validateSorRequest(request: SorRequest){
   if (!request.sender) {
-    throw new Error(
+    throw new SorError(
       'To create a SOR order you must pass a sender address in the request'
     );
   }
 
-  if (request.slippagePercentage && (request.slippagePercentage < 0 || request.slippagePercentage > 1)) {
-    throw new Error('Invalid slippage percentage. Must be 0 < n < 1.');
+  if (request.slippagePercentage) {
+    if (typeof request.slippagePercentage !== 'number') {
+      throw new SorError(
+        'slippagePercentage must be a number'
+      )
+    }
+
+    if ((request.slippagePercentage < 0 || request.slippagePercentage > 1)) {
+      throw new SorError('Invalid slippage percentage. Must be 0 < n < 1.');
+    }
   }
 }

@@ -1,11 +1,10 @@
-import { captureException } from '@sentry/serverless';
-import { wrapHandler } from '@/modules/sentry';
+import { wrapHandler, captureException } from '@/modules/sentry';
 import { isValidNetworkId } from '@/modules/network';
 import {
   INVALID_CHAIN_ID_ERROR,
   MISSING_CHAIN_ID_ERROR,
 } from '@/constants/errors';
-import { createSorOrder } from '@/modules/sor';
+import { createSorOrder, SorError } from '@/modules/sor';
 
 
 /** 
@@ -38,6 +37,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     return { statusCode: 200, body: JSON.stringify(sorOrder) };
   } catch (e) {
     captureException(e, { extra: { chainId, sorRequest }});
-    return { statusCode: 500, body: JSON.stringify({ error: 'SOR request failed' }) };
+    const userErrorMessage = e instanceof SorError ? e.message : 'SOR request failed'
+    return { statusCode: 500, body: JSON.stringify({ error: userErrorMessage }) };
   }
 });

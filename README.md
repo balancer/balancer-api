@@ -227,6 +227,7 @@ You can POST the following JSON content to the endpoints `/sor` or `/order` to r
     # The following are for /order only
     sender: string<Address>, # The address of the wallet sending sellToken.
     receiver: string<Address>, # The address of the wallet which should receive buyToken.
+    slippagePercentage: float (default 0.01), # The total slippage to allow in this order. 0.01 = 1%.
 }
 ```
 

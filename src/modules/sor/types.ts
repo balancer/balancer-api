@@ -7,9 +7,12 @@ export interface SorRequest {
   orderKind: 'sell' | 'buy';
   amount: BigNumberish;
   gasPrice: string;
+
   // Used for Sor Orders
   sender?: Address;
   recipient?: Address;
+  // Maximum allowable slippage in decimal format, 0.01 = 1%
+  slippagePercentage?: number;
 }
 
 export interface SerializedSwapInfo {
@@ -33,8 +36,8 @@ export interface PriceResponse {
   buyAmount: BigNumberish;
   // Address to give spend allowance to if the user hasn't already
   allowanceTarget: Address;
-  // The price the user is trading at in this order
-  price: BigNumberish;
+  // The market spot price the user is trading at in this order
+  price: string;
 }
 
 export interface SorOrderResponse {

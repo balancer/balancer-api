@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, BigNumberish, parseFixed } from '@ethersproject/bignumber';
 import {
   Address,
   BatchSwap,
@@ -7,11 +7,11 @@ import {
 } from '@balancer-labs/sdk';
 import { SwapTokenType, SwapToken } from '@/modules/tokens';
 
-function calculateLimits(
+export function calculateLimits(
   tokensIn: SwapToken[],
   tokensOut: SwapToken[],
   tokenAddresses: string[],
-  slippageBps = 10, // 0.1% slippage
+  slippagePercentage = 0.01, 
 ): string[] {
   const limits: string[] = [];
 
@@ -23,9 +23,9 @@ function calculateLimits(
       swapToken => token.toLowerCase() === swapToken.address.toLowerCase()
     );
     if (tokenIn) {
-      limits[i] = BigNumber.from(tokenIn.amount).mul(10000 + slippageBps).div(10000).toString();
+      limits[i] = calculateTokenLimit(tokenIn, slippagePercentage).toString();
     } else if (tokenOut) {
-      limits[i] = BigNumber.from(tokenOut.amount).mul(-10000).div(10000 + slippageBps).toString();
+      limits[i] = calculateTokenLimit(tokenOut, slippagePercentage).toString();
     } else {
       limits[i] = '0';
     }
@@ -34,25 +34,43 @@ function calculateLimits(
   return limits;
 }
 
+function calculateTokenLimit(token: SwapToken, slippagePercentage: number): BigNumberish {
+  if (token.type === SwapTokenType.min) {
+    return BigNumber.from(token.amount)
+      .mul(parseFixed('1', 18))
+      .div(parseFixed(String(1 + slippagePercentage), 18));
+  }
+
+  if (token.type === SwapTokenType.max) {
+    return BigNumber.from(token.amount)
+      .mul(parseFixed(String(1 + slippagePercentage), 18))
+      .div(parseFixed('1', 18));
+  }
+
+  return token.amount;
+}
+
 export function convertSwapInfoToBatchSwap(
   userAddress: Address,
   swapType: SwapType,
-  swapInfo: SwapInfo
+  swapInfo: SwapInfo,
+  slippagePercentage: number,
 ): BatchSwap {
   const tokenIn: SwapToken = {
     address: swapInfo.tokenIn,
     amount: BigNumber.from(swapInfo.swapAmount),
-    type: SwapTokenType.max,
+    type: swapType === SwapType.SwapExactIn ? SwapTokenType.fixed : SwapTokenType.max,
   };
   const tokenOut: SwapToken = {
     address: swapInfo.tokenOut,
     amount: BigNumber.from(swapInfo.returnAmount),
-    type: SwapTokenType.min,
+    type: swapType === SwapType.SwapExactOut ? SwapTokenType.fixed : SwapTokenType.min,
   };
   const limits = calculateLimits(
     [tokenIn],
     [tokenOut],
-    swapInfo.tokenAddresses
+    swapInfo.tokenAddresses,
+    slippagePercentage
   );
 
   const batchSwapData: BatchSwap = {

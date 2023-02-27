@@ -39,7 +39,7 @@ describe('sor/order', () => {
 
     it('Should throw an error if you do not pass a sender in the request', async () => {
       delete sorRequest.sender;
-      expect(async() => { await createSorOrder(networkId, sorRequest) }).rejects.toThrow();
+      expect(async() => { await createSorOrder(networkId, sorRequest) }).rejects.toThrow('To create a SOR order you must pass a sender address in the request');
     });
 
     it('Should return a valid order', async () => {
@@ -47,6 +47,17 @@ describe('sor/order', () => {
       expect(sorOrder.to).toEqual(ADDRESSES[networkId].contracts.vault);
       expect(sorOrder.data.length).toBeGreaterThan(10);
       expect(sorOrder.value).toBe('0');
-    })
+    });
+
+    it('Should throw an error if you pass a slippagePercentage greater than one', async () => {
+      sorRequest.slippagePercentage = 1.1;
+      expect(async() => { await createSorOrder(networkId, sorRequest) }).rejects.toThrow('Invalid slippage percentage. Must be 0 < n < 1.');
+    });
+
+    it('Should throw an error if you pass a slippagePercentage less than zero', async () => {
+      sorRequest.slippagePercentage = -0.3;
+      expect(async() => { await createSorOrder(networkId, sorRequest) }).rejects.toThrow('Invalid slippage percentage. Must be 0 < n < 1.');
+    });
+
   })
 })

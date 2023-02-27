@@ -12,18 +12,15 @@ export async function createSorOrder(
   networkId: number,
   request: SorRequest
 ): Promise<SorOrderResponse> {
-  if (!request.sender) {
-    throw new Error(
-      'To create a SOR order you must pass a sender address in the request'
-    );
-  }
+  validateSorRequest(request);
 
   const swapInfo: SwapInfo = await getSorSwap(networkId, request);
   const swapType: SwapType = orderKindToSwapType(request.orderKind);
   const batchSwap: BatchSwap = convertSwapInfoToBatchSwap(
     request.sender,
     swapType,
-    swapInfo
+    swapInfo,
+    request.slippagePercentage
   );
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwap);
 
@@ -40,4 +37,16 @@ export async function createSorOrder(
     data: encodedBatchSwapData,
     value: '0',
   };
+}
+
+function validateSorRequest(request: SorRequest){
+  if (!request.sender) {
+    throw new Error(
+      'To create a SOR order you must pass a sender address in the request'
+    );
+  }
+
+  if (request.slippagePercentage && (request.slippagePercentage < 0 || request.slippagePercentage > 1)) {
+    throw new Error('Invalid slippage percentage. Must be 0 < n < 1.');
+  }
 }

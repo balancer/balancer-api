@@ -6,9 +6,10 @@ import _ from 'lodash';
 import { MaxUint256 } from '@ethersproject/constants';
 import { hexValue } from '@ethersproject/bytes';
 import { ADDRESSES } from '@/constants/addresses';
+import config from '@/config';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { SorRequest, convertSwapInfoToBatchSwap, SorOrderResponse } from '@/modules/sor';
-import { approveToken } from './helpers';
+import { approveRelayer, approveToken } from './helpers';
 import {
   Address,
   SwapInfo,
@@ -59,7 +60,9 @@ export async function testOrderRequest(
     MaxUint256,
     sorOrderInfo.price.allowanceTarget
   );
-  
+
+  await approveRelayer(signer);
+
   const transaction = [
     {
       to: sorOrderInfo.to,

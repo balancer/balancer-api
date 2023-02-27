@@ -74,7 +74,7 @@ describe('SOR Endpoint E2E tests', () => {
       const balances = await getBalances(signer, [BAL]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [BAL]);
-      expect(BigNumber.from(newBalances.BAL).gt(balances.BAL));
+      expect(BigNumber.from(newBalances.BAL).gt(balances.BAL)).toBeTruthy();
     });
 
     it('Should be able to sell BAL for USDC', async () => {
@@ -90,7 +90,7 @@ describe('SOR Endpoint E2E tests', () => {
       const balances = await getBalances(signer, [BAL, USDC]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [BAL, USDC]);
-      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
+      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
     });
 
     it('Should be able to buy DAI with USDC', async () => {
@@ -106,7 +106,7 @@ describe('SOR Endpoint E2E tests', () => {
       const balances = await getBalances(signer, [USDC, DAI]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [USDC, DAI]);
-      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI));
+      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
     });
 
     it('Should be able to sell waUSDC for DAI', async () => {
@@ -122,7 +122,7 @@ describe('SOR Endpoint E2E tests', () => {
       const balances = await getBalances(signer, [waUSDC, DAI]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [waUSDC, DAI]);
-      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI));
+      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
     });
 
     it('Should be able to buy USDC with USDT', async () => {
@@ -138,7 +138,7 @@ describe('SOR Endpoint E2E tests', () => {
       const balances = await getBalances(signer, [USDT, USDC]);
       await testSorRequest(signer, Network.MAINNET, sorRequest)
       const newBalances = await getBalances(signer, [USDT, USDC]);
-      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC));
+      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
     });
 
     it('Should be able to sell WETH for bbausd', async () => {
@@ -154,7 +154,7 @@ describe('SOR Endpoint E2E tests', () => {
       const balances = await getBalances(signer, [WETH, bbausd2]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [WETH, bbausd2]);
-      expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2));
+      expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)).toBeTruthy();
     });
 
     it('Should fail if the SwapInfo is invalid', async () => {

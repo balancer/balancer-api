@@ -51,10 +51,11 @@ function calculateTokenLimit(token: SwapToken, slippagePercentage: number): BigN
 }
 
 export function convertSwapInfoToBatchSwap(
-  userAddress: Address,
   swapType: SwapType,
   swapInfo: SwapInfo,
-  slippagePercentage: number,
+  senderAddress: Address,
+  recipientAddress: Address,
+  slippagePercentage?: number,
 ): BatchSwap {
   const tokenIn: SwapToken = {
     address: swapInfo.tokenIn,
@@ -79,8 +80,8 @@ export function convertSwapInfoToBatchSwap(
     assets: swapInfo.tokenAddresses,
     funds: {
       fromInternalBalance: false,
-      sender: userAddress,
-      recipient: userAddress,
+      sender: senderAddress,
+      recipient: recipientAddress,
       toInternalBalance: false,
     },
     limits: limits,

@@ -90,9 +90,10 @@ export async function testSorSwap(
   );
 
   const batchSwapData = convertSwapInfoToBatchSwap(
-    walletAddress,
     swapType,
-    sorSwapInfo
+    sorSwapInfo,
+    walletAddress,
+    walletAddress,
   );
 
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);

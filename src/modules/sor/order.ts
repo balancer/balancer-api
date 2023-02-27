@@ -17,9 +17,10 @@ export async function createSorOrder(
   const swapInfo: SwapInfo = await getSorSwap(networkId, request);
   const swapType: SwapType = orderKindToSwapType(request.orderKind);
   const batchSwap: BatchSwap = convertSwapInfoToBatchSwap(
-    request.sender,
     swapType,
     swapInfo,
+    request.sender,
+    request.recipient || request.sender,
     request.slippagePercentage
   );
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwap);

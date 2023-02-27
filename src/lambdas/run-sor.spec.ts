@@ -13,6 +13,9 @@ jest.mock(
       getSorSwap: jest.fn().mockImplementation(async () => {
         return defaultSorResponse;
       }),
+      serializeSwapInfo: jest.fn().mockImplementation((swapInfo) => {
+        return swapInfo;
+      })
     };
   })
 );

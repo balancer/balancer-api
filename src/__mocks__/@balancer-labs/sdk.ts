@@ -15,6 +15,7 @@ let mockSwapInfo = {
 
 let mockSubgraphPools: Pool[] = [];
 let mockSorPools: SubgraphPoolBase[] = [];
+let mockEncodedBatchSwap = "";
 
 export const mockSwapCostCalculator = {
   setNativeAssetPriceInToken: jest.fn().mockImplementation(),
@@ -32,6 +33,7 @@ export const BalancerSDK = jest.fn().mockImplementation(() => {
       }),
       swapCostCalculator: mockSwapCostCalculator,
     },
+    
   };
 });
 
@@ -50,6 +52,17 @@ export const PoolsSubgraphRepository = jest.fn().mockImplementation(() => {
   };
 });
 
+export const Swaps = {
+  encodeBatchSwap: jest.fn().mockImplementation(() => {
+    return mockEncodedBatchSwap;
+  })
+};
+
+
+export enum SwapType {
+  SwapExactIn = 0,
+  SwapExactOut = 1,
+}
 
 export enum SwapTypes {
   SwapExactIn = 0,
@@ -66,4 +79,8 @@ export function _setSubgraphPools(pools: Pool[]) {
 
 export function _setSorPools(pools: SubgraphPoolBase[]) {
   mockSorPools = pools;
+}
+
+export function _setEncodedBatchSwap(encodedBatchSwap: string) {
+  mockEncodedBatchSwap = encodedBatchSwap;
 }

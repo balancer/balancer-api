@@ -1,4 +1,4 @@
-import { BalancerSDK, SwapInfo, SwapTypes } from '@balancer-labs/sdk';
+import { BalancerSDK, SwapInfo, SwapType, SwapTypes } from '@balancer-labs/sdk';
 import { SorRequest, SerializedSwapInfo } from './types';
 import { Token } from '@/modules/tokens';
 import {
@@ -8,7 +8,7 @@ import {
 } from '@/modules/network';
 import { getToken } from '@/modules/dynamodb';
 import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
-import { DatabasePoolDataService } from './poolDataService';
+import { DatabasePoolDataService } from './pool-data-service';
 import debug from 'debug';
 import { SOR_MIN_LIQUIDITY } from '@/constants/general';
 
@@ -18,20 +18,23 @@ export function _setLogger(logger) {
   log = logger;
 }
 
-
-export function orderKindToSwapType(orderKind: string): SwapTypes {
+export function orderKindToSwapType(orderKind: string): SwapType {
   switch (orderKind) {
     case 'sell':
-      return SwapTypes.SwapExactIn;
+      return SwapType.SwapExactIn;
     case 'buy':
-      return SwapTypes.SwapExactOut;
+      return SwapType.SwapExactOut;
     default:
       throw new Error(`invalid order kind ${orderKind}`);
   }
 }
 
+export function sdkToSorSwapType(swapType: SwapType): SwapTypes {
+  return swapType === SwapType.SwapExactIn ? SwapTypes.SwapExactIn : SwapTypes.SwapExactOut;
+}
 
-function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
+
+export function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
   const serializedSwapInfo: SerializedSwapInfo = {
     tokenAddresses: swapInfo.tokenAddresses,
     swaps: swapInfo.swaps,
@@ -60,10 +63,10 @@ interface SorSwapOptions {
 
 export async function getSorSwap(
   chainId: number,
-  order: SorRequest,
+  request: SorRequest,
   options: SorSwapOptions = {},
-): Promise<SerializedSwapInfo> {
-  log(`Getting swap: ${JSON.stringify(order)}`);
+): Promise<SwapInfo> {
+  log(`Getting swap: ${JSON.stringify(request)}`);
   const rpcUrl = getRpcUrl(chainId);
   const subgraphUrl = getSubgraphUrl(chainId);
 
@@ -93,7 +96,7 @@ export async function getSorSwap(
     sor: sorSettings,
   });
 
-  const { sellToken, buyToken, orderKind, amount, gasPrice } = order;
+  const { sellToken, buyToken, orderKind, amount, gasPrice } = request;
 
   const sellTokenDetails: Token = await getToken(chainId, sellToken);
   log(
@@ -152,7 +155,8 @@ export async function getSorSwap(
     priceOfNativeAssetInBuyToken.toString()
   );
 
-  const swapType = orderKindToSwapType(orderKind);
+  const swapType: SwapType = orderKindToSwapType(orderKind);
+  const sorSwapType: SwapTypes = sdkToSorSwapType(swapType);
 
   const swapOptions = {
     gasPrice: BigNumber.from(gasPrice),
@@ -172,15 +176,13 @@ export async function getSorSwap(
   const swapInfo = await balancer.sor.getSwaps(
     sellToken,
     buyToken,
-    swapType,
+    sorSwapType,
     amount,
     swapOptions
   );
 
   log(`SwapInfo: ${JSON.stringify(swapInfo)}`);
 
-  const serializedSwapInfo = serializeSwapInfo(swapInfo);
-  log(`Serialized SwapInfo: ${JSON.stringify(swapInfo)}`);
-
-  return serializedSwapInfo;
+  return swapInfo;
 }
+

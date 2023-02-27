@@ -273,6 +273,11 @@ export class BalancerPoolsAPI extends Stack {
       ...nodeJsFunctionProps,
       memorySize: 2048,
     });
+    const orderLambda = new NodejsFunction(this, 'orderFunction', {
+      entry: join(__dirname, 'src', 'lambdas', 'order.ts'),
+      ...nodeJsFunctionProps,
+      memorySize: 2048,
+    });
 
     const updatePoolsLambdas: Record<number, NodejsFunction> = {};
     Object.entries(SELECTED_NETWORKS).forEach(([networkName, chainId]) => {
@@ -402,7 +407,8 @@ export class BalancerPoolsAPI extends Stack {
 
     poolsTable.grantReadData(getPoolsLambda);
     poolsTable.grantReadData(getPoolLambda);
-    poolsTable.grantReadWriteData(runSORLambda);
+    poolsTable.grantReadData(runSORLambda);
+    poolsTable.grantReadData(orderLambda);
     Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
       poolsTable.grantReadWriteData(updatePoolsLambda);
     });
@@ -411,7 +417,8 @@ export class BalancerPoolsAPI extends Stack {
     });
 
     tokensTable.grantReadData(getTokensLambda);
-    tokensTable.grantReadWriteData(runSORLambda);
+    tokensTable.grantReadData(runSORLambda);
+    tokensTable.grantReadData(orderLambda);
     tokensTable.grantReadWriteData(updateTokenPricesLambda);
     Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
       tokensTable.grantReadData(decoratePoolsLambda);
@@ -460,6 +467,12 @@ export class BalancerPoolsAPI extends Stack {
           'method.request.querystring.useDb',
           'integration.request.querystring.minLiquidity':
           'method.request.querystring.minLiquidity',
+      },
+    });
+    const orderIntegration = new LambdaIntegration(orderLambda, {
+      proxy: true,
+      requestParameters: {
+        'integration.request.path.chainId': 'method.request.path.chainId',
       },
     });
     const updateTokenPricesIntegration = new LambdaIntegration(
@@ -576,6 +589,15 @@ export class BalancerPoolsAPI extends Stack {
       },
     });
     addCorsOptions(sor);
+
+    const order = api.root.addResource('order');
+    const orderOnChain = order.addResource('{chainId}');
+    orderOnChain.addMethod('POST', orderIntegration, {
+      requestParameters: {
+        'method.request.path.chainId': true,
+      },
+    });
+    addCorsOptions(order);
   
     const checkWallet = api.root.addResource('check-wallet');
     checkWallet.addMethod('GET', checkWalletIntegration, {

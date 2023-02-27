@@ -1,5 +1,12 @@
 {
   "networkId": 100,
   "rpc": "https://poa-xdai.gateway.pokt.network/v1/lb/91bc0e12a76e7a84dd76189d",
-  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2"
+  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2",
+  "addresses": {
+    "nativeAsset": "",
+    "wrappedNativeAsset": "",
+    "vault": "",
+    "batchRelayerV3": "",
+    "batchRelayerV4": ""
+  }
 }

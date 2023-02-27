@@ -1,7 +1,8 @@
-import { BatchSwap, SwapInfo, Swaps, SwapType } from '@balancer-labs/sdk';
-import { ADDRESSES } from '@/constants/addresses';
+import { BatchSwap, buildRelayerCalls, canUseJoinExit, someJoinExit, SubgraphPoolBase, SwapInfo, Swaps, SwapType } from '@balancer-labs/sdk';
+import config  from '@/config';
+import { getPools } from '@/modules/dynamodb';
 import { convertSwapInfoToBatchSwap } from './batch-swap';
-import { getSorSwap, orderKindToSwapType } from './sor';
+import { getSorSwap, orderKindToSwapType, sdkToSorSwapType } from './sor';
 import { SorRequest, SorOrderResponse, PriceResponse } from './types';
 
 /**
@@ -16,6 +17,52 @@ export async function createSorOrder(
 
   const swapInfo: SwapInfo = await getSorSwap(networkId, request);
   const swapType: SwapType = orderKindToSwapType(request.orderKind);
+
+  const priceResponse: PriceResponse = {
+    sellAmount: swapInfo.swapAmount,
+    buyAmount: swapInfo.returnAmount,
+    allowanceTarget: config[networkId].addresses.vault,
+    price: swapInfo.marketSp,
+  };
+
+  console.log("Creating sor order with request: ", request);
+  console.log("Swap info: ", swapInfo);
+
+  const joinExitAvailable = canUseJoinExit(sdkToSorSwapType(swapType), request.sellToken, request.buyToken);
+
+  console.log("Join exit available: ", joinExitAvailable);
+
+  if (joinExitAvailable) {
+    const pools = await getPools(networkId);
+    const hasJoinExit = someJoinExit(pools as SubgraphPoolBase[], swapInfo.swaps, swapInfo.tokenAddresses);
+
+    console.log("Has join exits: ", hasJoinExit);
+    if (hasJoinExit) {
+      // Convert slippage to basis points as that's what the SDK expects
+      const slippageBps = (request.slippagePercentage * 10_000).toString();
+      const relayerCallData = buildRelayerCalls(
+        swapInfo,
+        pools as SubgraphPoolBase[],
+        request.sender,
+        config[networkId].addresses.batchRelayerV3,
+        config[networkId].addresses.wrappedNativeAsset,
+        slippageBps,
+        undefined
+      );
+
+      priceResponse.allowanceTarget = config[networkId].addresses.batchRelayerV3;
+
+      console.log('Relayer going to: ', relayerCallData.to);
+
+      return {
+        price: priceResponse,
+        to: relayerCallData.to,
+        data: relayerCallData.data,
+        value: '0'
+      }
+    }
+  }
+
   const batchSwap: BatchSwap = convertSwapInfoToBatchSwap(
     swapType,
     swapInfo,
@@ -25,16 +72,9 @@ export async function createSorOrder(
   );
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwap);
 
-  const priceResponse: PriceResponse = {
-    sellAmount: swapInfo.swapAmount,
-    buyAmount: swapInfo.returnAmount,
-    allowanceTarget: ADDRESSES[networkId].contracts.vault,
-    price: swapInfo.marketSp,
-  };
-
   return {
     price: priceResponse,
-    to: ADDRESSES[networkId].contracts.vault,
+    to: config[networkId].addresses.vault,
     data: encodedBatchSwapData,
     value: '0',
   };

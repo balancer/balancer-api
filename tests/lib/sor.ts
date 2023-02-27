@@ -60,7 +60,7 @@ export async function testOrderRequest(
     sorOrderInfo.price.allowanceTarget
   );
   
-  const batchSwapParams = [
+  const transaction = [
     {
       to: sorOrderInfo.to,
       from: sorRequest.sender,
@@ -70,7 +70,7 @@ export async function testOrderRequest(
     },
   ];
 
-  await signer.provider.send('eth_sendTransaction', batchSwapParams);
+  await signer.provider.send('eth_sendTransaction', transaction);
 }
 
 export async function testSorSwap(
@@ -98,7 +98,7 @@ export async function testSorSwap(
 
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
 
-  const batchSwapParams = [
+  const transaction = [
     {
       to: ADDRESSES[network].contracts.vault,
       from: walletAddress,
@@ -108,7 +108,7 @@ export async function testSorSwap(
     },
   ];
 
-  await signer.provider.send('eth_sendTransaction', batchSwapParams);
+  await signer.provider.send('eth_sendTransaction', transaction);
 }
 
 export async function querySorEndpoint(

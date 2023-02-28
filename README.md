@@ -235,8 +235,15 @@ Order Kind - Set to 'buy' to buy the exact amount of your `buyToken` and sell as
 
 #### Return Values
 
+##### /sor Endpoint
+
 The `/sor` endpoint returns [SerializedSwapInfo](./src/modules/sor/types.ts) which contains all the swaps and order information, but you must assemble the transaction to make this swap yourself.
+
+##### /order Endpoint
+
 The `/order` endpoint returns a [SorOrderResponse](./src/modules/sor/types.ts) which contains transaction data that you can immediately post to chain.
+
+Sometimes the returned order needs to be sent to the Balancer Batch Relayer (the `to` address will be the batch relayer). When this happens you must first approve the relayer with the Balancer vault so that it can make swaps on your behalf. You can do this by calling `setRelayerApproval(walletAddress, relayerAddress, true)` on the Balancer vault, see an example in the [E2E Test Helpers](./tests/lib/helpers.ts) file.
 
 ### Smart Order Router Examples
 

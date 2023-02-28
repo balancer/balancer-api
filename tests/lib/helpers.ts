@@ -146,8 +146,7 @@ export async function approveRelayer(
   const vaultAddress = config[Network.MAINNET].addresses.vault;
   const relayerAddress = config[Network.MAINNET].addresses.batchRelayerV4;
   const vaultContract = new Contract(vaultAddress, Vault__factory.abi, signer);
-  const approval = await vaultContract.setRelayerApproval(
+  await vaultContract.setRelayerApproval(
     walletAddress, relayerAddress, true
   );
-  console.log("Approval: ", approval);
 }

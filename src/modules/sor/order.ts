@@ -1,3 +1,4 @@
+import debug from 'debug';
 import { BatchSwap, buildRelayerCalls, canUseJoinExit, someJoinExit, SwapInfo, Swaps, SwapType } from '@balancer-labs/sdk';
 import config  from '@/config';
 import { getPools } from '@/modules/dynamodb';
@@ -6,6 +7,8 @@ import { convertSwapInfoToBatchSwap } from './batch-swap';
 import { getSorSwap, orderKindToSwapType, sdkToSorSwapType } from './sor';
 import { SorRequest, SorOrderResponse, PriceResponse, SorError } from './types';
 import { SOR_DEFAULT_SLIPPAGE } from '@/constants';
+
+const log = debug('balancer:sor');
 
 /**
  * Takes a SOR request and returns a SorOrder which contains a transaction that
@@ -29,12 +32,9 @@ export async function createSorOrder(
     price: swapInfo.marketSp,
   };
 
-  console.log("Creating sor order with request: ", request);
-  console.log("Swap info: ", swapInfo);
-
   const joinExitAvailable = canUseJoinExit(sdkToSorSwapType(swapType), request.sellToken, request.buyToken);
 
-  console.log("Join exit available: ", joinExitAvailable);
+  log("Join exit available: ", joinExitAvailable);
 
   if (joinExitAvailable) {
     const pools = await getPools(networkId);
@@ -42,13 +42,10 @@ export async function createSorOrder(
       convertPoolToSubgraphPoolBase(pool)
     );
     const hasJoinExit = someJoinExit(subgraphPools, swapInfo.swaps, swapInfo.tokenAddresses);
-    console.log("Has join exit: ", hasJoinExit);
+    log("Has join exit: ", hasJoinExit);
     if (hasJoinExit) {
       // Convert slippage to basis points as that's what the SDK expects
       const slippageBps = (slippagePercentage * 10_000).toString();
-      console.log("Relayer data: ")
-      console.log(subgraphPools);
-      console.log(request.sender, config[networkId].addresses.batchRelayerV4, config[networkId].addresses.wrappedNativeAsset, slippageBps)
       const relayerCallData = buildRelayerCalls(
         swapInfo,
         subgraphPools,
@@ -60,8 +57,6 @@ export async function createSorOrder(
       );
 
       priceResponse.allowanceTarget = config[networkId].addresses.vault;
-
-      console.log('Relayer going to: ', relayerCallData.to);
 
       return {
         price: priceResponse,
@@ -108,10 +103,3 @@ function validateSorRequest(request: SorRequest){
     }
   }
 }
-
-// function createUserRelayerApprovalSignature(networkId: number, ) {
-//   const deadline = calculateDeadlineExpiry(30);
-//   const vaultAddress = config[networkId].addresses.vault;
-//   const relayerAddress = config[networkId].addresses.batchRelayerV4;
-//   const vaultContract = new Contract(vaultAddress, Vault__factory.abi, signer);
-// }

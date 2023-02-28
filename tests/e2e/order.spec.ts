@@ -192,7 +192,7 @@ describe('/order E2E tests', () => {
     });
 
     describe('Relayer Swaps', () => {
-      it.only('Should be able to sell WETH for auraBal through a join/exit swap', async () => {
+      it('Should be able to sell WETH for auraBal through a join/exit swap', async () => {
         const { WETH, auraBal } = TOKENS[Network.MAINNET];
         const sorRequest: SorRequest = {
           sellToken: WETH.address,

@@ -198,14 +198,14 @@ describe('/order E2E tests', () => {
           sellToken: WETH.address,
           buyToken: auraBal.address,
           orderKind: 'sell',
-          amount: parseFixed('1', WETH.decimals).toString(),
+          amount: parseFixed('1000', WETH.decimals).toString(),
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
         await setTokenBalance(signer, WETH, sorRequest.amount)
         const balances = await getBalances(signer, [WETH, auraBal]);
         const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(Network.MAINNET, sorRequest);
-        expect(sorOrderInfo.to).toEqual(config[Network.MAINNET].addresses.batchRelayerV3);
+        expect(sorOrderInfo.to).toEqual(config[Network.MAINNET].addresses.batchRelayerV4);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [WETH, auraBal]);
         expect(BigNumber.from(newBalances.auraBal).gt(balances.auraBal)).toBeTruthy();

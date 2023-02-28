@@ -48,18 +48,18 @@ export async function createSorOrder(
       const slippageBps = (slippagePercentage * 10_000).toString();
       console.log("Relayer data: ")
       console.log(subgraphPools);
-      console.log(request.sender, config[networkId].addresses.batchRelayerV3, config[networkId].addresses.wrappedNativeAsset, slippageBps)
+      console.log(request.sender, config[networkId].addresses.batchRelayerV4, config[networkId].addresses.wrappedNativeAsset, slippageBps)
       const relayerCallData = buildRelayerCalls(
         swapInfo,
         subgraphPools,
         request.sender,
-        config[networkId].addresses.batchRelayerV3,
+        config[networkId].addresses.batchRelayerV4,
         config[networkId].addresses.wrappedNativeAsset,
         slippageBps,
         undefined
       );
 
-      priceResponse.allowanceTarget = config[networkId].addresses.batchRelayerV3;
+      priceResponse.allowanceTarget = config[networkId].addresses.vault;
 
       console.log('Relayer going to: ', relayerCallData.to);
 
@@ -108,3 +108,10 @@ function validateSorRequest(request: SorRequest){
     }
   }
 }
+
+// function createUserRelayerApprovalSignature(networkId: number, ) {
+//   const deadline = calculateDeadlineExpiry(30);
+//   const vaultAddress = config[networkId].addresses.vault;
+//   const relayerAddress = config[networkId].addresses.batchRelayerV4;
+//   const vaultContract = new Contract(vaultAddress, Vault__factory.abi, signer);
+// }

@@ -1,4 +1,5 @@
 import config from '@/config';
+import { Vault__factory } from '@balancer-labs/typechain';
 import { TokenWithSlot } from '@/constants/addresses';
 import { hexlify, hexValue, zeroPad } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/solidity';
@@ -8,8 +9,7 @@ import { Token, Address } from '@balancer-labs/sdk';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Network } from '@/constants';
 
-const ERC20ABI = require('./ERC20.json');
-const VaultABI = require('./VaultAbi.json');
+const ERC20ABI = require('./abis/ERC20.json');
 
 export async function getBalances(
   signer: JsonRpcSigner,
@@ -144,17 +144,10 @@ export async function approveRelayer(
 ): Promise<void> {
   const walletAddress = await signer.getAddress();
   const vaultAddress = config[Network.MAINNET].addresses.vault;
-  const relayerAddress = config[Network.MAINNET].addresses.batchRelayerV3;
-  const vaultContract = new Contract(vaultAddress, VaultABI, signer);
-  const approval = await vaultContract.callStatic.setRelayerApproval(
+  const relayerAddress = config[Network.MAINNET].addresses.batchRelayerV4;
+  const vaultContract = new Contract(vaultAddress, Vault__factory.abi, signer);
+  const approval = await vaultContract.setRelayerApproval(
     walletAddress, relayerAddress, true
   );
   console.log("Approval: ", approval);
-  await signer.sendTransaction({
-    to: vaultAddress,
-    data: approval,
-    value: '0'
-  });
-
-  console.log("Done approving");
 }

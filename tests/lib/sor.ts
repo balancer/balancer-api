@@ -5,7 +5,6 @@ import axios from 'axios';
 import _ from 'lodash';
 import { MaxUint256 } from '@ethersproject/constants';
 import { hexValue } from '@ethersproject/bytes';
-import { ADDRESSES } from '@/constants/addresses';
 import config from '@/config';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { SorRequest, convertSwapInfoToBatchSwap, SorOrderResponse } from '@/modules/sor';
@@ -89,7 +88,7 @@ export async function testSorSwap(
     signer,
     sorSwapInfo.tokenIn,
     MaxUint256,
-    ADDRESSES[network].contracts.vault
+    config[network].addresses.vault
   );
 
   const batchSwapData = convertSwapInfoToBatchSwap(
@@ -103,7 +102,7 @@ export async function testSorSwap(
 
   const transaction = [
     {
-      to: ADDRESSES[network].contracts.vault,
+      to: config[network].addresses.vault,
       from: walletAddress,
       data: encodedBatchSwapData,
       gas: hexValue(3000000),

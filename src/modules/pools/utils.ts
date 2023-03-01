@@ -71,11 +71,7 @@ export function getNonStaticSchemaFields(schema: Schema): string[] {
 
 export function isSchemaFieldANumber(key: string, schema: Schema): boolean {
   const numberTypes = ['BigDecimal', 'BigInt', 'Int'];
-  if (numberTypes.includes(schema[key]?.type)) {
-    return true;
-  }
-
-  return false;
+  return numberTypes.includes(schema[key]?.type)
 }
 
 export function isSame(newPool: Pool, oldPool?: Pool): boolean {

@@ -5,10 +5,10 @@ import axios from 'axios';
 import _ from 'lodash';
 import { MaxUint256 } from '@ethersproject/constants';
 import { hexValue } from '@ethersproject/bytes';
-import { ADDRESSES } from '@/constants/addresses';
+import config from '@/config';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { SorRequest, convertSwapInfoToBatchSwap, SorOrderResponse } from '@/modules/sor';
-import { approveToken } from './helpers';
+import { approveRelayer, approveToken } from './helpers';
 import {
   Address,
   SwapInfo,
@@ -59,8 +59,10 @@ export async function testOrderRequest(
     MaxUint256,
     sorOrderInfo.price.allowanceTarget
   );
-  
-  const batchSwapParams = [
+
+  await approveRelayer(signer);
+
+  const transaction = [
     {
       to: sorOrderInfo.to,
       from: sorRequest.sender,
@@ -70,7 +72,7 @@ export async function testOrderRequest(
     },
   ];
 
-  await signer.provider.send('eth_sendTransaction', batchSwapParams);
+  await signer.provider.send('eth_sendTransaction', transaction);
 }
 
 export async function testSorSwap(
@@ -86,7 +88,7 @@ export async function testSorSwap(
     signer,
     sorSwapInfo.tokenIn,
     MaxUint256,
-    ADDRESSES[network].contracts.vault
+    config[network].addresses.vault
   );
 
   const batchSwapData = convertSwapInfoToBatchSwap(
@@ -98,9 +100,9 @@ export async function testSorSwap(
 
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
 
-  const batchSwapParams = [
+  const transaction = [
     {
-      to: ADDRESSES[network].contracts.vault,
+      to: config[network].addresses.vault,
       from: walletAddress,
       data: encodedBatchSwapData,
       gas: hexValue(3000000),
@@ -108,7 +110,7 @@ export async function testSorSwap(
     },
   ];
 
-  await signer.provider.send('eth_sendTransaction', batchSwapParams);
+  await signer.provider.send('eth_sendTransaction', transaction);
 }
 
 export async function querySorEndpoint(

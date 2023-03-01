@@ -5,6 +5,7 @@ import {
   SwapInfo,
   SwapType,
 } from '@balancer-labs/sdk';
+import { SOR_DEFAULT_SLIPPAGE } from '@/constants';
 import { SwapTokenType, SwapToken } from '@/modules/tokens';
 import { calculateDeadlineExpiry } from '@/modules/time';
 import { SOR_DEADLINE } from '@/constants';
@@ -13,7 +14,7 @@ export function calculateLimits(
   tokensIn: SwapToken[],
   tokensOut: SwapToken[],
   tokenAddresses: string[],
-  slippagePercentage = 0.01, 
+  slippagePercentage = SOR_DEFAULT_SLIPPAGE, 
 ): string[] {
   const limits: string[] = [];
 

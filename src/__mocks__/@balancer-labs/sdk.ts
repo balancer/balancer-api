@@ -17,6 +17,8 @@ let mockSubgraphPools: Pool[] = [];
 let mockSorPools: SubgraphPoolBase[] = [];
 let mockEncodedBatchSwap = "";
 
+let isJoinExitSwap = false;
+
 export const mockSwapCostCalculator = {
   setNativeAssetPriceInToken: jest.fn().mockImplementation(),
 };
@@ -58,6 +60,22 @@ export const Swaps = {
   })
 };
 
+export const canUseJoinExit = jest.fn().mockImplementation(() => {
+  return isJoinExitSwap;
+});
+
+export const someJoinExit = jest.fn().mockImplementation(() => {
+  return isJoinExitSwap;
+});
+
+export const buildRelayerCalls = jest.fn().mockImplementation(() => {
+  return {
+    to: '0x2536dfeeCB7A0397CF98eDaDA8486254533b1aFA',
+    data: '0x123456789abcdef'
+  }
+})
+
+
 
 export enum SwapType {
   SwapExactIn = 0,
@@ -83,4 +101,8 @@ export function _setSorPools(pools: SubgraphPoolBase[]) {
 
 export function _setEncodedBatchSwap(encodedBatchSwap: string) {
   mockEncodedBatchSwap = encodedBatchSwap;
+}
+
+export function _setIsJoinExitSwap(isJoinExit: boolean) {
+  isJoinExitSwap = isJoinExit;
 }

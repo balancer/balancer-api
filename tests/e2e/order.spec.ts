@@ -2,11 +2,12 @@
 require('dotenv').config();
 
 import axios from 'axios';
-import { SorRequest } from '@/modules/sor';
+import { SorOrderResponse, SorRequest } from '@/modules/sor';
 import { parseFixed } from '@ethersproject/bignumber';
 import { BigNumber } from 'ethers';
-import { testOrderRequest } from '@tests/lib/sor';
+import { queryOrderEndpoint, testOrderRequest } from '@tests/lib/sor';
 import { Network } from '@/constants/general';
+import config from '@/config';
 import { getRpcUrl } from '@/modules/network';
 import { forkSetup, getBalances, setEthBalance, setTokenBalance } from '@tests/lib/helpers';
 import { JsonRpcProvider } from '@ethersproject/providers';
@@ -62,131 +63,154 @@ describe('/order E2E tests', () => {
       await setEthBalance(signer, parseFixed('100', 18));
     });
 
-    it('Should be able to sell DAI for BAL', async () => {
-      const { DAI, BAL } = TOKENS[Network.MAINNET];
-      const sorRequest: SorRequest = {
-        sellToken: DAI.address,
-        buyToken: BAL.address,
-        orderKind: 'sell',
-        amount: parseFixed('100', DAI.decimals).toString(),
-        gasPrice: GAS_PRICE,
-        sender: walletAddress,
-      };
-      await setTokenBalance(signer, DAI, sorRequest.amount)
-      const balances = await getBalances(signer, [BAL]);
-      await testOrderRequest(signer, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, [BAL]);
-      expect(BigNumber.from(newBalances.BAL).gt(balances.BAL)).toBeTruthy();
+    describe('Batch Swaps', () => {
+      it('Should be able to sell DAI for BAL', async () => {
+        const { DAI, BAL } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: DAI.address,
+          buyToken: BAL.address,
+          orderKind: 'sell',
+          amount: parseFixed('100', DAI.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+        };
+        await setTokenBalance(signer, DAI, sorRequest.amount)
+        const balances = await getBalances(signer, [BAL]);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newBalances = await getBalances(signer, [BAL]);
+        expect(BigNumber.from(newBalances.BAL).gt(balances.BAL)).toBeTruthy();
+      });
+
+      it('Should be able to sell BAL for USDC', async () => {
+        const { BAL, USDC } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: BAL.address,
+          buyToken: USDC.address,
+          orderKind: 'sell',
+          amount: parseFixed('100', BAL.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+        };
+        await setTokenBalance(signer, BAL, sorRequest.amount)
+        const balances = await getBalances(signer, [BAL, USDC]);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newBalances = await getBalances(signer, [BAL, USDC]);
+        expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
+      });
+
+      it('Should be able to buy DAI with USDC', async () => {
+        const { USDC, DAI } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: USDC.address,
+          buyToken: DAI.address,
+          orderKind: 'buy',
+          amount: parseFixed('100', DAI.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+        };
+        await setTokenBalance(signer, USDC, BigNumber.from(sorRequest.amount).mul(2))
+        const balances = await getBalances(signer, [USDC, DAI]);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newBalances = await getBalances(signer, [USDC, DAI]);
+        expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
+      });
+
+      it('Should be able to sell waUSDC for DAI', async () => {
+        const { waUSDC, DAI } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: waUSDC.address,
+          buyToken: DAI.address,
+          orderKind: 'sell',
+          amount: parseFixed('100', waUSDC.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+        };
+        await setTokenBalance(signer, waUSDC, sorRequest.amount)
+        const balances = await getBalances(signer, [waUSDC, DAI]);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newBalances = await getBalances(signer, [waUSDC, DAI]);
+        expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
+      });
+
+      it('Should be able to buy USDC with USDT', async () => {
+        const { USDT, USDC } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: USDT.address,
+          buyToken: USDC.address,
+          orderKind: 'buy',
+          amount: parseFixed('1000', USDC.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+        };
+        await setTokenBalance(signer, USDT, BigNumber.from(sorRequest.amount).mul(2))
+        const balances = await getBalances(signer, [USDT, USDC]);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newBalances = await getBalances(signer, [USDT, USDC]);
+        expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
+      });
+
+      it('Should be able to sell WETH for bbausd', async () => {
+        const { WETH, bbausd2 } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: WETH.address,
+          buyToken: bbausd2.address,
+          orderKind: 'sell',
+          amount: parseFixed('10', WETH.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+        };
+        await setTokenBalance(signer, WETH, sorRequest.amount)
+        const balances = await getBalances(signer, [WETH, bbausd2]);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newBalances = await getBalances(signer, [WETH, bbausd2]);
+        expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)).toBeTruthy();
+      });
+
+      it('Should be able to sell BAL for USDC and send to another receipient', async () => {
+        const { BAL, USDC } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: BAL.address,
+          buyToken: USDC.address,
+          orderKind: 'sell',
+          amount: parseFixed('100', BAL.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+          recipient: recipientWalletAddress,
+        };
+        await setTokenBalance(signer, BAL, sorRequest.amount)
+        const senderBalances = await getBalances(signer, [BAL, USDC]);
+        const recipientSigner = await provider.getSigner(recipientWalletAddress);
+        const recipientBalances = await getBalances(recipientSigner, [BAL, USDC]);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newRecipientBalances = await getBalances(recipientSigner, [BAL, USDC]);
+        expect(BigNumber.from(newRecipientBalances.BAL).eq(recipientBalances.BAL)).toBeTruthy();
+        expect(BigNumber.from(newRecipientBalances.USDC).gt(recipientBalances.USDC)).toBeTruthy();
+        const newSenderBalances = await getBalances(signer, [BAL, USDC]);
+        expect(BigNumber.from(newSenderBalances.BAL).lt(senderBalances.BAL)).toBeTruthy();
+        expect(BigNumber.from(newSenderBalances.USDC).eq(senderBalances.USDC)).toBeTruthy();
+      });
     });
 
-    it('Should be able to sell BAL for USDC', async () => {
-      const { BAL, USDC } = TOKENS[Network.MAINNET];
-      const sorRequest: SorRequest = {
-        sellToken: BAL.address,
-        buyToken: USDC.address,
-        orderKind: 'sell',
-        amount: parseFixed('100', BAL.decimals).toString(),
-        gasPrice: GAS_PRICE,
-        sender: walletAddress,
-      };
-      await setTokenBalance(signer, BAL, sorRequest.amount)
-      const balances = await getBalances(signer, [BAL, USDC]);
-      await testOrderRequest(signer, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, [BAL, USDC]);
-      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
-    });
-
-    it('Should be able to buy DAI with USDC', async () => {
-      const { USDC, DAI } = TOKENS[Network.MAINNET];
-      const sorRequest: SorRequest = {
-        sellToken: USDC.address,
-        buyToken: DAI.address,
-        orderKind: 'buy',
-        amount: parseFixed('100', DAI.decimals).toString(),
-        gasPrice: GAS_PRICE,
-        sender: walletAddress,
-      };
-      await setTokenBalance(signer, USDC, BigNumber.from(sorRequest.amount).mul(2))
-      const balances = await getBalances(signer, [USDC, DAI]);
-      await testOrderRequest(signer, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, [USDC, DAI]);
-      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
-    });
-
-    it('Should be able to sell waUSDC for DAI', async () => {
-      const { waUSDC, DAI } = TOKENS[Network.MAINNET];
-      const sorRequest: SorRequest = {
-        sellToken: waUSDC.address,
-        buyToken: DAI.address,
-        orderKind: 'sell',
-        amount: parseFixed('100', waUSDC.decimals).toString(),
-        gasPrice: GAS_PRICE,
-        sender: walletAddress,
-      };
-      await setTokenBalance(signer, waUSDC, sorRequest.amount)
-      const balances = await getBalances(signer, [waUSDC, DAI]);
-      await testOrderRequest(signer, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, [waUSDC, DAI]);
-      expect(BigNumber.from(newBalances.DAI).gt(balances.DAI)).toBeTruthy();
-    });
-
-    it('Should be able to buy USDC with USDT', async () => {
-      const { USDT, USDC } = TOKENS[Network.MAINNET];
-      const sorRequest: SorRequest = {
-        sellToken: USDT.address,
-        buyToken: USDC.address,
-        orderKind: 'buy',
-        amount: parseFixed('1000', USDC.decimals).toString(),
-        gasPrice: GAS_PRICE,
-        sender: walletAddress,
-      };
-      await setTokenBalance(signer, USDT, BigNumber.from(sorRequest.amount).mul(2))
-      const balances = await getBalances(signer, [USDT, USDC]);
-      await testOrderRequest(signer, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, [USDT, USDC]);
-      expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
-    });
-
-    it('Should be able to sell WETH for bbausd', async () => {
-      const { WETH, bbausd2 } = TOKENS[Network.MAINNET];
-      const sorRequest: SorRequest = {
-        sellToken: WETH.address,
-        buyToken: bbausd2.address,
-        orderKind: 'sell',
-        amount: parseFixed('10', WETH.decimals).toString(),
-        gasPrice: GAS_PRICE,
-        sender: walletAddress,
-      };
-      await setTokenBalance(signer, WETH, sorRequest.amount)
-      const balances = await getBalances(signer, [WETH, bbausd2]);
-      await testOrderRequest(signer, Network.MAINNET, sorRequest);
-      const newBalances = await getBalances(signer, [WETH, bbausd2]);
-      expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)).toBeTruthy();
-    });
-
-    it('Should be able to sell BAL for USDC and send to another receipient', async () => {
-      const { BAL, USDC } = TOKENS[Network.MAINNET];
-      const sorRequest: SorRequest = {
-        sellToken: BAL.address,
-        buyToken: USDC.address,
-        orderKind: 'sell',
-        amount: parseFixed('100', BAL.decimals).toString(),
-        gasPrice: GAS_PRICE,
-        sender: walletAddress,
-        recipient: recipientWalletAddress,
-      };
-      await setTokenBalance(signer, BAL, sorRequest.amount)
-      const senderBalances = await getBalances(signer, [BAL, USDC]);
-      const recipientSigner = await provider.getSigner(recipientWalletAddress);
-      const recipientBalances = await getBalances(recipientSigner, [BAL, USDC]);
-      await testOrderRequest(signer, Network.MAINNET, sorRequest);
-      const newRecipientBalances = await getBalances(recipientSigner, [BAL, USDC]);
-      expect(BigNumber.from(newRecipientBalances.BAL).eq(recipientBalances.BAL)).toBeTruthy();
-      expect(BigNumber.from(newRecipientBalances.USDC).gt(recipientBalances.USDC)).toBeTruthy();
-      const newSenderBalances = await getBalances(signer, [BAL, USDC]);
-      expect(BigNumber.from(newSenderBalances.BAL).lt(senderBalances.BAL)).toBeTruthy();
-      expect(BigNumber.from(newSenderBalances.USDC).eq(senderBalances.USDC)).toBeTruthy();
-    });
+    describe('Relayer Swaps', () => {
+      it('Should be able to sell WETH for auraBal through a join/exit swap', async () => {
+        const { WETH, auraBal } = TOKENS[Network.MAINNET];
+        const sorRequest: SorRequest = {
+          sellToken: WETH.address,
+          buyToken: auraBal.address,
+          orderKind: 'sell',
+          amount: parseFixed('1000', WETH.decimals).toString(),
+          gasPrice: GAS_PRICE,
+          sender: walletAddress,
+        };
+        await setTokenBalance(signer, WETH, sorRequest.amount)
+        const balances = await getBalances(signer, [WETH, auraBal]);
+        const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(Network.MAINNET, sorRequest);
+        expect(sorOrderInfo.to).toEqual(config[Network.MAINNET].addresses.batchRelayerV4);
+        await testOrderRequest(signer, Network.MAINNET, sorRequest);
+        const newBalances = await getBalances(signer, [WETH, auraBal]);
+        expect(BigNumber.from(newBalances.auraBal).gt(balances.auraBal)).toBeTruthy();
+      });
+    })
   });
 });
 

@@ -57,6 +57,7 @@ export function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
 }
 
 interface SorSwapOptions {
+  useJoinExitSwaps?: boolean;
   useDb?: boolean;
   minLiquidity?: string;
 }
@@ -70,6 +71,7 @@ export async function getSorSwap(
   const rpcUrl = getRpcUrl(chainId);
   const subgraphUrl = getSubgraphUrl(chainId);
 
+  const useJoinExitSwaps = options.useJoinExitSwaps ?? false;
   const useDb = options.useDb ?? true;
   const minLiquidity = options.minLiquidity ?? SOR_MIN_LIQUIDITY;
 
@@ -178,7 +180,8 @@ export async function getSorSwap(
     buyToken,
     sorSwapType,
     amount,
-    swapOptions
+    swapOptions,
+    useJoinExitSwaps
   );
 
   log(`SwapInfo: ${JSON.stringify(swapInfo)}`);

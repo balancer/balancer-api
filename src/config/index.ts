@@ -10,6 +10,13 @@ export interface Config {
   networkId: number;
   rpc: string;
   subgraph: string;
+  addresses: {
+    nativeAsset: string;
+    wrappedNativeAsset: string;
+    vault: string;
+    batchRelayerV3: string;
+    batchRelayerV4: string;
+  }
 }
 
 const config: Record<number, Config> = {

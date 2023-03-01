@@ -1,3 +1,5 @@
+import config from '@/config';
+import { Vault__factory } from '@balancer-labs/typechain';
 import { TokenWithSlot } from '@/constants/addresses';
 import { hexlify, hexValue, zeroPad } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/solidity';
@@ -5,8 +7,9 @@ import { JsonRpcSigner } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { Token, Address } from '@balancer-labs/sdk';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import { Network } from '@/constants';
 
-const ERC20_ABI = require('./ERC20.json');
+const ERC20ABI = require('./abis/ERC20.json');
 
 export async function getBalances(
   signer: JsonRpcSigner,
@@ -14,7 +17,7 @@ export async function getBalances(
 ): Promise<Record<string, string>> {
   const balances = await Promise.all(
     tokens.map(async token => {
-      const contract = new Contract(token.address, ERC20_ABI, signer);
+      const contract = new Contract(token.address, ERC20ABI, signer);
       const balance = await contract.balanceOf(await signer.getAddress());
       return [token.symbol, balance];
     })
@@ -129,9 +132,21 @@ export async function approveToken(
   amount: BigNumberish,
   spender: Address
 ): Promise<void> {
-  const tokenContract = new Contract(token, ERC20_ABI, signer);
+  const tokenContract = new Contract(token, ERC20ABI, signer);
 
   const tx = await tokenContract.approve(spender, amount);
 
   await tx.wait();
+}
+
+export async function approveRelayer(
+  signer: JsonRpcSigner,
+): Promise<void> {
+  const walletAddress = await signer.getAddress();
+  const vaultAddress = config[Network.MAINNET].addresses.vault;
+  const relayerAddress = config[Network.MAINNET].addresses.batchRelayerV4;
+  const vaultContract = new Contract(vaultAddress, Vault__factory.abi, signer);
+  await vaultContract.setRelayerApproval(
+    walletAddress, relayerAddress, true
+  );
 }

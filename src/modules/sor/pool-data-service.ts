@@ -43,7 +43,7 @@ export class DatabasePoolDataService implements PoolDataService {
       convertPoolToSubgraphPoolBase(pool)
     );
     log(`Found ${subgraphPools.length} subgraph pools total`);
-    const enabledPools = subgraphPools.filter(pool => pool.swapEnabled && pool.id !== '0x0578292cb20a443ba1cde459c985ce14ca2bdee5000100000000000000000269');
+    const enabledPools = subgraphPools.filter(pool => pool.swapEnabled);
     log(`Found ${enabledPools.length} enabled pools`);
     return enabledPools ?? [];
   }

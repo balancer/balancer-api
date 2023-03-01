@@ -2,10 +2,11 @@ import { AprBreakdown } from '@balancer-labs/sdk';
 import {
   getNonStaticSchemaFields,
   isSame,
+  isSchemaFieldANumber,
   isValidApr,
 } from './utils';
 import { Pool } from './types';
-import { Schema } from '@/modules/dynamodb';
+import { POOL_SCHEMA, Schema } from '@/modules/dynamodb';
 import _ from 'lodash';
 
 import POOLS from '@tests/mocks/pools';
@@ -130,6 +131,21 @@ describe('utils', () => {
     });
   });
 
+  describe('isSchemaFieldANumber', () => {
+    it('Should return true for number fields', () => {
+      const schema: Schema = POOL_SCHEMA;
+      expect(isSchemaFieldANumber('volumeSnapshot', schema)).toBeTruthy()
+      expect(isSchemaFieldANumber('createTime', schema)).toBeTruthy()
+      expect(isSchemaFieldANumber('amp', schema)).toBeTruthy()
+    });
+
+    it('Should return false for non number fields', () => {
+      const schema: Schema = POOL_SCHEMA;
+      expect(isSchemaFieldANumber('name', schema)).toBeFalsy()
+      expect(isSchemaFieldANumber('isNew', schema)).toBeFalsy()
+      expect(isSchemaFieldANumber('tokens', schema)).toBeFalsy()
+    });
+  })
   
   describe('isSame', () => {
     let newPool: Pool;
@@ -150,11 +166,35 @@ describe('utils', () => {
       expect(same).toBe(true);
     });
 
+    it('Should return true if the only difference is the formatting of amp', () => {
+      oldPool = Object.assign({}, POOLS[0]);
+      oldPool.amp = '200';
+      newPool.amp = '200.0';
+      const same = isSame(newPool, oldPool);
+      expect(same).toBe(true);
+    });
+
     it('Should return false if oldPool has slightly different tokens', () => {
       oldPool = _.cloneDeep(POOLS[0]);
       if (oldPool && oldPool.tokens) {
         oldPool.tokens[0].balance = '12345';
       }
+      const same = isSame(newPool, oldPool);
+      expect(same).toBe(false);
+    });
+
+    it('Should return true if two large numbers are the same', () => {
+      oldPool = Object.assign({}, POOLS[0]);
+      oldPool.volumeSnapshot = '123456789123456789123456789123456789.12345';
+      newPool.volumeSnapshot = '123456789123456789123456789123456789.12345';
+      const same = isSame(newPool, oldPool);
+      expect(same).toBe(true);
+    });
+
+    it('Should return false if two large numbers are different', () => {
+      oldPool = Object.assign({}, POOLS[0]);
+      oldPool.volumeSnapshot = '123456789123456789123456789123456789.12345';
+      newPool.volumeSnapshot = '123456789123456789123456789123467899.12345';
       const same = isSame(newPool, oldPool);
       expect(same).toBe(false);
     });

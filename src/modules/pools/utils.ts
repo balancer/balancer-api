@@ -3,6 +3,8 @@ import { Pool } from './types';
 import { Schema, POOL_SCHEMA, POOL_TOKEN_SCHEMA } from '@/modules/dynamodb';
 import _ from 'lodash';
 import { inspect } from 'util';
+import { BigNumber } from 'bignumber.js';
+
 
 /**
  * Used for converting a Balancer Pool type to a SubgraphPoolBase type which is what SOR expects
@@ -67,6 +69,15 @@ export function getNonStaticSchemaFields(schema: Schema): string[] {
   return _.compact(nonStaticFields);
 }
 
+export function isSchemaFieldANumber(key: string, schema: Schema): boolean {
+  const numberTypes = ['BigDecimal', 'BigInt', 'Int'];
+  if (numberTypes.includes(schema[key]?.type)) {
+    return true;
+  }
+
+  return false;
+}
+
 export function isSame(newPool: Pool, oldPool?: Pool): boolean {
   if (!oldPool) return false;
 
@@ -86,6 +97,10 @@ export function isSame(newPool: Pool, oldPool?: Pool): boolean {
 
   for (const key of newPoolFields) {
     if (!_.isEqual(filteredNewPool[key], filteredOldPool[key])) {
+      if (isSchemaFieldANumber(key, POOL_SCHEMA) && new BigNumber(filteredNewPool[key]).eq(filteredOldPool[key])) {
+        continue;
+      }
+
       console.log(
         `Updating pool ${newPool.id} -  ${key} is not equal. New: ${inspect(
           filteredNewPool[key],

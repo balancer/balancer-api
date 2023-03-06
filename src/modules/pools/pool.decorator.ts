@@ -19,7 +19,7 @@ import { PoolService } from './pool.service';
 
 const log = debug('balancer:pool-decorator');
 
-const UNKNOWN_POOL_TYPES = ['GyroE', 'FX']
+const UNKNOWN_POOL_TYPES = ['GyroE', 'FX', 'HighAmpComposableStable'];
 const IGNORED_POOL_TYPES = [...UNKNOWN_POOL_TYPES, PoolType.Element, PoolType.Gyro2, PoolType.Gyro3];
 
 export interface PoolDecoratorOptions {

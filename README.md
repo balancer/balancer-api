@@ -277,6 +277,12 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x9a71012B13C
 curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0x82af49447d8a07e3bd95bd0d56f35241523fbab1","buyToken":"0x040d1EdC9569d4Bab2D15287Dc5A4F10F56a56B8","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"10000000"}' $ENDPOINT_URL/sor/42161
 ```
 
+#### Swap WXDAI for USDC on the Gnosis Chain network
+
+```sh
+curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0xe91d153e0b41518a2ce8dd3d7944fa863463a97d","buyToken":"0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83","orderKind":"sell", "amount":"1000000000000000000", "gasPrice":"100000"}' $ENDPOINT_URL/sor/100
+```
+
 ## GraphQL Requests
 
 You can run `npx tsx src/scripts/graphql-query.ts` to see example requests fetching pools from the API.

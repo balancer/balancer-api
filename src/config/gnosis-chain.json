@@ -4,9 +4,9 @@
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gnosis-chain-v2",
   "addresses": {
     "nativeAsset": "",
-    "wrappedNativeAsset": "",
-    "vault": "",
+    "wrappedNativeAsset": "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",
+    "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
     "batchRelayerV3": "",
-    "batchRelayerV4": ""
+    "batchRelayerV4": "0xeF606F58A4FD0fCcb066c6203d0994694d3eB2D3"
   }
 }

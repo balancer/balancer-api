@@ -26,7 +26,9 @@ export const mockSwapCostCalculator = {
 export const BalancerSDK = jest.fn().mockImplementation(() => {
   return {
     sor: {
-      fetchPools: jest.fn().mockImplementation(),
+      fetchPools: jest.fn().mockImplementation(() => {
+        return mockSorPools.length > 0;
+      }),
       getSwaps: jest.fn().mockImplementation(() => {
         return mockSwapInfo;
       }),

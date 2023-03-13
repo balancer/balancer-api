@@ -18,6 +18,11 @@ describe('onchain data-provider', () => {
       expect(pools[0].id).toBe(sorPools[0].id);
     });
 
+    it('Should throw an exception if sor fails to fetch pools', async () => {
+      require('@balancer-labs/sdk')._setSorPools([]);
+      expect(async() => { await fetchPoolsFromChain(1); }).rejects.toThrow('SOR Failed to fetch pools');
+    })
+
     it('Should add subgraph information if there is a subgraph pools', async () => {
       const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
       require('@balancer-labs/sdk')._setSorPools(sorPools);

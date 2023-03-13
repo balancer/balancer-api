@@ -21,7 +21,10 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     customSubgraphUrl: subgraphUrl
   });
 
-  await balancer.sor.fetchPools();
+  const fetchedPools: boolean = await balancer.sor.fetchPools();
+  if (!fetchedPools) {
+    throw new Error("SOR Failed to fetch pools");
+  }
   const sorPools: SubgraphPoolBase[] = balancer.sor.getPools();
 
   const subgraphPoolFetcher = new PoolsSubgraphRepository({

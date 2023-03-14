@@ -11,7 +11,7 @@ import { Pool } from '@/modules/pools/types';
 import { Token, getTokenInfo } from '@/modules/tokens';
 import { getSubgraphUrl, getRpcUrl } from '@/modules/network';
 
-export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
+export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool>[]> {
   const infuraUrl = getRpcUrl(chainId);
   const subgraphUrl = getSubgraphUrl(chainId);
 
@@ -60,19 +60,9 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     subgraphPools.map(pool => [pool.id, pool])
   );
 
-  const emptySubgraphPool = {
-    poolTypeVersion: 1,
-    protocolYieldFeeCache: '0',
-    protocolSwapFeeCache: '0',
-    totalWeight: '1',
-    lowerTarget: '',
-    upperTarget: '',
-  };
-
-  const pools: Pool[] = sorPools.map(sorPool => {
-    const subgraphPool = subgraphPoolsMap[sorPool.id] || emptySubgraphPool;
+  const pools: Partial<Pool>[] = sorPools.map(sorPool => {
+    const subgraphPool = subgraphPoolsMap[sorPool.id] || {};
     return Object.assign(
-      { totalLiquidity: '0', name: '' },
       subgraphPool,
       sorPool,
       {
@@ -82,22 +72,22 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     );
   });
 
-  const subgraphPoolsMissingFromSor: Pool[] = subgraphPools
+  const subgraphPoolsMissingFromSor: Partial<Pool>[] = subgraphPools
     .filter(subgraphPool => {
       return !sorPoolsMap[subgraphPool.id];
     })
     .map(subgraphPool => {
-      return Object.assign({ totalLiquidity: '0', name: '' }, subgraphPool, {
+      return Object.assign(subgraphPool, {
         chainId,
       });
     });
 
-  const allPools: Pool[] = pools.concat(subgraphPoolsMissingFromSor);
+  const allPools: Partial<Pool>[] = pools.concat(subgraphPoolsMissingFromSor);
 
   return allPools;
 }
 
-export function sanitizePools(pools: Pool[]): Pool[] {
+export function sanitizePools(pools: Partial<Pool>[]): Partial<Pool>[] {
   return pools.map(pool => {
     /* Move totalLiquidity to graphData to save it for later comparison */
     pool.graphData = {

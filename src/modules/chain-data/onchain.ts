@@ -4,6 +4,7 @@ import {
   PoolType,
   BalancerSDK,
   SubgraphPoolBase,
+  Pool as SDKPool,
 } from '@balancer-labs/sdk';
 import { getToken } from '@/modules/dynamodb';
 import { Pool } from '@/modules/pools/types';
@@ -18,12 +19,12 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const balancer = new BalancerSDK({
     network: chainId,
     rpcUrl: infuraUrl,
-    customSubgraphUrl: subgraphUrl
+    customSubgraphUrl: subgraphUrl,
   });
 
   const fetchedPools: boolean = await balancer.sor.fetchPools();
   if (!fetchedPools) {
-    throw new Error("SOR Failed to fetch pools");
+    throw new Error('SOR Failed to fetch pools');
   }
   const sorPools: SubgraphPoolBase[] = balancer.sor.getPools();
 
@@ -42,8 +43,8 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     },
   });
 
-  let subgraphPools = [];
-  let poolBatch = [];
+  let subgraphPools: SDKPool[] = [];
+  let poolBatch: SDKPool[] = [];
 
   const first = 1000;
   let skip = 0;
@@ -54,10 +55,22 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     subgraphPools = subgraphPools.concat(poolBatch);
   } while (poolBatch.length > 0);
 
-  const subgraphPoolsMap = Object.fromEntries(subgraphPools.map(pool => [pool.id, pool]));
+  const sorPoolsMap = Object.fromEntries(sorPools.map(pool => [pool.id, pool]));
+  const subgraphPoolsMap = Object.fromEntries(
+    subgraphPools.map(pool => [pool.id, pool])
+  );
+
+  const emptySubgraphPool = {
+    poolTypeVersion: 1,
+    protocolYieldFeeCache: '0',
+    protocolSwapFeeCache: '0',
+    totalWeight: '1',
+    lowerTarget: '',
+    upperTarget: '',
+  };
 
   const pools: Pool[] = sorPools.map(sorPool => {
-    const subgraphPool = subgraphPoolsMap[sorPool.id] || {};
+    const subgraphPool = subgraphPoolsMap[sorPool.id] || emptySubgraphPool;
     return Object.assign(
       { totalLiquidity: '0', name: '' },
       subgraphPool,
@@ -69,7 +82,19 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     );
   });
 
-  return pools;
+  const subgraphPoolsMissingFromSor: Pool[] = subgraphPools
+    .filter(subgraphPool => {
+      return !sorPoolsMap[subgraphPool.id];
+    })
+    .map(subgraphPool => {
+      return Object.assign({ totalLiquidity: '0', name: '' }, subgraphPool, {
+        chainId,
+      });
+    });
+
+  const allPools: Pool[] = pools.concat(subgraphPoolsMissingFromSor);
+
+  return allPools;
 }
 
 export function sanitizePools(pools: Pool[]): Pool[] {

@@ -47,7 +47,7 @@ export function isValidApr(apr: AprBreakdown) {
  * of all pools that have changed in newPools
  */
 
-export function getChangedPools(newPools: Pool[], currentPools: Pool[]) {
+export function getChangedPools(newPools: Partial<Pool>[], currentPools: Pool[]) {
   const currentPoolsMap = Object.fromEntries(
     currentPools.map(pool => {
       return [pool.id, pool];
@@ -74,7 +74,7 @@ export function isSchemaFieldANumber(key: string, schema: Schema): boolean {
   return numberTypes.includes(schema[key]?.type)
 }
 
-export function isSame(newPool: Pool, oldPool?: Pool): boolean {
+export function isSame(newPool: Partial<Pool>, oldPool?: Pool): boolean {
   if (!oldPool) return false;
 
   const poolFieldsToCompare = getNonStaticSchemaFields(POOL_SCHEMA);
@@ -111,7 +111,7 @@ export function isSame(newPool: Pool, oldPool?: Pool): boolean {
 }
 
 
-export function getTokenAddressesFromPools(pools: Pool[]): string[] {
+export function getTokenAddressesFromPools(pools: Partial<Pool>[]): string[] {
   const tokenAddressMap = {};
   pools.forEach(pool => {
     pool.tokensList.forEach(address => {

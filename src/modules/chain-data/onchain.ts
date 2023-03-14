@@ -4,13 +4,14 @@ import {
   PoolType,
   BalancerSDK,
   SubgraphPoolBase,
+  Pool as SDKPool,
 } from '@balancer-labs/sdk';
 import { getToken } from '@/modules/dynamodb';
 import { Pool } from '@/modules/pools/types';
 import { Token, getTokenInfo } from '@/modules/tokens';
 import { getSubgraphUrl, getRpcUrl } from '@/modules/network';
 
-export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
+export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool>[]> {
   const infuraUrl = getRpcUrl(chainId);
   const subgraphUrl = getSubgraphUrl(chainId);
 
@@ -18,12 +19,12 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
   const balancer = new BalancerSDK({
     network: chainId,
     rpcUrl: infuraUrl,
-    customSubgraphUrl: subgraphUrl
+    customSubgraphUrl: subgraphUrl,
   });
 
   const fetchedPools: boolean = await balancer.sor.fetchPools();
   if (!fetchedPools) {
-    throw new Error("SOR Failed to fetch pools");
+    throw new Error('SOR Failed to fetch pools');
   }
   const sorPools: SubgraphPoolBase[] = balancer.sor.getPools();
 
@@ -42,8 +43,8 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     },
   });
 
-  let subgraphPools = [];
-  let poolBatch = [];
+  let subgraphPools: SDKPool[] = [];
+  let poolBatch: SDKPool[] = [];
 
   const first = 1000;
   let skip = 0;
@@ -54,12 +55,14 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     subgraphPools = subgraphPools.concat(poolBatch);
   } while (poolBatch.length > 0);
 
-  const subgraphPoolsMap = Object.fromEntries(subgraphPools.map(pool => [pool.id, pool]));
+  const sorPoolsMap = Object.fromEntries(sorPools.map(pool => [pool.id, pool]));
+  const subgraphPoolsMap = Object.fromEntries(
+    subgraphPools.map(pool => [pool.id, pool])
+  );
 
-  const pools: Pool[] = sorPools.map(sorPool => {
+  const pools: Partial<Pool>[] = sorPools.map(sorPool => {
     const subgraphPool = subgraphPoolsMap[sorPool.id] || {};
     return Object.assign(
-      { totalLiquidity: '0', name: '' },
       subgraphPool,
       sorPool,
       {
@@ -69,10 +72,22 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Pool[]> {
     );
   });
 
-  return pools;
+  const subgraphPoolsMissingFromSor: Partial<Pool>[] = subgraphPools
+    .filter(subgraphPool => {
+      return !sorPoolsMap[subgraphPool.id];
+    })
+    .map(subgraphPool => {
+      return Object.assign(subgraphPool, {
+        chainId,
+      });
+    });
+
+  const allPools: Partial<Pool>[] = pools.concat(subgraphPoolsMissingFromSor);
+
+  return allPools;
 }
 
-export function sanitizePools(pools: Pool[]): Pool[] {
+export function sanitizePools(pools: Partial<Pool>[]): Partial<Pool>[] {
   return pools.map(pool => {
     /* Move totalLiquidity to graphData to save it for later comparison */
     pool.graphData = {

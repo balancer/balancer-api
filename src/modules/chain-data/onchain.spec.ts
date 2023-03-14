@@ -36,6 +36,21 @@ describe('onchain data-provider', () => {
       expect(pools[0].poolType).toBe(PoolType.Weighted);
     });
 
+    it('Should return pools from the subgraph that arent returned by SOR', async () => {
+      const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
+      require('@balancer-labs/sdk')._setSorPools(sorPools);
+      const subgraphPools: Pool[] = [
+        poolBase.build({
+          id: '0x133d241f225750d2c92948e464a5a80111920331000000000000000000000476'
+        }),
+      ];
+      require('@balancer-labs/sdk')._setSubgraphPools(subgraphPools);
+      const pools = await fetchPoolsFromChain(1);
+      expect(pools.length).toBe(2);
+      expect(pools[0].id).toBe(sorPools[0].id);
+      expect(pools[1].id).toBe(subgraphPools[0].id);
+    });
+
     it('Should over-write token priceRates with subgraph data', async () => {
       const newPriceRate = "1.15";
       const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];

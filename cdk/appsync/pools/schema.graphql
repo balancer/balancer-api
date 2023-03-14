@@ -47,6 +47,7 @@
   apr: AprBreakdown
   maxApr: Int
   isNew: Boolean
+  isInRecoveryMode: Boolean
   protocolYieldFeeCache: String
   priceRateProviders: [PriceRateProvider]
 }

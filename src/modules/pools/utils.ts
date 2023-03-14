@@ -111,7 +111,7 @@ export function isSame(newPool: Partial<Pool>, oldPool?: Pool): boolean {
 }
 
 
-export function getTokenAddressesFromPools(pools: Pool[]): string[] {
+export function getTokenAddressesFromPools(pools: Partial<Pool>[]): string[] {
   const tokenAddressMap = {};
   pools.forEach(pool => {
     pool.tokensList.forEach(address => {

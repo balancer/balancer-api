@@ -285,7 +285,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"sellToken":"0xe91d153e0b4
 
 ## GraphQL Requests
 
-You can run `npx tsx src/scripts/graphql-query.ts` to see example requests fetching pools from the API.
+You can run `npx tsx scripts/graphql-query.ts` to see example requests fetching pools from the API.
 
 ## Options
 

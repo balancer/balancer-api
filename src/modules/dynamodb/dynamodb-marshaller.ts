@@ -101,7 +101,7 @@ function finalizeUnmarshalledItem(schema: Schema, item) {
  * but numbers in DynamoDB.
  * e.g. totalLiquidity: '123.456' -> totalLiquidity: {'N': '123.456'}
  */
-export function marshallPool(pool: Pool): Record<string, any> {
+export function marshallPool(pool: Partial<Pool>): Record<string, any> {
   const autoMarshaller = new Marshaller();
   const autoMarshalledPool = autoMarshaller.marshallItem(pool);
 
@@ -149,7 +149,7 @@ export function discardStaticFields(
 }
 
 export function generateUpdateExpression(
-  pool: Pool,
+  pool: Partial<Pool>,
   options?: UpdatePoolOptions
 ): UpdateExpression {
   const primaryKeyAttributes = ['id', 'chainId'];

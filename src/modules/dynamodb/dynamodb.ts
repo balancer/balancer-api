@@ -53,7 +53,7 @@ export async function isAlive() {
   return true;
 }
 
-export async function updatePools(pools: Pool[], options?: UpdatePoolOptions) {
+export async function updatePools(pools: Partial<Pool>[], options?: UpdatePoolOptions) {
   const dynamodb = getDynamoDB();
 
   const allPoolUpdateRequests = pools.map(function (pool) {

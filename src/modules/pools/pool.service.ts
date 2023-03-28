@@ -22,7 +22,9 @@ export class PoolService {
     networkConfig: BalancerNetworkConfig,
     repositories: BalancerDataRepositories
   ) {
-    this.pools = new Pools(networkConfig, repositories);
+    // Passing in an empty object for the contracts as we don't need it for this service
+    // it's only needed for the PoolFactories which is part of the creation service
+    this.pools = new Pools(networkConfig, repositories, {} as any);
   }
 
   /**

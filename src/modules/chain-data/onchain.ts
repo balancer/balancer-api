@@ -69,7 +69,7 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool
         poolType: sorPool.poolType as PoolType,
         chainId,
       }
-    );
+    ) as Partial<Pool>;
   });
 
   const subgraphPoolsMissingFromSor: Partial<Pool>[] = subgraphPools

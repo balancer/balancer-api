@@ -55,8 +55,8 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool
     subgraphPools = subgraphPools.concat(poolBatch);
   } while (poolBatch.length > 0);
 
-  const sorPoolsMap = Object.fromEntries(sorPools.map(pool => [pool.id, pool]));
-  const subgraphPoolsMap = Object.fromEntries(
+  const sorPoolsMap: Record<string, SubgraphPoolBase> = Object.fromEntries(sorPools.map(pool => [pool.id, pool]));
+  const subgraphPoolsMap: Record<string, SDKPool> = Object.fromEntries(
     subgraphPools.map(pool => [pool.id, pool])
   );
 
@@ -69,7 +69,7 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool
         poolType: sorPool.poolType as PoolType,
         chainId,
       }
-    );
+    ) as Partial<Pool>;
   });
 
   const subgraphPoolsMissingFromSor: Partial<Pool>[] = subgraphPools

@@ -48,6 +48,7 @@
   maxApr: Int
   isNew: Boolean
   isInRecoveryMode: Boolean
+  isPaused: Boolean
   protocolYieldFeeCache: String
   priceRateProviders: [PriceRateProvider]
 }

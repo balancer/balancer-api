@@ -1,7 +1,7 @@
 import debug from 'debug';
 import { PoolDataService } from '@balancer-labs/sor';
 import { SubgraphPoolBase } from '@balancer-labs/sdk';
-import { getPools, queryPools } from '@/modules/dynamodb';
+import { queryPools } from '@/modules/dynamodb';
 import { Pool, convertPoolToSubgraphPoolBase } from '@/modules/pools';
 
 const log = debug('balancer:pool-data-service');
@@ -29,15 +29,10 @@ export class DatabasePoolDataService implements PoolDataService {
     };
   }
 
-  public async getPools(filterPools = true): Promise<SubgraphPoolBase[]> {
+  public async getPools(): Promise<SubgraphPoolBase[]> {
     log(`Retrieving pools for chain ${this.chainId} from the database`);
 
-    let pools: Pool[];
-    if (filterPools) {
-      pools = await queryPools(this.filterParams);
-    } else {
-      pools = await getPools(this.chainId);
-    }
+    const pools: Pool[] = await queryPools(this.filterParams);
 
     log(`Retrieved ${pools.length} pools`);
     const subgraphPools = pools.map(pool =>

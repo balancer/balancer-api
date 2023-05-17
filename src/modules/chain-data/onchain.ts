@@ -10,6 +10,7 @@ import { getToken } from '@/modules/dynamodb';
 import { Pool } from '@/modules/pools/types';
 import { Token, getTokenInfo } from '@/modules/tokens';
 import { getSubgraphUrl, getRpcUrl } from '@/modules/network';
+import { captureException } from '@/modules/sentry';
 
 export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool>[]> {
   const infuraUrl = getRpcUrl(chainId);
@@ -22,11 +23,14 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool
     customSubgraphUrl: subgraphUrl,
   });
 
-  const fetchedPools: boolean = await balancer.sor.fetchPools();
-  if (!fetchedPools) {
-    throw new Error('SOR Failed to fetch pools');
+  let fetchedPools = false;
+  try {
+    fetchedPools = await balancer.sor.fetchPools();
+  } catch (e) {
+    console.error("Failed to fetch pools from sor", e);
+    captureException(new Error('SOR Failed to fetch pools'), { extra: { sorError: e}});
   }
-  const sorPools: SubgraphPoolBase[] = balancer.sor.getPools();
+  const sorPools: SubgraphPoolBase[] = fetchedPools ? balancer.sor.getPools() : [];
 
   const subgraphPoolFetcher = new PoolsSubgraphRepository({
     url: subgraphUrl,

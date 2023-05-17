@@ -1,7 +1,7 @@
 {
   "networkId": 1101,
   "rpc": "https://polygonzkevm-mainnet.g.alchemy.com/v2/{{ALCHEMY_KEY}}",
-  "subgraph": "https://api.studio.thegraph.com/query/24660/balancer-polygon-zkevm-v2/v0.0.1",
+  "subgraph": "https://api.studio.thegraph.com/query/24660/balancer-polygon-zkevm-v2/v0.0.2",
   "addresses": {
     "nativeAsset": "",
     "wrappedNativeAsset": "",

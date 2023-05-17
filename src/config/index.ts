@@ -5,6 +5,7 @@ import goerli from './goerli.json';
 import mainnet from './mainnet.json';
 import polygon from './polygon.json';
 import gnosis from './gnosis-chain.json';
+import zkevm from './zkevm.json';
 
 export interface Config {
   networkId: number;
@@ -24,7 +25,8 @@ const config: Record<number, Config> = {
   [Network.GOERLI]: goerli,
   [Network.POLYGON]: polygon,
   [Network.ARBITRUM]: arbitrum,
-  [Network.GNOSIS]: gnosis
+  [Network.GNOSIS]: gnosis,
+  [Network.ZKEVM]: zkevm,
 };
 
 export default config;

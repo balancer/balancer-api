@@ -7,6 +7,9 @@ jest.mock('@/config', () => {
     },
     100: {
       rpc: 'https://poa-xdai.gateway.pokt.network/v1/lb/888c0e12a76e7a84dd76189d'
+    },
+    1101: {
+      rpc: 'https://polygonzkevm-mainnet.g.alchemy.com/v2/{{ALCHEMY_KEY}}'
     }
   };
 });
@@ -22,6 +25,10 @@ describe('network module', () => {
       expect(getRpcUrl(1)).toEqual('https://mainnet.infura.io/v3/mock-infura');
     });
 
+    it('Should return the rpcUrl with ALCHEMY_KEY in the template replaced', () => {
+      expect(getRpcUrl(1101)).toEqual('https://polygonzkevm-mainnet.g.alchemy.com/v2/mock-alchemy');
+    });
+
     it('Should work for networks that dont use infura', () => {
       expect(getRpcUrl(100)).toEqual('https://poa-xdai.gateway.pokt.network/v1/lb/888c0e12a76e7a84dd76189d');
     });
@@ -30,6 +37,12 @@ describe('network module', () => {
       jest.resetModules()
       delete process.env.INFURA_PROJECT_ID;
       expect(() => require('./network').getRpcUrl(1)).toThrow();
+    });
+
+    it('Should throw an error if the network requires ALCHEMY_KEY but it is not passed', () => {
+      jest.resetModules()
+      delete process.env.ALCHEMY_KEY;
+      expect(() => require('./network').getRpcUrl(1101)).toThrow();
     });
 
     it('Should work for networks that dont use infura without INFURA_PROJECT_ID set', () => {

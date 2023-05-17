@@ -5,7 +5,7 @@ import {
 } from '@/constants';
 import configs  from '@/config';
 
-const { INFURA_PROJECT_ID } = process.env;
+const { INFURA_PROJECT_ID, ALCHEMY_KEY } = process.env;
 
 export default function template(templateString, templateVariables) {
   return templateString.replace(/{{(.*?)}}/g, (_, g) => templateVariables[g]);
@@ -18,9 +18,13 @@ export function getRpcUrl(networkId: number): string {
   if (templateUrl.match(/INFURA_PROJECT_ID/) && INFURA_PROJECT_ID == null) {
     throw new Error(`INFURA_PROJECT_ID env variable must be set for network ${networkId}`)
   }
+  if (templateUrl.match(/ALCHEMY_KEY/) && ALCHEMY_KEY == null) {
+    throw new Error(`ALCHEMY_KEY env variable must be set for network ${networkId}`)
+  }
 
   const rpcUrl = template(templateUrl, {
-    INFURA_PROJECT_ID
+    INFURA_PROJECT_ID,
+    ALCHEMY_KEY
   });
 
   return rpcUrl;

@@ -22,6 +22,7 @@ export const Network: Record<string, number> = {
   POLYGON: 137,
   ARBITRUM: 42161,
   GNOSIS: 100,
+  ZKEVM: 1101,
 };
 
 export const NativeAssetAddress = {

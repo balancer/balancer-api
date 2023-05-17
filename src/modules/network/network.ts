@@ -49,6 +49,7 @@ export function getPlatformId(chainId: string | number): string | undefined {
     '137': 'polygon-pos',
     '42161': 'arbitrum-one',
     '100': 'xdai',
+    '1101': 'polygon-zkevm',
   };
 
   return mapping[chainId.toString()];
@@ -61,6 +62,7 @@ export function getNativeAssetAddress(chainId: string | number): string {
     '137': NativeAssetAddress.MATIC,
     '42161': NativeAssetAddress.ETH,
     '100': NativeAssetAddress.XDAI,
+    '1101': NativeAssetAddress.ETH,
   };
 
   return mapping[chainId.toString()] || 'eth';
@@ -73,6 +75,7 @@ export function getNativeAssetPriceSymbol(chainId: string | number): string {
     '137': NativeAssetPriceSymbol.MATIC,
     '42161': NativeAssetPriceSymbol.ETH,
     '100': NativeAssetPriceSymbol.ETH,
+    '1101': NativeAssetPriceSymbol.ETH,
   };
 
   return mapping[chainId.toString()] || 'eth';

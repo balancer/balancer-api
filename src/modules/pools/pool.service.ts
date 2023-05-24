@@ -107,7 +107,7 @@ export class PoolService {
       max: 0,
     };
 
-    if (Number(this.pool.totalLiquidity) < 100) {
+    if (Number(this.pool.totalLiquidity) < 1) {
       log(
         `Pool only has ${this.pool.totalLiquidity} liquidity. Not processing`
       );
@@ -146,7 +146,7 @@ export class PoolService {
   public async setVolumeSnapshot(): Promise<string> {
     let volumeSnapshot = '0';
 
-    if (Number(this.pool.totalSwapVolume) < 100) {
+    if (Number(this.pool.totalSwapVolume) < 1) {
       log(`Pool only has ${this.pool.totalSwapVolume} volume. Not processing`);
       return (this.pool.volumeSnapshot = volumeSnapshot); // Don't bother calculating Volume snapshots for pools with super low volume
     }

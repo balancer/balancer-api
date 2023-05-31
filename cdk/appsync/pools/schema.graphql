@@ -18,6 +18,7 @@
   id: String!
   address: String
   poolType: String
+  poolTypeVersion: Int
   factory: String
   symbol: String
   name: String

@@ -28,7 +28,7 @@ functions or GraphQL interface so anyone can call them.
 
 ## Usage
 
-This package can be run locally for development, or deployed to an AWS account. AppSync cannot be used locally yet.
+This package can be run locally for development, or deployed to an AWS account. AppSync cannot be used locally.
 
 ### Initial Setup
 

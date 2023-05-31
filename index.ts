@@ -38,6 +38,7 @@ import { autoScaleSecondaryIndex, Capacities } from './cdk/dynamodb';
 
 const {
   INFURA_PROJECT_ID,
+  ALCHEMY_KEY,
   DYNAMODB_POOLS_READ_CAPACITY,
   DYNAMODB_POOLS_WRITE_CAPACITY,
   DYNAMODB_POOLS_IDX_READ_CAPACITY,
@@ -249,6 +250,7 @@ export class BalancerPoolsAPI extends Stack {
       },
       environment: {
         INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
+        ALCHEMY_KEY: ALCHEMY_KEY || '',
         SENTRY_DSN: SENTRY_DSN || '',
         DEBUG: DEBUG || '',
       },

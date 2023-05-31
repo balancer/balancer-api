@@ -5,7 +5,7 @@ import {
 } from '@/constants';
 import configs  from '@/config';
 
-const { INFURA_PROJECT_ID } = process.env;
+const { INFURA_PROJECT_ID, ALCHEMY_KEY } = process.env;
 
 export default function template(templateString, templateVariables) {
   return templateString.replace(/{{(.*?)}}/g, (_, g) => templateVariables[g]);
@@ -18,9 +18,13 @@ export function getRpcUrl(networkId: number): string {
   if (templateUrl.match(/INFURA_PROJECT_ID/) && INFURA_PROJECT_ID == null) {
     throw new Error(`INFURA_PROJECT_ID env variable must be set for network ${networkId}`)
   }
+  if (templateUrl.match(/ALCHEMY_KEY/) && ALCHEMY_KEY == null) {
+    throw new Error(`ALCHEMY_KEY env variable must be set for network ${networkId}`)
+  }
 
   const rpcUrl = template(templateUrl, {
-    INFURA_PROJECT_ID
+    INFURA_PROJECT_ID,
+    ALCHEMY_KEY
   });
 
   return rpcUrl;
@@ -49,6 +53,7 @@ export function getPlatformId(chainId: string | number): string | undefined {
     '137': 'polygon-pos',
     '42161': 'arbitrum-one',
     '100': 'xdai',
+    '1101': 'polygon-zkevm',
   };
 
   return mapping[chainId.toString()];
@@ -61,6 +66,7 @@ export function getNativeAssetAddress(chainId: string | number): string {
     '137': NativeAssetAddress.MATIC,
     '42161': NativeAssetAddress.ETH,
     '100': NativeAssetAddress.XDAI,
+    '1101': NativeAssetAddress.ETH,
   };
 
   return mapping[chainId.toString()] || 'eth';
@@ -73,6 +79,7 @@ export function getNativeAssetPriceSymbol(chainId: string | number): string {
     '137': NativeAssetPriceSymbol.MATIC,
     '42161': NativeAssetPriceSymbol.ETH,
     '100': NativeAssetPriceSymbol.ETH,
+    '1101': NativeAssetPriceSymbol.ETH,
   };
 
   return mapping[chainId.toString()] || 'eth';

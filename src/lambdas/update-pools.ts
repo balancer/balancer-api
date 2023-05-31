@@ -36,7 +36,7 @@ export const handler = wrapHandler(async (): Promise<any> => {
     await updatePools(changedPools);
   } catch (e) {
     captureException(e);
-    log(`Received db error updating pools: ${e}`);
+    log(`Received db error updating pools: `, e);
     didError = true;
   }
 
@@ -58,7 +58,7 @@ export const handler = wrapHandler(async (): Promise<any> => {
     log(`Saved ${filteredTokenAddresses.length} Tokens`);
   } catch (e) {
     captureException(e);
-    log(`Received db error updating tokens: ${e}`);
+    log(`Received db error updating tokens: `, e);
     didError = true;
   }
 

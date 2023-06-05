@@ -3,10 +3,14 @@
   "rpc": "https://goerli.infura.io/v3/{{INFURA_KEY}}",
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-goerli-v2",
   "addresses": {
-    "nativeAsset": "",
-    "wrappedNativeAsset": "",
-    "vault": "",
-    "batchRelayerV3": "",
-    "batchRelayerV4": ""
+    "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "wrappedNativeAsset": "0xdFCeA9088c8A88A76FF74892C1457C17dfeef9C1",
+    "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+    "batchRelayer": "0x03F1ab8b19bcE21EB06C364aEc9e40322572a1e9"
+  },
+  "coingecko": {
+    "platformId": "ethereum",
+    "nativeAssetId": "ethereum",
+    "nativeAssetPriceSymbol": "eth"
   }
 }

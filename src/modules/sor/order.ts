@@ -50,7 +50,7 @@ export async function createSorOrder(
         swapInfo,
         subgraphPools,
         request.sender,
-        config[networkId].addresses.batchRelayerV4,
+        config[networkId].addresses.batchRelayer,
         config[networkId].addresses.wrappedNativeAsset,
         slippageBps,
         undefined

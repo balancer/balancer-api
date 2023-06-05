@@ -3,10 +3,14 @@
   "rpc": "https://polygon-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
   "addresses": {
-    "nativeAsset": "",
-    "wrappedNativeAsset": "",
-    "vault": "",
-    "batchRelayerV3": "",
-    "batchRelayerV4": ""
+    "nativeAsset": "0x0000000000000000000000000000000000001010",
+    "wrappedNativeAsset": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+    "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+    "batchRelayer": "0xd18d5D377eb23362e54Fa496597d7E962d56C554"
+  },
+  "coingecko": {
+    "platformId": "polygon-pos",
+    "nativeAssetId": "matic-network",
+    "nativeAssetPriceSymbol": "matic"
   }
 }

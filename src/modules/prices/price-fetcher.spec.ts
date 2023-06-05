@@ -3,6 +3,7 @@ import nock from 'nock';
 import { Token } from '@/modules/tokens';
 import PriceFetcher from './price-fetcher';
 import { Network, COINGECKO_BASEURL } from '@/constants';
+import configs from '@/config';
 
 /**
  * Token Prices (USD)
@@ -61,8 +62,9 @@ describe('Price Fetcher', () => {
         },
       });
 
+    const networkIds = Object.values(configs).map((config) => config.coingecko.nativeAssetId).join(',')
     nock(COINGECKO_BASEURL)
-      .get(`/simple/price?ids=ethereum,matic-network,xdai&vs_currencies=usd`)
+      .get(`/simple/price?ids=${networkIds}&vs_currencies=usd`)
       .reply(200, {
         ethereum: {
           usd: 2500,
@@ -416,8 +418,8 @@ describe('Price Fetcher', () => {
       expect(tokenWithPrice(Network.POLYGON, 'DAI').price).toEqual({ usd: '1', matic: '0.5' });
       expect(tokenWithPrice(Network.ARBITRUM, 'BAL').price).toEqual({ usd: '25', eth: '0.01' });
       expect(tokenWithPrice(Network.ARBITRUM, 'DAI').price).toEqual({ usd: '1', eth: '0.0004' });
-      expect(tokenWithPrice(Network.GNOSIS, 'BAL').price).toEqual({ usd: '25', eth: '0.01' });
-      expect(tokenWithPrice(Network.GNOSIS, 'DAI').price).toEqual({ usd: '1', eth: '0.0004' });
+      expect(tokenWithPrice(Network.GNOSIS, 'BAL').price).toEqual({ usd: '25', xdai: '25' });
+      expect(tokenWithPrice(Network.GNOSIS, 'DAI').price).toEqual({ usd: '1', xdai: '1' });
     });
 
     it('Should handle tokens with an invalid chainID gracefully', async () => {

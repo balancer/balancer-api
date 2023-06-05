@@ -51,7 +51,7 @@ describe('sor/order', () => {
       it('Should return a valid batchRelayer order', async () => {
         require('@balancer-labs/sdk')._setIsJoinExitSwap(true);
         const sorOrder = await createSorOrder(networkId, sorRequest);
-        expect(sorOrder.to).toEqual(config[networkId].addresses.batchRelayerV4);
+        expect(sorOrder.to).toEqual(config[networkId].addresses.batchRelayer);
         expect(sorOrder.data.length).toBeGreaterThan(10);
         expect(sorOrder.value).toBe('0');
       });

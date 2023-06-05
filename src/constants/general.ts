@@ -25,24 +25,6 @@ export const Network: Record<string, number> = {
   ZKEVM: 1101,
 };
 
-export const NativeAssetAddress = {
-  ETH: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-  MATIC: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
-  XDAI: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-};
-
-export const NativeAssetId = {
-  ETH: 'ethereum',
-  MATIC: 'matic-network',
-  XDAI: 'xdai',
-};
-
-export const NativeAssetPriceSymbol = {
-  ETH: 'eth',
-  MATIC: 'matic',
-  XDAI: 'xdai',
-};
-
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(
   Object.entries(Network).filter(([, id]) => {
     return [Network.GOERLI, Network.KOVAN].includes(id);

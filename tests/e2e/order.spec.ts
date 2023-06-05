@@ -205,7 +205,7 @@ describe('/order E2E tests', () => {
         await setTokenBalance(signer, WETH, sorRequest.amount)
         const balances = await getBalances(signer, [WETH, auraBal]);
         const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(Network.MAINNET, sorRequest);
-        expect(sorOrderInfo.to).toEqual(config[Network.MAINNET].addresses.batchRelayerV4);
+        expect(sorOrderInfo.to).toEqual(config[Network.MAINNET].addresses.batchRelayer);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [WETH, auraBal]);
         expect(BigNumber.from(newBalances.auraBal).gt(balances.auraBal)).toBeTruthy();

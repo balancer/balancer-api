@@ -1,5 +1,4 @@
 import { Network } from '@/constants';
-
 import arbitrum from './arbitrum.json';
 import goerli from './goerli.json';
 import mainnet from './mainnet.json';
@@ -15,8 +14,12 @@ export interface Config {
     nativeAsset: string;
     wrappedNativeAsset: string;
     vault: string;
-    batchRelayerV3: string;
-    batchRelayerV4: string;
+    batchRelayer: string;
+  }
+  coingecko: {
+    platformId: string;
+    nativeAssetId: string;
+    nativeAssetPriceSymbol: string;
   }
 }
 

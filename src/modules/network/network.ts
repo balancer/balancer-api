@@ -1,7 +1,5 @@
 import {
   Network,
-  NativeAssetAddress,
-  NativeAssetPriceSymbol,
 } from '@/constants';
 import configs  from '@/config';
 
@@ -47,40 +45,9 @@ export function requireValidNetworkId(networkId: number): void {
 }
 
 export function getPlatformId(chainId: string | number): string | undefined {
-  const mapping = {
-    '1': 'ethereum',
-    '42': 'ethereum',
-    '137': 'polygon-pos',
-    '42161': 'arbitrum-one',
-    '100': 'xdai',
-    '1101': 'polygon-zkevm',
-  };
-
-  return mapping[chainId.toString()];
-}
-
-export function getNativeAssetAddress(chainId: string | number): string {
-  const mapping = {
-    '1': NativeAssetAddress.ETH,
-    '42': NativeAssetAddress.ETH,
-    '137': NativeAssetAddress.MATIC,
-    '42161': NativeAssetAddress.ETH,
-    '100': NativeAssetAddress.XDAI,
-    '1101': NativeAssetAddress.ETH,
-  };
-
-  return mapping[chainId.toString()] || 'eth';
+  return configs[chainId].coingecko.platformId;
 }
 
 export function getNativeAssetPriceSymbol(chainId: string | number): string {
-  const mapping = {
-    '1': NativeAssetPriceSymbol.ETH,
-    '42': NativeAssetPriceSymbol.ETH,
-    '137': NativeAssetPriceSymbol.MATIC,
-    '42161': NativeAssetPriceSymbol.ETH,
-    '100': NativeAssetPriceSymbol.ETH,
-    '1101': NativeAssetPriceSymbol.ETH,
-  };
-
-  return mapping[chainId.toString()] || 'eth';
+  return configs[chainId].coingecko.nativeAssetPriceSymbol || 'eth';
 }

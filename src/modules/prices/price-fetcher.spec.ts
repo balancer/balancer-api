@@ -41,6 +41,10 @@ TOKEN_ADDRESSES[Network.GNOSIS] = {
   DAI: '0x44fa8e6f47987339850636f88629646662444217',
   XDAI: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
 };
+TOKEN_ADDRESSES[Network.AVALANCHE] = {
+  BAL: '0x8239A6b877804206C7799028232A7188DA487CeC',
+  DAI: '0xd586E7F844cEa2F87f50152665BCbc2C279D8d70',
+};
 
 const TOKEN_PRICE_BASEURL = COINGECKO_BASEURL + '/simple/token_price';
 
@@ -74,7 +78,10 @@ describe('Price Fetcher', () => {
         },
         'xdai': {
           usd: 1
-        }
+        },
+        'avalanche-2': {
+          usd: 15
+        },
       });
   });
 

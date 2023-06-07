@@ -20,9 +20,10 @@ export const Network: Record<string, number> = {
   GOERLI: 5,
   KOVAN: 42,
   POLYGON: 137,
-  ARBITRUM: 42161,
   GNOSIS: 100,
   ZKEVM: 1101,
+  ARBITRUM: 42161,
+  AVALANCHE: 43114
 };
 
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(

@@ -1,5 +1,6 @@
 import { Network } from '@/constants';
 import arbitrum from './arbitrum.json';
+import avalanche from './avalanche.json';
 import goerli from './goerli.json';
 import mainnet from './mainnet.json';
 import polygon from './polygon.json';
@@ -30,6 +31,7 @@ const config: Record<number, Config> = {
   [Network.ARBITRUM]: arbitrum,
   [Network.GNOSIS]: gnosis,
   [Network.ZKEVM]: zkevm,
+  [Network.AVALANCHE]: avalanche
 };
 
 export default config;

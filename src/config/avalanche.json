@@ -1,0 +1,16 @@
+{
+  "networkId": 43114,
+  "rpc": "https://avalanche-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
+  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-avalanche-v2",
+  "addresses": {
+    "nativeAsset": "0x0000000000000000000000000000000000000000",
+    "wrappedNativeAsset": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+    "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+    "batchRelayer": "0x03F1ab8b19bcE21EB06C364aEc9e40322572a1e9"
+  },
+  "coingecko": {
+    "platformId": "avalanche",
+    "nativeAssetId": "avalanche-2",
+    "nativeAssetPriceSymbol": "avax"
+  }
+}

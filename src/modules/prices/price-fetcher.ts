@@ -269,7 +269,7 @@ class PriceFetcher {
     try {
       await this.fetchNativeAssetPrices();
     } catch (e) {
-      console.error('Failed to fetch native asset prices.');
+      console.error('Failed to fetch native asset prices.', e);
       return this.tokens;
     }
 

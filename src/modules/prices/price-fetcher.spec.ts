@@ -5,8 +5,6 @@ import PriceFetcher from './price-fetcher';
 import { Network, COINGECKO_BASEURL } from '@/constants';
 import configs from '@/config';
 
-nock.disableNetConnect();
-
 /**
  * Token Prices (USD)
  * ETH: 2500

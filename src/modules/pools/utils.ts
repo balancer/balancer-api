@@ -120,3 +120,7 @@ export function getTokenAddressesFromPools(pools: Partial<Pool>[]): string[] {
   });
   return Object.keys(tokenAddressMap);
 }
+
+export function convertPoolIdToAddress(poolId: string) {
+  return poolId.substring(0, 42);
+}

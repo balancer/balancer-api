@@ -9,11 +9,11 @@ import {
 import { isValidNetworkId } from '@/modules/network';
 import { allowlistPool } from '@/modules/allowlist';
 
-
-/** This webhook takes events from hal.xyz and performs actions with them
- * 
- * The first action is to listen to new pool creation events on the Balancer Vault 
- * and send the event details 
+/**
+ * This webhook takes events from hal.xyz and performs actions with them
+ *
+ * The first action is to listen to new pool creation events on the Balancer Vault
+ * and send the event details to a Github Webhook that creates a PR to allowlist the pool
  */
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
@@ -38,17 +38,13 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
       const parameters = event.eventParameters;
       if (event.eventName === HALEventName.TokensRegistered) {
         const poolId = parameters.poolId;
-        await allowlistPool(chainId, "Weighted", poolId);
+        await allowlistPool(chainId, poolId);
         console.log(`Successfully allowlisted pool ${poolId}`);
       }
-    })
-
-
+    });
   } catch (e) {
-    console.log(
-      `Received error processing HAL Webhook: ${e}`
-    );
-    captureException(e)
+    console.log(`Received error processing HAL Webhook: ${e}`);
+    captureException(e);
     return formatResponse(500, 'Unable to process webhook event');
   }
 });

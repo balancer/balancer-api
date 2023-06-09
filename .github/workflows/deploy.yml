@@ -35,6 +35,7 @@ jobs:
         TENDERLY_PROJECT: ${{ secrets.TENDERLY_PROJECT }}
         TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
         SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        GH_WEBHOOK_PAT: ${{ secrets.GH_WEBHOOK_PAT }}
         DOMAIN_NAME: 'api.balancer.fi'
         NETWORKS: '1,100,137,1101,42161,43114'
         DYNAMODB_POOLS_READ_CAPACITY: 200

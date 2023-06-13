@@ -22,12 +22,12 @@ class BeetsPriceFetcher {
 
     const tokensWithPrices: Token[] = tokens.map(token => {
       if (tokenPricesByChain[token.chainId][token.address]) {
-        token.price = {
-          usd: tokenPricesByChain[token.chainId][token.address].toString(),
-        };
+        token.price = token.price || {}
+        token.price.usd = tokenPricesByChain[token.chainId][token.address].toString()
       }
       return token;
     });
+
 
     return tokensWithPrices;
   }
@@ -47,9 +47,8 @@ class BeetsPriceFetcher {
     }
 
     const tokenPrices = result.data.data.tokenGetCurrentPrices;
-    console.log("Got prices from Beets API: ", tokenPrices);
     const tokenPricesMap = Object.fromEntries(
-      tokenPrices.map(token => [tokenPrices.address, token.price])
+      tokenPrices.map(token => [token.address, token.price])
     );
 
     return tokenPricesMap;

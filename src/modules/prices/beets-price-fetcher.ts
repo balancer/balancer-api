@@ -33,9 +33,10 @@ class BeetsPriceFetcher {
   }
 
   async fetchFromBeetsAPI(chainId: number): Promise<Record<string, number>> {
-    const payload = 'query { tokenGetCurrentPrices { address price }}';
+    const payload = JSON.stringify({query: 'query { tokenGetCurrentPrices { address price }}'});
     const result = await axios.post(BEETS_API_URL, payload, {
       headers: {
+        'Content-Type': 'application/json',
         ChainId: chainId.toString(),
       },
     });

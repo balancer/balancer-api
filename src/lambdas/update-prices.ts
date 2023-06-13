@@ -5,7 +5,6 @@ import { updateTokenPrices } from '@/modules/tokens';
 
 export const handler = wrapHandler(async (): Promise<any> => {
   const log = console.log;
-
   try {
     log('Fetching all tokens.');
     const tokens = await getTokens();

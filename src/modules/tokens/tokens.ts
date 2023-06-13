@@ -2,6 +2,7 @@ import { BigNumber, ethers } from 'ethers';
 import { Token } from './types';
 import { Contract } from '@ethersproject/contracts';
 import PriceFetcher from '@/modules/prices/price-fetcher';
+import BeetsPriceFetcher from '@/modules/prices/beets-price-fetcher';
 import { getToken, updateTokens } from '@/modules/dynamodb';
 import { TokenPrices } from '@balancer-labs/sdk';
 
@@ -11,8 +12,13 @@ export async function updateTokenPrices(
   tokens: Token[],
   abortOnRateLimit = false
 ) {
+  const beetsPriceFetcher = new BeetsPriceFetcher();
+  log(`fetching prices for ${tokens.length} tokens from beets API`);
+  const beetsTokensWithPrices = await beetsPriceFetcher.fetch(tokens);
+  log(`Saving ${beetsTokensWithPrices.length} updated tokens to DB`);
+  await updateTokens(beetsTokensWithPrices);
   const priceFetcher = new PriceFetcher(abortOnRateLimit);
-  log(`fetching prices for ${tokens.length} tokens`);
+  log(`fetching prices for ${tokens.length} tokens from coingecko`);
   const tokensWithPrices = await priceFetcher.fetch(tokens);
   log(`Saving ${tokensWithPrices.length} updated tokens to DB`);
   await updateTokens(tokensWithPrices);

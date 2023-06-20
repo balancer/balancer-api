@@ -145,6 +145,7 @@ The `{chainId}` in each endpoint is the chain/network number you wish to request
 - `/check-wallet` - Used to perform sanctions checks with TRM.
 - `/tenderly/contracts/encode-states` - Encodes state information with Tenderly
 - `/tenderly/simulate` - Simulate a transaction with Tenderly
+- `/hal-webhook` - Receives events from hal.xyz
 
 ### Update Pools Lambda
 
@@ -326,6 +327,7 @@ You can customize your deployment with env variables. See .env.example for all p
 - TENDERLY_PROJECT - Your Tenderly project id, used by the `/tenderly` endpoints.
 - TENDERLY_ACCESS_KEY - Your tenderly access key, used by the `/tenderly` endpoints.
 - SENTRY_DSN - Your Sentry account DSN, if you'd like to send errors to Sentry
+- GH_WEBHOOK_PAT - A Github Personal Access Token, used to call webhooks on Balancer repositories
 
 ## Common Issues
 

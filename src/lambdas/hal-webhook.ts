@@ -33,16 +33,19 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   }
 
   try {
-    const halEvents: HALEvent[] = event.body;
-    await Promise.all(halEvents.map(async (event: HALEvent) => {
-      if (event.eventName === HALEventName.TokensRegistered) {
-        const parameters = (event as TokenRegisteredEvent).eventParameters;
-        const poolId = parameters.poolId;
-        await allowlistPool(chainId, poolId);
-        console.log(`Successfully allowlisted pool ${poolId}`);
-      }
-    }));
-    return { statusCode: 200 }
+    const halEvents: HALEvent[] =
+      typeof event.body == 'object' ? event.body : JSON.parse(event.body);
+    await Promise.all(
+      halEvents.map(async (event: HALEvent) => {
+        if (event.eventName === HALEventName.TokensRegistered) {
+          const parameters = (event as TokenRegisteredEvent).eventParameters;
+          const poolId = parameters.poolId;
+          await allowlistPool(chainId, poolId);
+          console.log(`Successfully allowlisted pool ${poolId}`);
+        }
+      })
+    );
+    return { statusCode: 200 };
   } catch (e) {
     console.log(`Received error processing HAL Webhook: ${e}`);
     captureException(e);

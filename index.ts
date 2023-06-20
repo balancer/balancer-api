@@ -375,6 +375,7 @@ export class BalancerPoolsAPI extends Stack {
     const halWebhookLambda = new NodejsFunction(this, 'halWebhookFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'hal-webhook.ts'),
       environment: {
+        INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
         GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
       },
       runtime: Runtime.NODEJS_14_X,
@@ -506,9 +507,12 @@ export class BalancerPoolsAPI extends Stack {
           'method.request.querystring.address',
       },
     });
-    const halWebhookIntegration = new LambdaIntegration(
-      halWebhookLambda
-    );
+    const halWebhookIntegration = new LambdaIntegration(halWebhookLambda, {
+      proxy: true,
+      requestParameters: {
+        'integration.request.path.chainId': 'method.request.path.chainId',
+      },
+    });
 
     const apiGatewayLogGroup = new LogGroup(this, 'ApiGatewayLogs');
 

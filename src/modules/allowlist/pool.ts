@@ -1,12 +1,10 @@
 import configs from '@/config';
-import fetch from 'isomorphic-fetch';
 import { getRpcUrl } from '@/modules/network';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { convertPoolIdToAddress } from '@/modules/pools';
 import { Contract } from '@ethersproject/contracts';
-import { ALLOWLIST_POOL_ENDPOINT } from '@/constants';
+import { callGitHubWebhook } from '@/modules/github';
 
-const { GH_WEBHOOK_PAT } = process.env;
 
 export async function allowlistPool(chainId: number, poolId: string) {
   console.log(`Allowlisting pool ${poolId}`);
@@ -58,20 +56,14 @@ export async function allowlistPool(chainId: number, poolId: string) {
 
   const network = configs[chainId].network;
 
-  const response = await fetch(ALLOWLIST_POOL_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Authorization: `token ${GH_WEBHOOK_PAT}`,
+  const response = await callGitHubWebhook({
+    event_type: 'allowlist_pool',
+    client_payload: {
+      network,
+      poolType,
+      poolId,
+      poolDescription,
     },
-    body: JSON.stringify({
-      event_type: 'allowlist_pool',
-      client_payload: {
-        network,
-        poolType,
-        poolId,
-        poolDescription,
-      },
-    }),
   });
 
   console.log('Got response from Github: ', response);
@@ -80,3 +72,4 @@ export async function allowlistPool(chainId: number, poolId: string) {
     throw new Error('Failed to send allowlist request to Github');
   }
 }
+

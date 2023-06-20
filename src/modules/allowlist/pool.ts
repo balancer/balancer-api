@@ -4,6 +4,7 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { convertPoolIdToAddress } from '@/modules/pools';
 import { Contract } from '@ethersproject/contracts';
 import { callGitHubWebhook } from '@/modules/github';
+import { ALLOWLIST_POOL_ENDPOINT } from '@/constants';
 
 
 export async function allowlistPool(chainId: number, poolId: string) {
@@ -56,7 +57,7 @@ export async function allowlistPool(chainId: number, poolId: string) {
 
   const network = configs[chainId].network;
 
-  const response = await callGitHubWebhook({
+  const response = await callGitHubWebhook(ALLOWLIST_POOL_ENDPOINT, {
     event_type: 'allowlist_pool',
     client_payload: {
       network,

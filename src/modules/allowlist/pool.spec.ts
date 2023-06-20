@@ -1,6 +1,7 @@
 import nock from 'nock';
 import { allowlistPool } from './pool';
 import { callGitHubWebhook } from '@/modules/github';
+import { ALLOWLIST_POOL_ENDPOINT } from '@/constants';
 
 nock.disableNetConnect();
 
@@ -34,7 +35,7 @@ describe('Allowlist Pool', () => {
       1,
       '0xfebb0bbf162e64fb9d0dfe186e517d84c395f016000000000000000000000502'
     );
-    expect(callGitHubWebhook).toBeCalledWith({
+    expect(callGitHubWebhook).toBeCalledWith(ALLOWLIST_POOL_ENDPOINT, {
       event_type: 'allowlist_pool',
       client_payload: {
         network: "mainnet",

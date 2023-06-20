@@ -1,6 +1,6 @@
 import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
-import { HALEvent, HALEventName } from '@/modules/hal';
+import { TokenRegisteredEvent, HALEventName, HALEvent } from '@/modules/hal';
 import { formatResponse } from './utils';
 import {
   INVALID_CHAIN_ID_ERROR,
@@ -34,14 +34,15 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
 
   try {
     const halEvents: HALEvent[] = event.body;
-    halEvents.forEach(async (event: HALEvent) => {
-      const parameters = event.eventParameters;
+    await Promise.all(halEvents.map(async (event: HALEvent) => {
       if (event.eventName === HALEventName.TokensRegistered) {
+        const parameters = (event as TokenRegisteredEvent).eventParameters;
         const poolId = parameters.poolId;
         await allowlistPool(chainId, poolId);
         console.log(`Successfully allowlisted pool ${poolId}`);
       }
-    });
+    }));
+    return { statusCode: 200 }
   } catch (e) {
     console.log(`Received error processing HAL Webhook: ${e}`);
     captureException(e);

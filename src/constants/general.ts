@@ -15,6 +15,10 @@ export const WEEK_IN_MS = DAY_IN_MS * 7;
 
 export const MAX_VALID_TO_EPOCH = 2 ** 32 - 1;
 
+export const ALLOWLIST_POOL_ENDPOINT =
+  'https://api.github.com/repos/timjrobinson/frontend-v2/dispatches';
+
+
 export const Network: Record<string, number> = {
   MAINNET: 1,
   GOERLI: 5,

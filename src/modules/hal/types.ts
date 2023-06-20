@@ -7,14 +7,8 @@ export enum HALEventName {
 export interface HALEvent {
   contractAddress: Address;
   eventName: HALEventName;
-  eventParameters: HALEventParameters
+  eventParameters: any;
   transaction: HALTransaction;
-}
-
-export interface HALEventParameters {
-  assetManagers: Address[];
-  poolId: string;
-  tokens: Address[];
 }
 
 export interface HALTransaction {
@@ -26,4 +20,12 @@ export interface HALTransaction {
   hash: string;
   value: string | null;
   inputData: string;
+}
+
+export interface TokenRegisteredEvent extends HALEvent {
+  eventParameters: {
+    assetManagers: Address[];
+    poolId: string;
+    tokens: Address[];
+  }
 }

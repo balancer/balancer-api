@@ -1,102 +1,65 @@
-import nock from 'nock';
-import { handler } from './check-wallet';
-import { TRMAccountDetails } from '@/modules/trm';
+import { handler } from './hal-webhook';
+import { HALEventName, HALEvent } from '@/modules/hal';
+import { allowlistPool } from '@/modules/allowlist';
 
-nock.disableNetConnect();
+jest.mock(
+  '@/modules/allowlist',
+  jest.fn().mockImplementation(() => {
+    return {
+      allowlistPool: jest.fn().mockImplementation()
+    }
+  })
+);
 
-let trmResponse: TRMAccountDetails[] = [];
+let request;
 
-const request = {
-  queryStringParameters: {
-    address: '0x0000000000000000000000000000000000000000',
-  },
-};
-
-describe('Wallet Check Lambda', () => {
-  it('Should return false for an address with no issues', async () => {
-    trmResponse = [
-      {
-        accountExternalId: null,
-        address: '0x0000000000000000000000000000000000000000',
-        addressRiskIndicators: [],
-        addressSubmitted: '0x0000000000000000000000000000000000000000',
-        chain: 'ethereum',
-        entities: [],
-        trmAppUrl:
-          'https://my.trmlabs.com/address/0x0000000000000000000000000000000000000000/eth',
-      },
-    ];
-    nock('https://api.trmlabs.com')
-      .post('/public/v2/screening/addresses')
-      .reply(200, trmResponse);
-    const response = await handler(request);
-    const body = JSON.parse(response.body);
-    expect(body.is_blocked).toBe(false);
-  });
-
-  it('Should return blocked for an address that has a Severe risk', async () => {
-    trmResponse = [
-      {
-        accountExternalId: null,
-        address: '0x0000000000000000000000000000000000000000',
-        addressRiskIndicators: [
-          {
-            category: 'Sanctions',
-            categoryId: '69',
-            categoryRiskScoreLevel: 15,
-            categoryRiskScoreLevelLabel: 'Severe',
-            incomingVolumeUsd:
-              '570037717.3324722239717737602882028941260267337',
-            outgoingVolumeUsd:
-              '573357789.82550046115536928143858188991303929335',
-            riskType: 'OWNERSHIP',
-            totalVolumeUsd: '1143395507.15797268512714304172678478403906602705',
+describe('HAL Webhook Lambda', () => {
+  describe('TokenRegisteredEvent', () => {
+    beforeEach(() => {
+      const body: HALEvent[] = [
+        {
+          contractAddress: '0xba12222222228d8ba445958a75a0704d566bf2c8',
+          eventName: HALEventName.TokensRegistered,
+          eventParameters: {
+            assetManagers: [
+              '0x0000000000000000000000000000000000000000',
+              '0x0000000000000000000000000000000000000000',
+              '0x0000000000000000000000000000000000000000',
+            ],
+            poolId:
+              '0xdfe6e7e18f6cc65fa13c8d8966013d4fda74b6ba000000000000000000000558',
+            tokens: [
+              '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0',
+              '0xdfe6e7e18f6cc65fa13c8d8966013d4fda74b6ba',
+              '0xe95a203b1a91a908f9b9ce46459d101078c2c3cb',
+            ],
           },
-          {
-            category: 'Sanctions',
-            categoryId: '69',
-            categoryRiskScoreLevel: 15,
-            categoryRiskScoreLevelLabel: 'Severe',
-            incomingVolumeUsd: '0',
-            outgoingVolumeUsd:
-              '428172699.46703217102356766551565669942647220227',
-            riskType: 'COUNTERPARTY',
-            totalVolumeUsd: '428172699.46703217102356766551565669942647220227',
+          transaction: {
+            blockHash:
+              '0x1ebbeefe7ccd50a937d288a7806e0570187f14b03b382b45545f9c68043b2eb1',
+            blockNumber: 17347414,
+            blockTimestamp: 1685154395,
+            from: '0x854b004700885a61107b458f11ecc169a019b764',
+            to: '0xfada0f4547ab2de89d1304a668c39b3e09aa7c76',
+            hash: '0x5a40175dcaac01496215f1f64d9a4e797672a5541d73e72021055791b981d67f',
+            value: null,
+            inputData: '',
           },
-        ],
-        addressSubmitted: '0x0000000000000000000000000000000000000000',
-        chain: 'ethereum',
-        entities: [
-          {
-            category: 'Sanctions',
-            categoryId: '69',
-            entity: 'Lazarus Group',
-            riskScoreLevel: 15,
-            riskScoreLevelLabel: 'Severe',
-            trmAppUrl:
-              'https://my.trmlabs.com/entities/trm/75624c42-157e-4a63-8f32-070b1d1fa4d4',
-            trmUrn: '/entity/manual/75624c42-157e-4a63-8f32-070b1d1fa4d4',
-          },
-          {
-            category: 'Hacked or Stolen Funds',
-            categoryId: '34',
-            entity: 'Ronin Bridge Hack - March 2022',
-            riskScoreLevel: 15,
-            riskScoreLevelLabel: 'Severe',
-            trmAppUrl:
-              'https://my.trmlabs.com/entities/trm/9145c0ff-1544-475f-8403-40840cb051e0',
-            trmUrn: '/entity/manual/9145c0ff-1544-475f-8403-40840cb051e0',
-          },
-        ],
-        trmAppUrl:
-          'https://my.trmlabs.com/address/0x0000000000000000000000000000000000000000/eth',
-      },
-    ];
-    nock('https://api.trmlabs.com')
-      .post('/public/v2/screening/addresses')
-      .reply(200, trmResponse);
-    const response = await handler(request);
-    const body = JSON.parse(response.body);
-    expect(body.is_blocked).toBe(true);
+        },
+      ];
+
+      request = {
+        pathParameters: {
+          chainId: 1
+        },
+        body
+      }
+    });
+
+    it('Should call allowlistPool with the chainId and poolId from the data', async () => {
+      const response = await handler(request);
+      expect(response.statusCode).toBe(200);
+      expect(allowlistPool).toBeCalledWith(1, '0xdfe6e7e18f6cc65fa13c8d8966013d4fda74b6ba000000000000000000000558');
+    });
   });
 });

@@ -4,11 +4,9 @@ import { getRpcUrl } from '@/modules/network';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { convertPoolIdToAddress } from '@/modules/pools';
 import { Contract } from '@ethersproject/contracts';
+import { ALLOWLIST_POOL_ENDPOINT } from '@/constants';
 
 const { GH_WEBHOOK_PAT } = process.env;
-
-const ALLOWLIST_POOL_ENDPOINT =
-  'https://api.github.com/repos/timjrobinson/frontend-v2/dispatches';
 
 export async function allowlistPool(chainId: number, poolId: string) {
   console.log(`Allowlisting pool ${poolId}`);

@@ -382,24 +382,24 @@ export class BalancerPoolsAPI extends Stack {
       new LambdaFunction(updateTokenPricesLambda)
     );
 
+
     const updatePeriodWord = UPDATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
-    const updatePoolsRule = new Rule(this, 'updatePoolsInterval', {
-      schedule: Schedule.expression(
-        `rate(${UPDATE_POOLS_INTERVAL} ${updatePeriodWord})`
-      ),
+    Object.entries(updatePoolsLambdas).forEach(([chainId, updatePoolsLambda]) => {
+      const updatePoolsRule = new Rule(this, `updatePoolsInterval-${chainId}`, {
+        schedule: Schedule.expression(
+          `rate(${UPDATE_POOLS_INTERVAL} ${updatePeriodWord})`
+        ),
+      });
+      updatePoolsRule.addTarget(new LambdaFunction(updatePoolsLambda));
     });
 
     const decoratePeriodWord = DECORATE_POOLS_INTERVAL > 1 ? 'minutes' : 'minute';
-    const decoratePoolsRule = new Rule(this, 'decoratePoolsInterval', {
-      schedule: Schedule.expression(
-        `rate(${DECORATE_POOLS_INTERVAL} ${decoratePeriodWord})`
-      ),
-    });
-
-    Object.values(updatePoolsLambdas).forEach(updatePoolsLambda => {
-      updatePoolsRule.addTarget(new LambdaFunction(updatePoolsLambda));
-    });
-    Object.values(decoratePoolsLambdas).forEach(decoratePoolsLambda => {
+    Object.entries(decoratePoolsLambdas).forEach(([chainId, decoratePoolsLambda]) => {
+      const decoratePoolsRule = new Rule(this, `decoratePoolsInterval-${chainId}`, {
+        schedule: Schedule.expression(
+          `rate(${DECORATE_POOLS_INTERVAL} ${decoratePeriodWord})`
+        ),
+      });
       decoratePoolsRule.addTarget(new LambdaFunction(decoratePoolsLambda));
     });
 

@@ -1,5 +1,6 @@
 {
   "networkId": 42161,
+  "network": "arbitrum",
   "rpc": "https://arbitrum-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2-beta",
   "addresses": {

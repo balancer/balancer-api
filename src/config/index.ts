@@ -9,6 +9,7 @@ import zkevm from './zkevm.json';
 
 export interface Config {
   networkId: number;
+  network: string;
   rpc: string;
   subgraph: string;
   addresses: {

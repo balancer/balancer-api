@@ -55,6 +55,7 @@ const {
   TENDERLY_PROJECT,
   TENDERLY_ACCESS_KEY,
   SENTRY_DSN,
+  GH_WEBHOOK_PAT,
   DEBUG,
 } = process.env;
 
@@ -371,6 +372,16 @@ export class BalancerPoolsAPI extends Stack {
       timeout: Duration.seconds(15),
     });
 
+    const halWebhookLambda = new NodejsFunction(this, 'halWebhookFunction', {
+      entry: join(__dirname, 'src', 'lambdas', 'hal-webhook.ts'),
+      environment: {
+        INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
+        GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
+      },
+      runtime: Runtime.NODEJS_14_X,
+      timeout: Duration.seconds(15),
+    });
+
     /**
      * Lambda Schedules
      */
@@ -496,6 +507,12 @@ export class BalancerPoolsAPI extends Stack {
           'method.request.querystring.address',
       },
     });
+    const halWebhookIntegration = new LambdaIntegration(halWebhookLambda, {
+      proxy: true,
+      requestParameters: {
+        'integration.request.path.chainId': 'method.request.path.chainId',
+      },
+    });
 
     const apiGatewayLogGroup = new LogGroup(this, 'ApiGatewayLogs');
 
@@ -618,6 +635,14 @@ export class BalancerPoolsAPI extends Stack {
     const tenderlyEncodeStates = tenderlyContracts.addResource('encode-states');
     tenderlyEncodeStates.addMethod('POST', tenderlyEncodeStateIntegration);
     addCorsOptions(tenderlyEncodeStates);
+
+    const hal = api.root.addResource('hal');
+    const halOnChain = hal.addResource('{chainId}');
+    halOnChain.addMethod('POST', halWebhookIntegration, {
+      requestParameters: {
+        'method.request.path.chainId': true,
+      },
+    });
 
     /**
      * Web Application Firewall

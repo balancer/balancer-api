@@ -1,5 +1,6 @@
 {
   "networkId": 5,
+  "network": "goerli",
   "rpc": "https://goerli.infura.io/v3/{{INFURA_KEY}}",
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-goerli-v2",
   "addresses": {

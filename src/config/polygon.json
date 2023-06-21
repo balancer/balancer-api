@@ -1,5 +1,6 @@
 {
   "networkId": 137,
+  "network": "polygon",
   "rpc": "https://polygon-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
   "addresses": {

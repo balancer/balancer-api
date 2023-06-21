@@ -6,7 +6,6 @@ import { Contract } from '@ethersproject/contracts';
 import { callGitHubWebhook } from '@/modules/github';
 import { ALLOWLIST_POOL_ENDPOINT } from '@/constants';
 
-
 export async function allowlistPool(chainId: number, poolId: string) {
   console.log(`Allowlisting pool ${poolId}`);
 
@@ -56,8 +55,7 @@ export async function allowlistPool(chainId: number, poolId: string) {
   console.log(`pool type: ${poolType}`);
 
   const network = configs[chainId].network;
-
-  const response = await callGitHubWebhook(ALLOWLIST_POOL_ENDPOINT, {
+  const webhookData = {
     event_type: 'allowlist_pool',
     client_payload: {
       network,
@@ -65,7 +63,14 @@ export async function allowlistPool(chainId: number, poolId: string) {
       poolId,
       poolDescription,
     },
-  });
+  };
+
+  console.log('Sending to Github: ', webhookData);
+
+  const response = await callGitHubWebhook(
+    ALLOWLIST_POOL_ENDPOINT,
+    webhookData
+  );
 
   console.log('Got response from Github: ', response);
 
@@ -73,4 +78,3 @@ export async function allowlistPool(chainId: number, poolId: string) {
     throw new Error('Failed to send allowlist request to Github');
   }
 }
-

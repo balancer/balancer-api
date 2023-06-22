@@ -15,7 +15,7 @@ export const WEEK_IN_MS = DAY_IN_MS * 7;
 
 export const MAX_VALID_TO_EPOCH = 2 ** 32 - 1;
 
-export const ALLOWLIST_POOL_ENDPOINT =
+export const ALLOWLIST_POOL_ENDPOINT = process.env.ALLOWLIST_POOL_ENDPOINT || 
   'https://api.github.com/repos/balancer/frontend-v2/dispatches';
 
 

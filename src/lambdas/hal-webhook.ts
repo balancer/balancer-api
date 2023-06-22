@@ -33,8 +33,10 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   }
 
   try {
-    const halEvents: HALEvent[] =
+    const parsedBody =
       typeof event.body == 'object' ? event.body : JSON.parse(event.body);
+    const halEvents: HALEvent[] = Array.isArray(parsedBody) ? parsedBody : [parsedBody];
+
     await Promise.all(
       halEvents.map(async (event: HALEvent) => {
         if (event.eventName === HALEventName.TokensRegistered) {

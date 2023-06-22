@@ -56,6 +56,7 @@ const {
   TENDERLY_ACCESS_KEY,
   SENTRY_DSN,
   GH_WEBHOOK_PAT,
+  ALLOWLIST_POOL_ENDPOINT,
   DEBUG,
 } = process.env;
 
@@ -377,6 +378,7 @@ export class BalancerPoolsAPI extends Stack {
       environment: {
         INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
         GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
+        ALLOWLIST_POOL_ENDPOINT: ALLOWLIST_POOL_ENDPOINT || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15),

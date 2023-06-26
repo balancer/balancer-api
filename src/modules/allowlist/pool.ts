@@ -1,8 +1,7 @@
 import configs from '@/config';
 import { getRpcUrl } from '@/modules/network';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { convertPoolIdToAddress } from '@/modules/pools';
-import { Contract } from '@ethersproject/contracts';
+import { getPoolSymbolFromContract, getPoolTypeFromContract, getPoolTypeFromId } from '@/modules/pools';
 import { callGitHubWebhook } from '@/modules/github';
 import { ALLOWLIST_POOL_ENDPOINT } from '@/constants';
 
@@ -12,44 +11,15 @@ export async function allowlistPool(chainId: number, poolId: string) {
   const infuraUrl = getRpcUrl(chainId);
   const provider: any = new JsonRpcProvider(infuraUrl);
 
-  const poolAddress = convertPoolIdToAddress(poolId);
+  const poolDescription = await getPoolSymbolFromContract(poolId, provider);
 
-  const poolDetailsContract = new Contract(
-    poolAddress,
-    [
-      'function symbol() view returns (string)',
-      'function version() view returns (string)',
-    ],
-    provider
-  );
-
-  let poolType = 'Weighted';
-  let poolDescription = '';
-
-  try {
-    poolDescription = await poolDetailsContract.symbol();
-  } catch (e) {
-    console.error(
-      'Unable to fetch symbol for pool, continuing with empty description'
-    );
+  let poolType = getPoolTypeFromId(poolId);
+  if (!poolType) {
+    poolType = await getPoolTypeFromContract(poolId, provider);
   }
 
-  try {
-    const poolInfoJSON = await poolDetailsContract.version();
-    console.log('Got pool info: ', poolInfoJSON);
-    const poolInfo = JSON.parse(poolInfoJSON);
-
-    switch (poolInfo.name) {
-      case 'WeightedPool':
-        poolType = 'Weighted';
-        break;
-      case 'ComposableStablePool':
-        poolType = 'Stable';
-        break;
-    }
-  } catch (e) {
-    console.error('Unable to read pool type from contract. Aborting.');
-    throw e;
+  if (!poolType) {
+    throw new Error('Unable to determine pool type from ID or Contract');
   }
 
   console.log(`pool type: ${poolType}`);

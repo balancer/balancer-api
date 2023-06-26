@@ -1,9 +1,11 @@
-import { AprBreakdown, SubgraphPoolBase } from '@balancer-labs/sdk';
+import { AprBreakdown, PoolType, SubgraphPoolBase } from '@balancer-labs/sdk';
 import { Pool } from './types';
 import { Schema, POOL_SCHEMA, POOL_TOKEN_SCHEMA } from '@/modules/dynamodb';
 import _ from 'lodash';
 import { inspect } from 'util';
 import { BigNumber } from 'bignumber.js';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { Contract } from '@ethersproject/contracts';
 
 
 /**
@@ -123,4 +125,69 @@ export function getTokenAddressesFromPools(pools: Partial<Pool>[]): string[] {
 
 export function convertPoolIdToAddress(poolId: string) {
   return poolId.substring(0, 42);
+}
+
+export function getPoolTypeFromId(poolId: string): PoolType | undefined {
+  /**
+   *  The Pool Type is next 4 bytes after the address
+   *    0x0 = Stable
+   *    0x2 = Weighted
+   */
+
+  const middleBytes = poolId.substring(42, 46);
+  switch(middleBytes) {
+    case '0000':
+      return PoolType.Stable
+    case '0002':
+      return PoolType.Weighted
+  }
+}
+
+export async function getPoolSymbolFromContract(poolId: string, provider: JsonRpcProvider): Promise<PoolType | undefined> {
+  const poolAddress = convertPoolIdToAddress(poolId);
+
+  const poolDetailsContract = new Contract(
+    poolAddress,
+    [
+      'function symbol() view returns (string)',
+    ],
+    provider
+  );
+
+  try {
+    return await poolDetailsContract.symbol();
+  } catch (e) {
+    console.error(
+      'Unable to fetch symbol for pool, continuing with empty description'
+    );
+  }
+
+ 
+}
+
+export async function getPoolTypeFromContract(poolId: string, provider: JsonRpcProvider): Promise<PoolType | undefined> {
+  const poolAddress = convertPoolIdToAddress(poolId);
+
+  const poolDetailsContract = new Contract(
+    poolAddress,
+    [
+      'function version() view returns (string)',
+    ],
+    provider
+  );
+
+  try {
+    const poolInfoJSON = await poolDetailsContract.version();
+    console.log('Got pool info: ', poolInfoJSON);
+    const poolInfo = JSON.parse(poolInfoJSON);
+
+    switch (poolInfo.name) {
+      case 'WeightedPool':
+        return PoolType.Weighted
+      case 'ComposableStablePool':
+        return PoolType.Stable
+    }
+  } catch (e) {
+    console.error('Unable to read pool type from contract');
+  }
 }

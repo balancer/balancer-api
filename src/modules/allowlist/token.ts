@@ -4,6 +4,7 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
 import { callGitHubWebhook } from '@/modules/github';
 import { ALLOWLIST_TOKEN_ENDPOINT } from '@/constants';
+import { getAddress } from 'ethers/lib/utils';
 
 export async function allowlistTokens(chainId: number, tokenAddresses: string[]) {
   for (const address of tokenAddresses) {
@@ -11,9 +12,10 @@ export async function allowlistTokens(chainId: number, tokenAddresses: string[])
   }
 }
 
-export async function allowlistToken(chainId: number, tokenAddress: string) {
-  console.log(`Allowlisting token ${tokenAddress}`);
+export async function allowlistToken(chainId: number, address: string) {
+  const tokenAddress = getAddress(address);
 
+  console.log(`Allowlisting token ${tokenAddress}`);
   const infuraUrl = getRpcUrl(chainId);
   const provider: any = new JsonRpcProvider(infuraUrl);
 

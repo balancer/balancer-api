@@ -20,6 +20,8 @@ import debug from 'debug';
 const log = debug('lambda:hal');
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
+  log("Processing event: ", event);
+
   const chainId = parseInt(event.pathParameters.chainId);
   if (!chainId) {
     return MISSING_CHAIN_ID_ERROR;

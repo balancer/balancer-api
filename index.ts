@@ -57,6 +57,7 @@ const {
   SENTRY_DSN,
   GH_WEBHOOK_PAT,
   ALLOWLIST_POOL_ENDPOINT,
+  ALLOWLIST_TOKEN_ENDPOINT,
   DEBUG,
 } = process.env;
 
@@ -376,9 +377,10 @@ export class BalancerPoolsAPI extends Stack {
     const halWebhookLambda = new NodejsFunction(this, 'halWebhookFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'hal-webhook.ts'),
       environment: {
-        INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
+        ...nodeJsFunctionProps.environment,
         GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
         ALLOWLIST_POOL_ENDPOINT: ALLOWLIST_POOL_ENDPOINT || '',
+        ALLOWLIST_TOKEN_ENDPOINT: ALLOWLIST_TOKEN_ENDPOINT || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15),

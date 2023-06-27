@@ -6,10 +6,13 @@ import { callGitHubWebhook } from '@/modules/github';
 import { ALLOWLIST_TOKEN_ENDPOINT } from '@/constants';
 import { getAddress } from 'ethers/lib/utils';
 
-export async function allowlistTokens(chainId: number, tokenAddresses: string[]) {
-  for (const address of tokenAddresses) {
-    await allowlistToken(chainId, address);
-  }
+export async function allowlistTokens(
+  chainId: number,
+  tokenAddresses: string[]
+) {
+  await Promise.all(
+    tokenAddresses.map(address => allowlistToken(chainId, address))
+  );
 }
 
 export async function allowlistToken(chainId: number, address: string) {
@@ -21,9 +24,7 @@ export async function allowlistToken(chainId: number, address: string) {
 
   const tokenDetailsContract = new Contract(
     tokenAddress,
-    [
-      'function symbol() view returns (string)',
-    ],
+    ['function symbol() view returns (string)'],
     provider
   );
 
@@ -31,10 +32,10 @@ export async function allowlistToken(chainId: number, address: string) {
   console.log(`Got symbol ${tokenSymbol}`);
 
   let network = configs[chainId].network;
-  if (network === "mainnet") {
-    network = "ethereum";
+  if (network === 'mainnet') {
+    network = 'ethereum';
   }
-  
+
   const webhookData = {
     event_type: 'allowlist_token',
     client_payload: {

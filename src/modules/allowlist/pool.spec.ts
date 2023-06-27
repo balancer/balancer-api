@@ -5,6 +5,8 @@ import { ALLOWLIST_POOL_ENDPOINT } from '@/constants';
 
 nock.disableNetConnect();
 
+jest.unmock('@balancer-labs/sdk');
+
 jest.mock('@ethersproject/contracts');
 jest.mock(
   '@/modules/github',

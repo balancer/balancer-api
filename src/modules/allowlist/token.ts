@@ -30,7 +30,11 @@ export async function allowlistToken(chainId: number, address: string) {
   const tokenSymbol = await tokenDetailsContract.symbol();
   console.log(`Got symbol ${tokenSymbol}`);
 
-  const network = configs[chainId].network;
+  let network = configs[chainId].network;
+  if (network === "mainnet") {
+    network = "ethereum";
+  }
+  
   const webhookData = {
     event_type: 'allowlist_token',
     client_payload: {

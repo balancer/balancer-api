@@ -6,7 +6,8 @@ jest.mock(
   '@/modules/allowlist',
   jest.fn().mockImplementation(() => {
     return {
-      allowlistPool: jest.fn().mockImplementation()
+      allowlistPool: jest.fn().mockImplementation(),
+      allowlistTokens: jest.fn().mockImplementation()
     }
   })
 );

@@ -1,6 +1,6 @@
 import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
-import { TokenRegisteredEvent, HALEventName, HALEvent } from '@/modules/hal';
+import { TokenRegisteredEvent, HALEventName, HALEvent, HALNotification } from '@/modules/hal';
 import { formatResponse } from './utils';
 import {
   INVALID_CHAIN_ID_ERROR,
@@ -38,28 +38,20 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   }
 
   try {
-    const parsedBody =
+    const halNotification: HALNotification =
       typeof event.body == 'object' ? event.body : JSON.parse(event.body);
 
-    log("Received body: ", parsedBody);
+    const halEvent: HALEvent = halNotification.event;
+    log("Hal event: ", halEvent);
 
-    const halEvents: HALEvent[] = Array.isArray(parsedBody) ? parsedBody : [parsedBody];
-
-    log("Hal events: ", halEvents);
-
-    await Promise.all(
-      halEvents.map(async (event: HALEvent) => {
-        log("Parsing event: ", event);
-        if (event.eventName === HALEventName.TokensRegistered) {
-          log("Parsing TokensRegistered event");
-          const parameters = (event as TokenRegisteredEvent).eventParameters;
-          await allowlistPool(chainId, parameters.poolId);
-          console.log('Successfully allowlisted pool ', parameters.poolId);
-          await allowlistTokens(chainId, parameters.tokens);
-          console.log('Successfully allowlisted tokens ', parameters.tokens);
-        }
-      })
-    );
+    if (halEvent.eventName === HALEventName.TokensRegistered) {
+      log("Parsing TokensRegistered event");
+      const parameters = (halEvent as TokenRegisteredEvent).eventParameters;
+      await allowlistPool(chainId, parameters.poolId);
+      console.log('Successfully allowlisted pool ', parameters.poolId);
+      await allowlistTokens(chainId, parameters.tokens);
+      console.log('Successfully allowlisted tokens ', parameters.tokens);
+    }
 
     log("Successfully parsed all events");
     return { statusCode: 200 };

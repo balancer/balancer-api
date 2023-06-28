@@ -4,6 +4,12 @@ export enum HALEventName {
   TokensRegistered = 'TokensRegistered'
 }
 
+export interface HALNotification {
+  connectorId: string;
+  streamId: string;
+  event: HALEvent;
+}
+
 export interface HALEvent {
   contractAddress: Address;
   eventName: HALEventName;

@@ -17,6 +17,8 @@ export const MAX_VALID_TO_EPOCH = 2 ** 32 - 1;
 
 export const ALLOWLIST_POOL_ENDPOINT = process.env.ALLOWLIST_POOL_ENDPOINT || 
   'https://api.github.com/repos/balancer/frontend-v2/dispatches';
+export const ALLOWLIST_TOKEN_ENDPOINT = process.env.ALLOWLIST_TOKEN_ENDPOINT || 
+  'https://api.github.com/repos/balancer/tokenlists/dispatches';
 
 
 export const Network: Record<string, number> = {

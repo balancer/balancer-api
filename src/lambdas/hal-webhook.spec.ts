@@ -1,5 +1,5 @@
 import { handler } from './hal-webhook';
-import { HALEventName, HALEvent } from '@/modules/hal';
+import { HALEventName, HALNotification } from '@/modules/hal';
 import { allowlistPool } from '@/modules/allowlist';
 
 jest.mock(
@@ -17,8 +17,10 @@ let request;
 describe('HAL Webhook Lambda', () => {
   describe('TokenRegisteredEvent', () => {
     beforeEach(() => {
-      const body: HALEvent[] = [
-        {
+      const body: HALNotification = {
+        connectorId: 'abc',
+        streamId: 'def',
+        event: {
           contractAddress: '0xba12222222228d8ba445958a75a0704d566bf2c8',
           eventName: HALEventName.TokensRegistered,
           eventParameters: {
@@ -46,8 +48,8 @@ describe('HAL Webhook Lambda', () => {
             value: null,
             inputData: '',
           },
-        },
-      ];
+        }
+      }
 
       request = {
         pathParameters: {

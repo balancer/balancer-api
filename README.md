@@ -339,4 +339,4 @@ You can customize your deployment with env variables. See .env.example for all p
 If you encounter any unexpected issues during deployment, please ensure that:
 
 - you are using NodeJS version 14.X
-- the AWS region you are trying to deploy is exactly the same one that was used during the bootstrapping process.
+- the AWS region you are trying to deploy is exactly the same one that was used during the bootstrapping process

@@ -57,10 +57,5 @@ jobs:
         node-version: '16.x'
     - name: Install deps
       run: npm install -g npm@8 && npm ci
-    - name: Setup DynamoDB Local
-      uses: rrainn/dynamodb-action@v3.0.0
-      with:
-        port: 8000
-        cors: '*'
     - name: Run Test
       run: npm run test

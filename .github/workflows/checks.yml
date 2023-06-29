@@ -15,9 +15,9 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: '14.x'
+        node-version: '16.x'
     - name: Install deps
-      run: npm install -g npm@7 && npm ci
+      run: npm install -g npm@8 && npm ci
     - name: Run build
       run: npm run build
 
@@ -28,9 +28,9 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: '14.x'
+        node-version: '16.x'
     - name: Install deps
-      run: npm install -g npm@7 && npm ci
+      run: npm install -g npm@8 && npm ci
     - name: Run build-cdk
       run: npm run build-cdk
 
@@ -41,9 +41,9 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: '14.x'
+        node-version: '16.x'
     - name: Install deps
-      run: npm install -g npm@7 && npm ci
+      run: npm install -g npm@8 && npm ci
     - name: Run lint
       run: npm run lint
 
@@ -54,13 +54,8 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: '14.x'
+        node-version: '16.x'
     - name: Install deps
-      run: npm install -g npm@7 && npm ci
-    - name: Setup DynamoDB Local
-      uses: rrainn/dynamodb-action@v2.0.1
-      with:
-        port: 8000
-        cors: '*'
+      run: npm install -g npm@8 && npm ci
     - name: Run Test
       run: npm run test

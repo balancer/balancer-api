@@ -49,7 +49,6 @@ const {
   UPDATE_POOLS_INTERVAL_IN_MINUTES,
   DECORATE_POOLS_INTERVAL_IN_MINUTES,
   DOMAIN_NAME,
-  SANCTIONS_API_KEY,
   NETWORKS,
   TENDERLY_USER,
   TENDERLY_PROJECT,
@@ -368,7 +367,7 @@ export class BalancerPoolsAPI extends Stack {
     const checkWalletLambda = new NodejsFunction(this, 'checkWalletFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'check-wallet.ts'),
       environment: {
-        SANCTIONS_API_KEY: SANCTIONS_API_KEY || '',
+        INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15),

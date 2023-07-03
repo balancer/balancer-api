@@ -1,14 +1,15 @@
 import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
-import fetch from 'isomorphic-fetch';
-import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '@/modules/trm';
 import { formatResponse } from './utils';
-
-const SANCTIONS_ENDPOINT =
-  'https://api.trmlabs.com/public/v2/screening/addresses';
-const { SANCTIONS_API_KEY } = process.env;
+import { MISSING_CHAIN_ID_ERROR } from '@/constants';
+import { Chainalysis } from '@/modules/sanctions';
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
+  const chainId = parseInt(event.pathParameters.chainId);
+  if (!chainId) {
+    return MISSING_CHAIN_ID_ERROR;
+  }
+
   const address = event.queryStringParameters.address;
   if (!address) {
     return formatResponse(
@@ -18,38 +19,8 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   }
 
   try {
-    const response = await fetch(SANCTIONS_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization:
-          'Basic ' +
-          Buffer.from(`${SANCTIONS_API_KEY}:${SANCTIONS_API_KEY}`).toString(
-            'base64'
-          ),
-      },
-      body: JSON.stringify([
-        {
-          address: address.toLowerCase(),
-          chain: 'ethereum',
-        },
-      ]),
-    });
-
-    const result: TRMAccountDetails[] = await response.json();
-
-    const riskIndicators: TRMRiskIndicator[] =
-      result[0]?.addressRiskIndicators || [];
-    const entities: TRMEntity[] = result[0]?.entities || [];
-
-    const hasSevereRisk = riskIndicators.some(
-      indicator => indicator.categoryRiskScoreLevelLabel === 'Severe'
-    );
-    const hasSevereEntity = entities.some(
-      entity => entity.riskScoreLevelLabel === 'Severe'
-    );
-
-    const isBlocked = hasSevereEntity || hasSevereRisk;
+    const chainalysis = new Chainalysis(chainId);
+    const isBlocked = await chainalysis.isSanctioned(address);
 
     return formatResponse(
       200,

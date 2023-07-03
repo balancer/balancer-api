@@ -7,7 +7,8 @@
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
     "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
-    "batchRelayer": "0x598ce0f1ab64B27256759ef99d883EE51138b9bd"
+    "batchRelayer": "0x598ce0f1ab64B27256759ef99d883EE51138b9bd",
+    "sanctionsContract": "0x40C57923924B5c5c5455c48D93317139ADDaC8fb"
   },
   "coingecko": {
     "platformId": "arbitrum-one",

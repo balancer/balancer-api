@@ -17,6 +17,7 @@ export interface Config {
     wrappedNativeAsset: string;
     vault: string;
     batchRelayer: string;
+    sanctionsContract?: string;
   }
   coingecko: {
     platformId: string;

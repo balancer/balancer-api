@@ -142,7 +142,7 @@ The `{chainId}` in each endpoint is the chain/network number you wish to request
 - `/tokens/{chainId}` - Returns a JSON array of all known tokens of that chain
 - `/tokens/update/` - Runs the worker lambda that for every known token, fetches the latest price (in the chains native asset) from coingecko and saves it in the database.
 
-- `/check-wallet` - Used to perform sanctions checks with TRM.
+- `/check-wallet` - Used to perform sanctions checks with Chainalysis.
 - `/tenderly/contracts/encode-states` - Encodes state information with Tenderly
 - `/tenderly/simulate` - Simulate a transaction with Tenderly
 - `/hal-webhook` - Receives events from hal.xyz
@@ -322,7 +322,6 @@ You can customize your deployment with env variables. See .env.example for all p
 #### Additional Settings - Rarely used
 
 - DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created.
-- SANCTIONS_API_KEY - TRM API key for running sanction checks.
 - TENDERLY_USER - Your Tenderly user id, used by the `/tenderly` endpoints.
 - TENDERLY_PROJECT - Your Tenderly project id, used by the `/tenderly` endpoints.
 - TENDERLY_ACCESS_KEY - Your tenderly access key, used by the `/tenderly` endpoints.

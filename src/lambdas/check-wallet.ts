@@ -1,15 +1,9 @@
 import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
 import { formatResponse } from './utils';
-import { MISSING_CHAIN_ID_ERROR } from '@/constants';
-import { Chainalysis } from '@/modules/sanctions';
+import { isSanctioned } from '@/modules/sanctions';
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
-  const chainId = parseInt(event.pathParameters.chainId);
-  if (!chainId) {
-    return MISSING_CHAIN_ID_ERROR;
-  }
-
   const address = event.queryStringParameters.address;
   if (!address) {
     return formatResponse(
@@ -19,8 +13,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   }
 
   try {
-    const chainalysis = new Chainalysis(chainId);
-    const isBlocked = await chainalysis.isSanctioned(address);
+    const isBlocked = await isSanctioned(address);
 
     return formatResponse(
       200,

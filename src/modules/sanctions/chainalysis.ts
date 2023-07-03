@@ -2,26 +2,15 @@
 import { Contract } from '@ethersproject/contracts';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import abi from './abi.json';
-import config from '@/config';
 import { getRpcUrl } from '@/modules/network';
 
+const sanctionsContractAddress = '0x40C57923924B5c5c5455c48D93317139ADDaC8fb'
 
-export class Chainalysis {
-  private sanctionsContractAddress: string | undefined;
-  private provider: any;
-
-  constructor(chainId: number) {
-    this.sanctionsContractAddress = config[chainId]?.addresses.sanctionsContract;
-    const rpcUrl = getRpcUrl(chainId);
-    this.provider = new JsonRpcProvider(rpcUrl);
-  }
-
-
-  async isSanctioned(address: string): Promise<boolean> {
+export async function isSanctioned(address: string): Promise<boolean> {
     if (!this.sanctionsContractAddress) return false;
 
-    const sanctionsContract = new Contract(this.sanctionsContractAddress, abi, this.provider);
+    const rpcUrl = getRpcUrl(1);
+    this.provider = new JsonRpcProvider(rpcUrl);
+    const sanctionsContract = new Contract(sanctionsContractAddress, abi, this.provider);
     return await sanctionsContract.isSanctioned(address);
-  }
-
 }

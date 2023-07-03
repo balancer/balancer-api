@@ -7,8 +7,7 @@
     "nativeAsset": "0x0000000000000000000000000000000000001010",
     "wrappedNativeAsset": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
     "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
-    "batchRelayer": "0xd18d5D377eb23362e54Fa496597d7E962d56C554",
-    "sanctionsContract": "0x40C57923924B5c5c5455c48D93317139ADDaC8fb"
+    "batchRelayer": "0xd18d5D377eb23362e54Fa496597d7E962d56C554"
   },
   "coingecko": {
     "platformId": "polygon-pos",

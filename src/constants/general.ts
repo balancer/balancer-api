@@ -29,7 +29,8 @@ export const Network: Record<string, number> = {
   GNOSIS: 100,
   ZKEVM: 1101,
   ARBITRUM: 42161,
-  AVALANCHE: 43114
+  AVALANCHE: 43114,
+  SEPOLIA: 11155111,
 };
 
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(

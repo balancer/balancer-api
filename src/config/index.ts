@@ -2,9 +2,10 @@ import { Network } from '@/constants';
 import arbitrum from './arbitrum.json';
 import avalanche from './avalanche.json';
 import goerli from './goerli.json';
+import gnosis from './gnosis-chain.json';
 import mainnet from './mainnet.json';
 import polygon from './polygon.json';
-import gnosis from './gnosis-chain.json';
+import sepolia from './sepolia.json';
 import zkevm from './zkevm.json';
 
 export interface Config {
@@ -32,7 +33,8 @@ const config: Record<number, Config> = {
   [Network.ARBITRUM]: arbitrum,
   [Network.GNOSIS]: gnosis,
   [Network.ZKEVM]: zkevm,
-  [Network.AVALANCHE]: avalanche
+  [Network.AVALANCHE]: avalanche,
+  [Network.SEPOLIA]: sepolia,
 };
 
 export default config;

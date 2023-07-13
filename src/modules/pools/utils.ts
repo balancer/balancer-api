@@ -1,4 +1,4 @@
-import { AprBreakdown, PoolType, SubgraphPoolBase } from '@balancer-labs/sdk';
+import { AprBreakdown, PoolType, SubgraphPoolBase } from '@sobal/sdk';
 import { Pool } from './types';
 import { Schema, POOL_SCHEMA, POOL_TOKEN_SCHEMA } from '@/modules/dynamodb';
 import _ from 'lodash';
@@ -6,7 +6,6 @@ import { inspect } from 'util';
 import { BigNumber } from 'bignumber.js';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-
 
 /**
  * Used for converting a Balancer Pool type to a SubgraphPoolBase type which is what SOR expects
@@ -28,8 +27,6 @@ export function convertPoolToSubgraphPoolBase(pool: Pool): SubgraphPoolBase {
   };
 }
 
-
-
 export function isValidApr(apr: AprBreakdown) {
   for (const value of Object.values(apr)) {
     if (typeof value === 'object') {
@@ -43,13 +40,15 @@ export function isValidApr(apr: AprBreakdown) {
   return true;
 }
 
-
 /**
  * Takes a list of currentPools and newPools and returns a list
  * of all pools that have changed in newPools
  */
 
-export function getChangedPools(newPools: Partial<Pool>[], currentPools: Pool[]) {
+export function getChangedPools(
+  newPools: Partial<Pool>[],
+  currentPools: Pool[]
+) {
   const currentPoolsMap = Object.fromEntries(
     currentPools.map(pool => {
       return [pool.id, pool];
@@ -73,7 +72,7 @@ export function getNonStaticSchemaFields(schema: Schema): string[] {
 
 export function isSchemaFieldANumber(key: string, schema: Schema): boolean {
   const numberTypes = ['BigDecimal', 'BigInt', 'Int'];
-  return numberTypes.includes(schema[key]?.type)
+  return numberTypes.includes(schema[key]?.type);
 }
 
 export function isSame(newPool: Partial<Pool>, oldPool?: Pool): boolean {
@@ -95,7 +94,10 @@ export function isSame(newPool: Partial<Pool>, oldPool?: Pool): boolean {
 
   for (const key of newPoolFields) {
     if (!_.isEqual(filteredNewPool[key], filteredOldPool[key])) {
-      if (isSchemaFieldANumber(key, POOL_SCHEMA) && new BigNumber(filteredNewPool[key]).eq(filteredOldPool[key])) {
+      if (
+        isSchemaFieldANumber(key, POOL_SCHEMA) &&
+        new BigNumber(filteredNewPool[key]).eq(filteredOldPool[key])
+      ) {
         continue;
       }
 
@@ -111,7 +113,6 @@ export function isSame(newPool: Partial<Pool>, oldPool?: Pool): boolean {
   }
   return true;
 }
-
 
 export function getTokenAddressesFromPools(pools: Partial<Pool>[]): string[] {
   const tokenAddressMap = {};
@@ -135,22 +136,23 @@ export function getPoolTypeFromId(poolId: string): PoolType | undefined {
    */
 
   const middleBytes = poolId.substring(42, 46);
-  switch(middleBytes) {
+  switch (middleBytes) {
     case '0000':
-      return PoolType.Stable
+      return PoolType.Stable;
     case '0002':
-      return PoolType.Weighted
+      return PoolType.Weighted;
   }
 }
 
-export async function getPoolSymbolFromContract(poolId: string, provider: JsonRpcProvider): Promise<PoolType | undefined> {
+export async function getPoolSymbolFromContract(
+  poolId: string,
+  provider: JsonRpcProvider
+): Promise<PoolType | undefined> {
   const poolAddress = convertPoolIdToAddress(poolId);
 
   const poolDetailsContract = new Contract(
     poolAddress,
-    [
-      'function symbol() view returns (string)',
-    ],
+    ['function symbol() view returns (string)'],
     provider
   );
 
@@ -161,18 +163,17 @@ export async function getPoolSymbolFromContract(poolId: string, provider: JsonRp
       'Unable to fetch symbol for pool, continuing with empty description'
     );
   }
-
- 
 }
 
-export async function getPoolTypeFromContract(poolId: string, provider: JsonRpcProvider): Promise<PoolType | undefined> {
+export async function getPoolTypeFromContract(
+  poolId: string,
+  provider: JsonRpcProvider
+): Promise<PoolType | undefined> {
   const poolAddress = convertPoolIdToAddress(poolId);
 
   const poolDetailsContract = new Contract(
     poolAddress,
-    [
-      'function version() view returns (string)',
-    ],
+    ['function version() view returns (string)'],
     provider
   );
 
@@ -183,9 +184,9 @@ export async function getPoolTypeFromContract(poolId: string, provider: JsonRpcP
 
     switch (poolInfo.name) {
       case 'WeightedPool':
-        return PoolType.Weighted
+        return PoolType.Weighted;
       case 'ComposableStablePool':
-        return PoolType.Stable
+        return PoolType.Stable;
     }
   } catch (e) {
     console.error('Unable to read pool type from contract');

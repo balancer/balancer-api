@@ -1,5 +1,4 @@
-
-import { Price } from '@balancer-labs/sdk';
+import { Price } from '@sobal/sdk';
 import { formatPrice } from './utils';
 
 describe('prices utils', () => {

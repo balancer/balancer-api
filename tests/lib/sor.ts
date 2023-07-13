@@ -7,16 +7,15 @@ import { MaxUint256 } from '@ethersproject/constants';
 import { hexValue } from '@ethersproject/bytes';
 import config from '@/config';
 import { JsonRpcSigner } from '@ethersproject/providers';
-import { SorRequest, convertSwapInfoToBatchSwap, SorOrderResponse } from '@/modules/sor';
-import { approveRelayer, approveToken } from './helpers';
 import {
-  Address,
-  SwapInfo,
-  Swaps,
-  SwapType,
-} from '@balancer-labs/sdk';
+  SorRequest,
+  convertSwapInfoToBatchSwap,
+  SorOrderResponse,
+} from '@/modules/sor';
+import { approveRelayer, approveToken } from './helpers';
+import { Address, SwapInfo, Swaps, SwapType } from '@sobal/sdk';
 
-const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.balancer.fi';
+const ENDPOINT_URL = process.env.ENDPOINT_URL || 'https://api.sobal.fi';
 
 const GWEI = 10 ** 9;
 const GAS_PRICE = 500 * GWEI;
@@ -30,7 +29,7 @@ export async function testSorRequest(
   signer: JsonRpcSigner,
   network: number,
   sorRequest: SorRequest,
-  sorOptions?: SorOptions,
+  sorOptions?: SorOptions
 ) {
   const sorSwapInfo = await querySorEndpoint(network, sorRequest, sorOptions);
   const swapType =
@@ -48,9 +47,12 @@ export async function testSorRequest(
 export async function testOrderRequest(
   signer: JsonRpcSigner,
   network: number,
-  sorRequest: SorRequest,
+  sorRequest: SorRequest
 ) {
-  const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(network, sorRequest);
+  const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(
+    network,
+    sorRequest
+  );
 
   // Allow the vault to spend wallets tokens
   await approveToken(
@@ -95,7 +97,7 @@ export async function testSorSwap(
     swapType,
     sorSwapInfo,
     walletAddress,
-    walletAddress,
+    walletAddress
   );
 
   const encodedBatchSwapData = Swaps.encodeBatchSwap(batchSwapData);
@@ -120,8 +122,13 @@ export async function querySorEndpoint(
 ): Promise<SwapInfo> {
   let sorSwapInfo: SwapInfo;
   try {
-    const params = new URLSearchParams(_.omitBy(sorOptions, _.isUndefined)).toString();
-    const data = await axios.post(`${ENDPOINT_URL}/sor/${network}/?${params}`, sorRequest);
+    const params = new URLSearchParams(
+      _.omitBy(sorOptions, _.isUndefined)
+    ).toString();
+    const data = await axios.post(
+      `${ENDPOINT_URL}/sor/${network}/?${params}`,
+      sorRequest
+    );
     sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);
@@ -133,11 +140,14 @@ export async function querySorEndpoint(
 
 export async function queryOrderEndpoint(
   network: number,
-  sorRequest: SorRequest,
+  sorRequest: SorRequest
 ): Promise<SorOrderResponse> {
   let sorSwapInfo: SorOrderResponse;
   try {
-    const data = await axios.post(`${ENDPOINT_URL}/order/${network}/`, sorRequest);
+    const data = await axios.post(
+      `${ENDPOINT_URL}/order/${network}/`,
+      sorRequest
+    );
     sorSwapInfo = data.data;
   } catch (e) {
     console.error('Failed to fetch sor data. Error is: ', e);

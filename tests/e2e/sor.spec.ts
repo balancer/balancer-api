@@ -8,24 +8,31 @@ import { BigNumber } from 'ethers';
 import { querySorEndpoint, testSorRequest, testSorSwap } from '@tests/lib/sor';
 import { Network } from '@/constants/general';
 import { getRpcUrl } from '@/modules/network';
-import { forkSetup, getBalances, setEthBalance, setTokenBalance } from '@tests/lib/helpers';
+import {
+  forkSetup,
+  getBalances,
+  setEthBalance,
+  setTokenBalance,
+} from '@tests/lib/helpers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { TOKENS } from '@/constants/addresses';
-import { SwapInfo, SwapType } from '@balancer-labs/sdk';
+import { SwapInfo, SwapType } from '@sobal/sdk';
 
 jest.unmock('@ethersproject/contracts');
-jest.unmock('@balancer-labs/sdk');
+jest.unmock('@sobal/sdk');
 jest.setTimeout(30000);
 
-let provider, signer; 
+let provider, signer;
 
 const hardhatUrl = process.env.HARDHAT_URL || `http://127.0.0.1:8545`;
 const rpcUrl = process.env.RPC_URL || getRpcUrl(Network.MAINNET);
-const endpointUrl = process.env.ENDPOINT_URL || `https://api.balancer.fi`;
+const endpointUrl = process.env.ENDPOINT_URL || `https://api.sobal.fi`;
 const walletAddress = '0x90F79bf6EB2c4f870365E785982E1f101E93b906';
 
 if (!rpcUrl) {
-  console.error('Env variable RPC_URL or INFURA_PROJECT_ID must be set to run these tests')
+  console.error(
+    'Env variable RPC_URL or INFURA_PROJECT_ID must be set to run these tests'
+  );
   process.exit(1);
 }
 
@@ -41,11 +48,13 @@ describe('SOR Endpoint E2E tests', () => {
   beforeAll(async () => {
     // Update all pools
     try {
-      console.log(`Updating pools at ${endpointUrl}/pools/1/update`)
+      console.log(`Updating pools at ${endpointUrl}/pools/1/update`);
       await axios.post(`${endpointUrl}/pools/1/update`);
     } catch (e) {
-      console.log("Received error updating pools, this is probably because another update is already in process.");
-      // Ignore, just means there's another update in progress. 
+      console.log(
+        'Received error updating pools, this is probably because another update is already in process.'
+      );
+      // Ignore, just means there's another update in progress.
     }
   });
 
@@ -70,7 +79,7 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', DAI.decimals).toString(),
         gasPrice: GAS_PRICE,
       };
-      await setTokenBalance(signer, DAI, sorRequest.amount)
+      await setTokenBalance(signer, DAI, sorRequest.amount);
       const balances = await getBalances(signer, [BAL]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [BAL]);
@@ -86,7 +95,7 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', BAL.decimals).toString(),
         gasPrice: GAS_PRICE,
       };
-      await setTokenBalance(signer, BAL, sorRequest.amount)
+      await setTokenBalance(signer, BAL, sorRequest.amount);
       const balances = await getBalances(signer, [BAL, USDC]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [BAL, USDC]);
@@ -102,7 +111,11 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', DAI.decimals).toString(),
         gasPrice: GAS_PRICE,
       };
-      await setTokenBalance(signer, USDC, BigNumber.from(sorRequest.amount).mul(2))
+      await setTokenBalance(
+        signer,
+        USDC,
+        BigNumber.from(sorRequest.amount).mul(2)
+      );
       const balances = await getBalances(signer, [USDC, DAI]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [USDC, DAI]);
@@ -118,7 +131,7 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('100', waUSDC.decimals).toString(),
         gasPrice: GAS_PRICE,
       };
-      await setTokenBalance(signer, waUSDC, sorRequest.amount)
+      await setTokenBalance(signer, waUSDC, sorRequest.amount);
       const balances = await getBalances(signer, [waUSDC, DAI]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [waUSDC, DAI]);
@@ -134,9 +147,13 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('1000', USDC.decimals).toString(),
         gasPrice: GAS_PRICE,
       };
-      await setTokenBalance(signer, USDT, BigNumber.from(sorRequest.amount).mul(2))
+      await setTokenBalance(
+        signer,
+        USDT,
+        BigNumber.from(sorRequest.amount).mul(2)
+      );
       const balances = await getBalances(signer, [USDT, USDC]);
-      await testSorRequest(signer, Network.MAINNET, sorRequest)
+      await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [USDT, USDC]);
       expect(BigNumber.from(newBalances.USDC).gt(balances.USDC)).toBeTruthy();
     });
@@ -150,11 +167,13 @@ describe('SOR Endpoint E2E tests', () => {
         amount: parseFixed('10', WETH.decimals).toString(),
         gasPrice: GAS_PRICE,
       };
-      await setTokenBalance(signer, WETH, sorRequest.amount)
+      await setTokenBalance(signer, WETH, sorRequest.amount);
       const balances = await getBalances(signer, [WETH, bbausd2]);
       await testSorRequest(signer, Network.MAINNET, sorRequest);
       const newBalances = await getBalances(signer, [WETH, bbausd2]);
-      expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)).toBeTruthy();
+      expect(
+        BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)
+      ).toBeTruthy();
     });
 
     it('Should fail if the SwapInfo is invalid', async () => {
@@ -166,18 +185,21 @@ describe('SOR Endpoint E2E tests', () => {
         amount: '153492299',
         gasPrice: GAS_PRICE,
       };
-      await setTokenBalance(signer, USDC, sorRequest.amount)
-      const swapInfo: SwapInfo = await querySorEndpoint(Network.MAINNET, sorRequest);
+      await setTokenBalance(signer, USDC, sorRequest.amount);
+      const swapInfo: SwapInfo = await querySorEndpoint(
+        Network.MAINNET,
+        sorRequest
+      );
 
       // Modify the swapInfo to increase returnAmount by 10% as this should fail
       const originalReturnAmount = BigNumber.from(swapInfo.returnAmount);
       const newReturnAmount = originalReturnAmount.mul(11).div(10);
-      swapInfo.swaps = swapInfo.swaps.map((swap) => {
+      swapInfo.swaps = swapInfo.swaps.map(swap => {
         if (swap.returnAmount === originalReturnAmount.toString()) {
           return {
             ...swap,
-            returnAmount: newReturnAmount.toString()
-          }
+            returnAmount: newReturnAmount.toString(),
+          };
         }
 
         return swap;
@@ -187,15 +209,15 @@ describe('SOR Endpoint E2E tests', () => {
       swapInfo.returnAmountConsideringFees = newReturnAmount;
 
       const testSwap = async () => {
-        await testSorSwap(signer, Network.MAINNET, SwapType.SwapExactIn, swapInfo);
-      }
+        await testSorSwap(
+          signer,
+          Network.MAINNET,
+          SwapType.SwapExactIn,
+          swapInfo
+        );
+      };
 
       await expect(testSwap).rejects.toThrow(Error);
     });
   });
 });
-
-
-
-
-

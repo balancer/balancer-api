@@ -1,5 +1,5 @@
-import { Address, SwapV2 } from "@balancer-labs/sdk";
-import { BigNumberish } from "ethers";
+import { Address, SwapV2 } from '@sobal/sdk';
+import { BigNumberish } from 'ethers';
 
 export interface SorRequest {
   sellToken: Address;
@@ -44,7 +44,7 @@ export interface SorOrderResponse {
   // Price information from SOR
   price: PriceResponse;
   // The address the transaction should be sent to
-  to: Address; 
+  to: Address;
   // Transaction data
   data: string;
   // value to send with transaction

@@ -1,4 +1,4 @@
-import { Price } from '@balancer-labs/sdk';
+import { Price } from '@sobal/sdk';
 import { BigNumber } from 'bignumber.js';
 
 /** Formats a price correctly for storage. Does the following:

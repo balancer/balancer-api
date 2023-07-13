@@ -7,7 +7,7 @@ import {
   BalancerNetworkConfig,
   BalancerDataRepositories,
   AprBreakdown,
-} from '@balancer-labs/sdk';
+} from '@sobal/sdk';
 import { WEEK_IN_MS } from '@/constants';
 import { Pool } from './types';
 import { isValidApr } from './utils';

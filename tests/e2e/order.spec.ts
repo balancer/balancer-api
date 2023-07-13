@@ -9,25 +9,31 @@ import { queryOrderEndpoint, testOrderRequest } from '@tests/lib/sor';
 import { Network } from '@/constants/general';
 import config from '@/config';
 import { getRpcUrl } from '@/modules/network';
-import { forkSetup, getBalances, setEthBalance, setTokenBalance } from '@tests/lib/helpers';
+import {
+  forkSetup,
+  getBalances,
+  setEthBalance,
+  setTokenBalance,
+} from '@tests/lib/helpers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { TOKENS } from '@/constants/addresses';
 
 jest.unmock('@ethersproject/contracts');
-jest.unmock('@balancer-labs/sdk');
+jest.unmock('@sobal/sdk');
 jest.setTimeout(30000);
 
-let provider, signer; 
+let provider, signer;
 
 const hardhatUrl = process.env.HARDHAT_URL || `http://127.0.0.1:8545`;
 const rpcUrl = process.env.RPC_URL || getRpcUrl(Network.MAINNET);
-const endpointUrl = process.env.ENDPOINT_URL || `https://api.balancer.fi`;
+const endpointUrl = process.env.ENDPOINT_URL || `https://api.sobal.fi`;
 const walletAddress = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266';
-const recipientWalletAddress = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
-
+const recipientWalletAddress = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8';
 
 if (!rpcUrl) {
-  console.error('Env variable RPC_URL or INFURA_PROJECT_ID must be set to run these tests')
+  console.error(
+    'Env variable RPC_URL or INFURA_PROJECT_ID must be set to run these tests'
+  );
   process.exit(1);
 }
 
@@ -43,11 +49,13 @@ describe('/order E2E tests', () => {
   beforeAll(async () => {
     // Update all pools
     try {
-      console.log(`Updating pools at ${endpointUrl}/pools/1/update`)
+      console.log(`Updating pools at ${endpointUrl}/pools/1/update`);
       await axios.post(`${endpointUrl}/pools/1/update`);
     } catch (e) {
-      console.log("Received error updating pools, this is probably because another update is already in process.");
-      // Ignore, just means there's another update in progress. 
+      console.log(
+        'Received error updating pools, this is probably because another update is already in process.'
+      );
+      // Ignore, just means there's another update in progress.
     }
   });
 
@@ -74,7 +82,7 @@ describe('/order E2E tests', () => {
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
-        await setTokenBalance(signer, DAI, sorRequest.amount)
+        await setTokenBalance(signer, DAI, sorRequest.amount);
         const balances = await getBalances(signer, [BAL]);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [BAL]);
@@ -91,7 +99,7 @@ describe('/order E2E tests', () => {
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
-        await setTokenBalance(signer, BAL, sorRequest.amount)
+        await setTokenBalance(signer, BAL, sorRequest.amount);
         const balances = await getBalances(signer, [BAL, USDC]);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [BAL, USDC]);
@@ -108,7 +116,11 @@ describe('/order E2E tests', () => {
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
-        await setTokenBalance(signer, USDC, BigNumber.from(sorRequest.amount).mul(2))
+        await setTokenBalance(
+          signer,
+          USDC,
+          BigNumber.from(sorRequest.amount).mul(2)
+        );
         const balances = await getBalances(signer, [USDC, DAI]);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [USDC, DAI]);
@@ -125,7 +137,7 @@ describe('/order E2E tests', () => {
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
-        await setTokenBalance(signer, waUSDC, sorRequest.amount)
+        await setTokenBalance(signer, waUSDC, sorRequest.amount);
         const balances = await getBalances(signer, [waUSDC, DAI]);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [waUSDC, DAI]);
@@ -142,7 +154,11 @@ describe('/order E2E tests', () => {
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
-        await setTokenBalance(signer, USDT, BigNumber.from(sorRequest.amount).mul(2))
+        await setTokenBalance(
+          signer,
+          USDT,
+          BigNumber.from(sorRequest.amount).mul(2)
+        );
         const balances = await getBalances(signer, [USDT, USDC]);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [USDT, USDC]);
@@ -159,11 +175,13 @@ describe('/order E2E tests', () => {
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
-        await setTokenBalance(signer, WETH, sorRequest.amount)
+        await setTokenBalance(signer, WETH, sorRequest.amount);
         const balances = await getBalances(signer, [WETH, bbausd2]);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [WETH, bbausd2]);
-        expect(BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)).toBeTruthy();
+        expect(
+          BigNumber.from(newBalances.bbausd2).gt(balances.bbausd2)
+        ).toBeTruthy();
       });
 
       it('Should be able to sell BAL for USDC and send to another receipient', async () => {
@@ -177,17 +195,33 @@ describe('/order E2E tests', () => {
           sender: walletAddress,
           recipient: recipientWalletAddress,
         };
-        await setTokenBalance(signer, BAL, sorRequest.amount)
+        await setTokenBalance(signer, BAL, sorRequest.amount);
         const senderBalances = await getBalances(signer, [BAL, USDC]);
-        const recipientSigner = await provider.getSigner(recipientWalletAddress);
-        const recipientBalances = await getBalances(recipientSigner, [BAL, USDC]);
+        const recipientSigner = await provider.getSigner(
+          recipientWalletAddress
+        );
+        const recipientBalances = await getBalances(recipientSigner, [
+          BAL,
+          USDC,
+        ]);
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
-        const newRecipientBalances = await getBalances(recipientSigner, [BAL, USDC]);
-        expect(BigNumber.from(newRecipientBalances.BAL).eq(recipientBalances.BAL)).toBeTruthy();
-        expect(BigNumber.from(newRecipientBalances.USDC).gt(recipientBalances.USDC)).toBeTruthy();
+        const newRecipientBalances = await getBalances(recipientSigner, [
+          BAL,
+          USDC,
+        ]);
+        expect(
+          BigNumber.from(newRecipientBalances.BAL).eq(recipientBalances.BAL)
+        ).toBeTruthy();
+        expect(
+          BigNumber.from(newRecipientBalances.USDC).gt(recipientBalances.USDC)
+        ).toBeTruthy();
         const newSenderBalances = await getBalances(signer, [BAL, USDC]);
-        expect(BigNumber.from(newSenderBalances.BAL).lt(senderBalances.BAL)).toBeTruthy();
-        expect(BigNumber.from(newSenderBalances.USDC).eq(senderBalances.USDC)).toBeTruthy();
+        expect(
+          BigNumber.from(newSenderBalances.BAL).lt(senderBalances.BAL)
+        ).toBeTruthy();
+        expect(
+          BigNumber.from(newSenderBalances.USDC).eq(senderBalances.USDC)
+        ).toBeTruthy();
       });
     });
 
@@ -202,19 +236,21 @@ describe('/order E2E tests', () => {
           gasPrice: GAS_PRICE,
           sender: walletAddress,
         };
-        await setTokenBalance(signer, WETH, sorRequest.amount)
+        await setTokenBalance(signer, WETH, sorRequest.amount);
         const balances = await getBalances(signer, [WETH, auraBal]);
-        const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(Network.MAINNET, sorRequest);
-        expect(sorOrderInfo.to).toEqual(config[Network.MAINNET].addresses.batchRelayer);
+        const sorOrderInfo: SorOrderResponse = await queryOrderEndpoint(
+          Network.MAINNET,
+          sorRequest
+        );
+        expect(sorOrderInfo.to).toEqual(
+          config[Network.MAINNET].addresses.batchRelayer
+        );
         await testOrderRequest(signer, Network.MAINNET, sorRequest);
         const newBalances = await getBalances(signer, [WETH, auraBal]);
-        expect(BigNumber.from(newBalances.auraBal).gt(balances.auraBal)).toBeTruthy();
+        expect(
+          BigNumber.from(newBalances.auraBal).gt(balances.auraBal)
+        ).toBeTruthy();
       });
-    })
+    });
   });
 });
-
-
-
-
-

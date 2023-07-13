@@ -1,4 +1,4 @@
-import { BalancerSDK, SwapInfo, SwapType, SwapTypes } from '@balancer-labs/sdk';
+import { BalancerSDK, SwapInfo, SwapType, SwapTypes } from '@sobal/sdk';
 import { SorRequest, SerializedSwapInfo } from './types';
 import { Token } from '@/modules/tokens';
 import {
@@ -30,9 +30,10 @@ export function orderKindToSwapType(orderKind: string): SwapType {
 }
 
 export function sdkToSorSwapType(swapType: SwapType): SwapTypes {
-  return swapType === SwapType.SwapExactIn ? SwapTypes.SwapExactIn : SwapTypes.SwapExactOut;
+  return swapType === SwapType.SwapExactIn
+    ? SwapTypes.SwapExactIn
+    : SwapTypes.SwapExactOut;
 }
-
 
 export function serializeSwapInfo(swapInfo: SwapInfo): SerializedSwapInfo {
   const serializedSwapInfo: SerializedSwapInfo = {
@@ -65,7 +66,7 @@ interface SorSwapOptions {
 export async function getSorSwap(
   chainId: number,
   request: SorRequest,
-  options: SorSwapOptions = {},
+  options: SorSwapOptions = {}
 ): Promise<SwapInfo> {
   log(`Getting swap: ${JSON.stringify(request)}`);
   const rpcUrl = getRpcUrl(chainId);
@@ -77,18 +78,18 @@ export async function getSorSwap(
 
   let sorSettings;
   if (useDb) {
-    log("Using DynamoDB for SOR data.");
+    log('Using DynamoDB for SOR data.');
     log(`Minimum Liquidity: ${minLiquidity}`);
 
     // SDK/SOR will use this to retrieve pool list from db (default uses onchain call which will be slow)
     const dbPoolDataService = new DatabasePoolDataService({
       chainId,
-      minLiquidity
+      minLiquidity,
     });
 
     sorSettings = {
-      poolDataService: dbPoolDataService
-    }
+      poolDataService: dbPoolDataService,
+    };
   }
 
   const balancer = new BalancerSDK({
@@ -101,17 +102,9 @@ export async function getSorSwap(
   const { sellToken, buyToken, orderKind, amount, gasPrice } = request;
 
   const sellTokenDetails: Token = await getToken(chainId, sellToken);
-  log(
-    `Sell token details: ${JSON.stringify(
-      sellTokenDetails
-    )}`
-  );
+  log(`Sell token details: ${JSON.stringify(sellTokenDetails)}`);
   const buyTokenDetails: Token = await getToken(chainId, buyToken);
-  log(
-    `Buy token details: ${JSON.stringify(
-      buyTokenDetails
-    )}`
-  );
+  log(`Buy token details: ${JSON.stringify(buyTokenDetails)}`);
 
   const nativeAssetPriceSymbol = getNativeAssetPriceSymbol(chainId);
 
@@ -130,7 +123,9 @@ export async function getSorSwap(
       );
     }
   }
-  log(`Price of ${sellToken} in native asset: ${priceOfNativeAssetInSellToken}`);
+  log(
+    `Price of ${sellToken} in native asset: ${priceOfNativeAssetInSellToken}`
+  );
   balancer.sor.swapCostCalculator.setNativeAssetPriceInToken(
     sellToken,
     priceOfNativeAssetInSellToken.toString()
@@ -188,4 +183,3 @@ export async function getSorSwap(
 
   return swapInfo;
 }
-

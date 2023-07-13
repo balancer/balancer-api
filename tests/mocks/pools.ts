@@ -1,5 +1,5 @@
 import { Pool } from '@/modules/pools';
-import { PoolType } from '@balancer-labs/sdk';
+import { PoolType } from '@sobal/sdk';
 
 const pools: Pool[] = [
   {

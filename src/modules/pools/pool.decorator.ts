@@ -10,7 +10,7 @@ import {
   BalancerSDK,
   BalancerNetworkConfig,
   PoolType,
-} from '@balancer-labs/sdk';
+} from '@sobal/sdk';
 import debug from 'debug';
 import util from 'util';
 import { getRpcUrl, getSubgraphUrl } from '@/modules/network';
@@ -20,7 +20,11 @@ import { PoolService } from './pool.service';
 const log = debug('balancer:pool-decorator');
 
 const UNKNOWN_POOL_TYPES = ['HighAmpComposableStable'];
-const IGNORED_POOL_TYPES = [...UNKNOWN_POOL_TYPES, PoolType.Element, PoolType.Managed];
+const IGNORED_POOL_TYPES = [
+  ...UNKNOWN_POOL_TYPES,
+  PoolType.Element,
+  PoolType.Managed,
+];
 
 export interface PoolDecoratorOptions {
   chainId?: number;
@@ -101,7 +105,7 @@ export class PoolDecorator {
         this.poolsRepositories
       );
     } catch (e) {
-      captureException(e, { extra: { pool } })
+      captureException(e, { extra: { pool } });
       console.log(
         `Failed to initialize pool service. Error is: ${e}. Pool is:  ${util.inspect(
           pool,

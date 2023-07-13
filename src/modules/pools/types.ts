@@ -1,4 +1,4 @@
-import { Pool as SDKPool } from '@balancer-labs/sdk';
+import { Pool as SDKPool } from '@sobal/sdk';
 
 export interface Pool extends SDKPool {
   chainId: number;

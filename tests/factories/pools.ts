@@ -1,6 +1,6 @@
 import { Factory } from 'fishery';
 import { BigNumber, formatFixed } from '@ethersproject/bignumber';
-import { PoolType, PoolToken } from '@balancer-labs/sdk';
+import { PoolType, PoolToken } from '@sobal/sdk';
 import { formatAddress, formatId } from '@tests/lib/utils';
 import { Zero, WeiPerEther } from '@ethersproject/constants';
 import { Pool } from '@/modules/pools';
@@ -9,7 +9,7 @@ import { namedTokens } from './named-tokens';
 export type PoolParams = {
   type: PoolType;
   id?: string;
-}
+};
 
 type LinearTokens = {
   wrappedSymbol: string;
@@ -88,40 +88,40 @@ export interface BoostedMetaBigInfo {
   childPools: Pool[];
 }
 
-const poolBase = Factory.define<Pool, PoolParams>(
-  ({ params, afterBuild }) => {
-    afterBuild((pool) => {
-      pool.tokensList = pool.tokens.map((t) => t.address);
-    });
+const poolBase = Factory.define<Pool, PoolParams>(({ params, afterBuild }) => {
+  afterBuild(pool => {
+    pool.tokensList = pool.tokens.map(t => t.address);
+  });
 
-    const type = params.poolType || PoolType.Weighted;
+  const type = params.poolType || PoolType.Weighted;
 
-    const tokens = params.tokens || [
-      poolToken.transient({ symbol: 'wETH' }).build(),
-      poolToken.transient({ symbol: 'wBTC' }).build(),
-    ];
+  const tokens = params.tokens || [
+    poolToken.transient({ symbol: 'wETH' }).build(),
+    poolToken.transient({ symbol: 'wBTC' }).build(),
+  ];
 
-    return {
-      id: params.id || '0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e',
-      address: '0xa6f548df93de924d73be7d25dc02554c6bd66db5',
-      name: 'Default Pool',
-      chainId: 1,
-      poolType: type,
-      poolTypeVersion: 1,
-      protocolYieldFeeCache: '0',
-      protocolSwapFeeCache: '0',
-      swapFee: '0.001',
-      swapEnabled: true,
-      tokens,
-      tokensList: [],
-      totalWeight: '1',
-      totalShares: '1',
-      totalLiquidity: '0',
-      lowerTarget: '',
-      upperTarget: '',
-    };
-  }
-);
+  return {
+    id:
+      params.id ||
+      '0xa6f548df93de924d73be7d25dc02554c6bd66db500020000000000000000000e',
+    address: '0xa6f548df93de924d73be7d25dc02554c6bd66db5',
+    name: 'Default Pool',
+    chainId: 1,
+    poolType: type,
+    poolTypeVersion: 1,
+    protocolYieldFeeCache: '0',
+    protocolSwapFeeCache: '0',
+    swapFee: '0.001',
+    swapEnabled: true,
+    tokens,
+    tokensList: [],
+    totalWeight: '1',
+    totalShares: '1',
+    totalLiquidity: '0',
+    lowerTarget: '',
+    upperTarget: '',
+  };
+});
 
 const poolToken = Factory.define<PoolToken>(({ transientParams }) => {
   const { symbol, balance = '1', weight = '1', address } = transientParams;
@@ -146,8 +146,7 @@ LinearPools consisting of wrappedToken, mainToken, composableBpt
 */
 const linearPools = Factory.define<LinearInfo, LinearParams>(
   ({ transientParams }) => {
-    const { pools } =
-      transientParams;
+    const { pools } = transientParams;
     if (pools === undefined) throw new Error('Need linear pool params');
     const linearPools: Pool[] = [];
     const mainTokens: PoolToken[] = [];
@@ -158,7 +157,7 @@ const linearPools = Factory.define<LinearInfo, LinearParams>(
       (total: BigNumber, pool) => total.add(pool.balance),
       Zero
     );
-    pools?.forEach((pool) => {
+    pools?.forEach(pool => {
       const poolAddress = formatAddress(
         `address-${pool.tokens.mainSymbol}_${pool.tokens.wrappedSymbol}`
       );
@@ -266,7 +265,8 @@ const boostedPool = Factory.define<BoostedInfo, BoostedParams>(
       rootId = 'id_root',
       rootBalance = '1000000',
     } = transientParams;
-    if (!linearPoolInfo) throw new Error('Boosted Pool requires linear Pool Info');
+    if (!linearPoolInfo)
+      throw new Error('Boosted Pool requires linear Pool Info');
 
     const rootPoolParams = {
       id: formatId(rootId),
@@ -312,9 +312,7 @@ const boostedMetaPool = Factory.define<BoostedMetaInfo, BoostedMetaParams>(
     const rootTokenBalanceBoosted = BigNumber.from(
       boostedPoolInfo.totalBalance
     );
-    const rootTokenBalanceLiner = BigNumber.from(
-      linearPoolInfo.totalBalance
-    );
+    const rootTokenBalanceLiner = BigNumber.from(linearPoolInfo.totalBalance);
     const totalTokenBalance = rootTokenBalanceBoosted.add(
       rootTokenBalanceLiner
     );
@@ -411,4 +409,10 @@ const boostedMetaBigPool = Factory.define<
   };
 });
 
-export { poolBase, linearPools, boostedPool, boostedMetaPool, boostedMetaBigPool };
+export {
+  poolBase,
+  linearPools,
+  boostedPool,
+  boostedMetaPool,
+  boostedMetaBigPool,
+};

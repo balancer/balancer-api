@@ -1,6 +1,14 @@
 import debug from 'debug';
-import { BatchSwap, buildRelayerCalls, canUseJoinExit, someJoinExit, SwapInfo, Swaps, SwapType } from '@balancer-labs/sdk';
-import config  from '@/config';
+import {
+  BatchSwap,
+  buildRelayerCalls,
+  canUseJoinExit,
+  someJoinExit,
+  SwapInfo,
+  Swaps,
+  SwapType,
+} from '@sobal/sdk';
+import config from '@/config';
 import { getPools } from '@/modules/dynamodb';
 import { convertPoolToSubgraphPoolBase } from '@/modules/pools';
 import { convertSwapInfoToBatchSwap } from './batch-swap';
@@ -22,7 +30,9 @@ export async function createSorOrder(
 
   const slippagePercentage = request.slippagePercentage ?? SOR_DEFAULT_SLIPPAGE;
 
-  const swapInfo: SwapInfo = await getSorSwap(networkId, request, { useJoinExitSwaps: true });
+  const swapInfo: SwapInfo = await getSorSwap(networkId, request, {
+    useJoinExitSwaps: true,
+  });
   const swapType: SwapType = orderKindToSwapType(request.orderKind);
 
   const priceResponse: PriceResponse = {
@@ -32,17 +42,25 @@ export async function createSorOrder(
     price: swapInfo.marketSp,
   };
 
-  const joinExitAvailable = canUseJoinExit(sdkToSorSwapType(swapType), request.sellToken, request.buyToken);
+  const joinExitAvailable = canUseJoinExit(
+    sdkToSorSwapType(swapType),
+    request.sellToken,
+    request.buyToken
+  );
 
-  log("Join exit available: ", joinExitAvailable);
+  log('Join exit available: ', joinExitAvailable);
 
   if (joinExitAvailable) {
     const pools = await getPools(networkId);
     const subgraphPools = pools.map(pool =>
       convertPoolToSubgraphPoolBase(pool)
     );
-    const hasJoinExit = someJoinExit(subgraphPools, swapInfo.swaps, swapInfo.tokenAddresses);
-    log("Has join exit: ", hasJoinExit);
+    const hasJoinExit = someJoinExit(
+      subgraphPools,
+      swapInfo.swaps,
+      swapInfo.tokenAddresses
+    );
+    log('Has join exit: ', hasJoinExit);
     if (hasJoinExit) {
       // Convert slippage to basis points as that's what the SDK expects
       const slippageBps = (slippagePercentage * 10_000).toString();
@@ -62,8 +80,8 @@ export async function createSorOrder(
         price: priceResponse,
         to: relayerCallData.to,
         data: relayerCallData.data,
-        value: '0'
-      }
+        value: '0',
+      };
     }
   }
 
@@ -84,7 +102,7 @@ export async function createSorOrder(
   };
 }
 
-function validateSorRequest(request: SorRequest){
+function validateSorRequest(request: SorRequest) {
   if (!request.sender) {
     throw new SorError(
       'To create a SOR order you must pass a sender address in the request'
@@ -93,12 +111,10 @@ function validateSorRequest(request: SorRequest){
 
   if (request.slippagePercentage) {
     if (typeof request.slippagePercentage !== 'number') {
-      throw new SorError(
-        'slippagePercentage must be a number'
-      )
+      throw new SorError('slippagePercentage must be a number');
     }
 
-    if ((request.slippagePercentage < 0 || request.slippagePercentage > 1)) {
+    if (request.slippagePercentage < 0 || request.slippagePercentage > 1) {
       throw new SorError('Invalid slippage percentage. Must be 0 < n < 1.');
     }
   }

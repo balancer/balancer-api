@@ -7,7 +7,7 @@ import {
 } from './dynamodb-marshaller';
 import POOLS from '@tests/mocks/pools';
 
-jest.unmock('@balancer-labs/sdk');
+jest.unmock('@sobal/sdk');
 
 describe('DynamoDB Marshaller', () => {
   describe('Marshall Pool', () => {

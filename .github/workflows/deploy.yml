@@ -7,44 +7,43 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14.x'
-    - name: Install deps
-      run: npm install -g npm@7 && npm ci
-    - name: Install CDK
-      run: npm install -g aws-cdk@2.32.1
-    - name: Build Project
-      run: npm run build
-    - name: Build CDK Templates
-      run: npm run build-cdk
-    - name: Deploy CDK
-      run: |
-        cdk deploy --require-approval never
-      env:
-        DEBUG: 'balancer:sor,balancer:pool-data-service'
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }} 
-        ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }} 
-        SANCTIONS_API_KEY: ${{ secrets.SANCTIONS_API_KEY }} 
-        TENDERLY_USER: ${{ secrets.TENDERLY_USER }}
-        TENDERLY_PROJECT: ${{ secrets.TENDERLY_PROJECT }}
-        TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
-        SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-        GH_WEBHOOK_PAT: ${{ secrets.GH_WEBHOOK_PAT }}
-        DOMAIN_NAME: 'api.balancer.fi'
-        NETWORKS: '1,100,137,1101,42161,43114'
-        DYNAMODB_POOLS_READ_CAPACITY: 200
-        DYNAMODB_POOLS_WRITE_CAPACITY: 300
-        DYNAMODB_POOLS_IDX_READ_CAPACITY: 50
-        DYNAMODB_POOLS_IDX_WRITE_CAPACITY: 100
-        DYNAMODB_TOKENS_READ_CAPACITY: 100
-        DYNAMODB_TOKENS_WRITE_CAPACITY: 10
-        DYNAMODB_AUTOSCALE_MAX_MULTIPLIER: 20
-        UPDATE_POOLS_INTERVAL_IN_MINUTES: 1
-        DECORATE_POOLS_INTERVAL_IN_MINUTES: 1
-
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14.x'
+      - name: Install deps
+        run: npm install -g npm@7 && npm ci
+      - name: Install CDK
+        run: npm install -g aws-cdk@2.32.1
+      - name: Build Project
+        run: npm run build
+      - name: Build CDK Templates
+        run: npm run build-cdk
+      - name: Deploy CDK
+        run: |
+          cdk deploy --require-approval never
+        env:
+          DEBUG: 'balancer:sor,balancer:pool-data-service'
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }}
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
+          SANCTIONS_API_KEY: ${{ secrets.SANCTIONS_API_KEY }}
+          TENDERLY_USER: ${{ secrets.TENDERLY_USER }}
+          TENDERLY_PROJECT: ${{ secrets.TENDERLY_PROJECT }}
+          TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          GH_WEBHOOK_PAT: ${{ secrets.GH_WEBHOOK_PAT }}
+          DOMAIN_NAME: 'api.sobal.fi'
+          NETWORKS: '1,245022934'
+          DYNAMODB_POOLS_READ_CAPACITY: 200
+          DYNAMODB_POOLS_WRITE_CAPACITY: 300
+          DYNAMODB_POOLS_IDX_READ_CAPACITY: 50
+          DYNAMODB_POOLS_IDX_WRITE_CAPACITY: 100
+          DYNAMODB_TOKENS_READ_CAPACITY: 100
+          DYNAMODB_TOKENS_WRITE_CAPACITY: 10
+          DYNAMODB_AUTOSCALE_MAX_MULTIPLIER: 20
+          UPDATE_POOLS_INTERVAL_IN_MINUTES: 1
+          DECORATE_POOLS_INTERVAL_IN_MINUTES: 1

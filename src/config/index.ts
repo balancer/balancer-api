@@ -7,6 +7,8 @@ import mainnet from './mainnet.json';
 import polygon from './polygon.json';
 import sepolia from './sepolia.json';
 import zkevm from './zkevm.json';
+import neonMainnet from './neon-mainnet.json';
+import neonDevnet from './neon-devnet.json';
 
 export interface Config {
   networkId: number;
@@ -18,12 +20,12 @@ export interface Config {
     wrappedNativeAsset: string;
     vault: string;
     batchRelayer: string;
-  }
+  };
   coingecko: {
     platformId: string;
     nativeAssetId: string;
     nativeAssetPriceSymbol: string;
-  }
+  };
 }
 
 const config: Record<number, Config> = {
@@ -35,6 +37,8 @@ const config: Record<number, Config> = {
   [Network.ZKEVM]: zkevm,
   [Network.AVALANCHE]: avalanche,
   [Network.SEPOLIA]: sepolia,
+  [Network.NEON_MAINNET]: neonMainnet,
+  [Network.NEON_DEVNET]: neonDevnet,
 };
 
 export default config;

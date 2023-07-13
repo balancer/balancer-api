@@ -1,5 +1,5 @@
-import { Network } from "./general";
-import { Token } from '@balancer-labs/sdk';
+import { Network } from './general';
+import { Token } from '@sobal/sdk';
 
 export interface TokenWithSlot extends Token {
   slot?: number;
@@ -14,11 +14,11 @@ export const ADDRESSES = {
       lidoRelayer: '0xdcdbf71A870cc60C6F9B621E28a7D3Ffd6Dd4965',
       relayerV3: '0x886A3Ec7bcC508B8795990B60Fa21f85F9dB7948',
       relayerV4: '0x2536dfeeCB7A0397CF98eDaDA8486254533b1aFA',
-    }
-  }
-}
+    },
+  },
+};
 
-export const TOKENS: Record<number, Record<string, TokenWithSlot>>  = {
+export const TOKENS: Record<number, Record<string, TokenWithSlot>> = {
   [Network.MAINNET]: {
     ETH: {
       address: '0x0000000000000000000000000000000000000000',
@@ -135,5 +135,5 @@ export const TOKENS: Record<number, Record<string, TokenWithSlot>>  = {
       symbol: 'wstETH_bbaUSD',
       slot: 0,
     },
-  }
-}
+  },
+};

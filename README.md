@@ -111,7 +111,7 @@ API running somewhere, and a Hardhat network running.
 Before Starting set the following variables in your .env file:
 
 - `RPC_URL` - URL to your ETH node or Infura/Alchemy/etc. Will use infura with `INFURA_PROJECT_ID` if set.
-- `ENDPOINT_URL` - URL of your API instance - Defaults to `https://api.balancer.fi/`
+- `ENDPOINT_URL` - URL of your API instance - Defaults to `https://api.sobal.fi/`
 
 Then run the following:
 

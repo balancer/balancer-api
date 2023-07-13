@@ -1,7 +1,7 @@
 import { getSorSwap, _setLogger } from './sor';
-import { mockSwapCostCalculator } from '@balancer-labs/sdk';
+import { mockSwapCostCalculator } from '@sobal/sdk';
 
-jest.mock('@balancer-labs/sdk');
+jest.mock('@sobal/sdk');
 jest.mock('@ethersproject/providers');
 jest.mock('@ethersproject/contracts');
 jest.mock('@/modules/dynamodb/dynamodb');

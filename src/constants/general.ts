@@ -15,11 +15,12 @@ export const WEEK_IN_MS = DAY_IN_MS * 7;
 
 export const MAX_VALID_TO_EPOCH = 2 ** 32 - 1;
 
-export const ALLOWLIST_POOL_ENDPOINT = process.env.ALLOWLIST_POOL_ENDPOINT || 
+export const ALLOWLIST_POOL_ENDPOINT =
+  process.env.ALLOWLIST_POOL_ENDPOINT ||
   'https://api.github.com/repos/balancer/frontend-v2/dispatches';
-export const ALLOWLIST_TOKEN_ENDPOINT = process.env.ALLOWLIST_TOKEN_ENDPOINT || 
+export const ALLOWLIST_TOKEN_ENDPOINT =
+  process.env.ALLOWLIST_TOKEN_ENDPOINT ||
   'https://api.github.com/repos/balancer/tokenlists/dispatches';
-
 
 export const Network: Record<string, number> = {
   MAINNET: 1,
@@ -31,6 +32,8 @@ export const Network: Record<string, number> = {
   ARBITRUM: 42161,
   AVALANCHE: 43114,
   SEPOLIA: 11155111,
+  NEON_MAINNET: 245022934,
+  NEON_DEVNET: 245022926,
 };
 
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(

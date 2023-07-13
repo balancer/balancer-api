@@ -1,10 +1,10 @@
-import { PoolType, SubgraphPoolBase } from '@balancer-labs/sdk';
+import { PoolType, SubgraphPoolBase } from '@sobal/sdk';
 import { Pool } from '@/modules/pools';
 import { fetchTokens, fetchPoolsFromChain } from './onchain';
 import { subgraphPoolBase } from '@tests/factories/sor';
 import { poolBase } from '@tests/factories/pools';
 
-jest.mock('@balancer-labs/sdk');
+jest.mock('@sobal/sdk');
 jest.mock('@ethersproject/providers');
 jest.mock('@ethersproject/contracts');
 
@@ -12,25 +12,23 @@ describe('onchain data-provider', () => {
   describe('fetchPoolsFromChain', () => {
     it('Should return a list of pools from SOR, even if subgraph has none', async () => {
       const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
-      require('@balancer-labs/sdk')._setSorPools(sorPools);
+      require('@sobal/sdk')._setSorPools(sorPools);
       const pools = await fetchPoolsFromChain(1);
       expect(pools.length).toBe(1);
       expect(pools[0].id).toBe(sorPools[0].id);
     });
 
     it('Should return an empty array of pools if sor fails to fetch pools', async () => {
-      require('@balancer-labs/sdk')._setSorPools([]);
+      require('@sobal/sdk')._setSorPools([]);
       const pools = await fetchPoolsFromChain(1);
       expect(pools.length).toBe(0);
-    })
+    });
 
     it('Should add subgraph information if there is a subgraph pools', async () => {
       const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
-      require('@balancer-labs/sdk')._setSorPools(sorPools);
-      const subgraphPools: Pool[] = [
-        poolBase.build(),
-      ];
-      require('@balancer-labs/sdk')._setSubgraphPools(subgraphPools);
+      require('@sobal/sdk')._setSorPools(sorPools);
+      const subgraphPools: Pool[] = [poolBase.build()];
+      require('@sobal/sdk')._setSubgraphPools(subgraphPools);
       const pools = await fetchPoolsFromChain(1);
       expect(pools.length).toBe(1);
       expect(pools[0].protocolSwapFeeCache).toBe('0');
@@ -39,13 +37,13 @@ describe('onchain data-provider', () => {
 
     it('Should return pools from the subgraph that arent returned by SOR', async () => {
       const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
-      require('@balancer-labs/sdk')._setSorPools(sorPools);
+      require('@sobal/sdk')._setSorPools(sorPools);
       const subgraphPools: Pool[] = [
         poolBase.build({
-          id: '0x133d241f225750d2c92948e464a5a80111920331000000000000000000000476'
+          id: '0x133d241f225750d2c92948e464a5a80111920331000000000000000000000476',
         }),
       ];
-      require('@balancer-labs/sdk')._setSubgraphPools(subgraphPools);
+      require('@sobal/sdk')._setSubgraphPools(subgraphPools);
       const pools = await fetchPoolsFromChain(1);
       expect(pools.length).toBe(2);
       expect(pools[0].id).toBe(sorPools[0].id);
@@ -53,14 +51,12 @@ describe('onchain data-provider', () => {
     });
 
     it('Should over-write token priceRates with subgraph data', async () => {
-      const newPriceRate = "1.15";
+      const newPriceRate = '1.15';
       const sorPools: SubgraphPoolBase[] = [subgraphPoolBase.build()];
       sorPools[0].tokens[0].priceRate = newPriceRate;
-      require('@balancer-labs/sdk')._setSorPools(sorPools);
-      const subgraphPools: Pool[] = [
-        poolBase.build(),
-      ];
-      require('@balancer-labs/sdk')._setSubgraphPools(subgraphPools);
+      require('@sobal/sdk')._setSorPools(sorPools);
+      const subgraphPools: Pool[] = [poolBase.build()];
+      require('@sobal/sdk')._setSubgraphPools(subgraphPools);
       const pools = await fetchPoolsFromChain(1);
       expect(pools.length).toBe(1);
       expect(pools[0].tokens[0].priceRate).toBe(newPriceRate);

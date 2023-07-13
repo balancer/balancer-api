@@ -5,7 +5,7 @@ import { hexlify, hexValue, zeroPad } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/solidity';
 import { JsonRpcSigner } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { Token, Address } from '@balancer-labs/sdk';
+import { Token, Address } from '@sobal/sdk';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Network } from '@/constants';
 
@@ -139,14 +139,10 @@ export async function approveToken(
   await tx.wait();
 }
 
-export async function approveRelayer(
-  signer: JsonRpcSigner,
-): Promise<void> {
+export async function approveRelayer(signer: JsonRpcSigner): Promise<void> {
   const walletAddress = await signer.getAddress();
   const vaultAddress = config[Network.MAINNET].addresses.vault;
   const relayerAddress = config[Network.MAINNET].addresses.batchRelayer;
   const vaultContract = new Contract(vaultAddress, Vault__factory.abi, signer);
-  await vaultContract.setRelayerApproval(
-    walletAddress, relayerAddress, true
-  );
+  await vaultContract.setRelayerApproval(walletAddress, relayerAddress, true);
 }

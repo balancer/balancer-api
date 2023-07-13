@@ -1,4 +1,4 @@
-import { AprBreakdown } from '@balancer-labs/sdk';
+import { AprBreakdown } from '@sobal/sdk';
 import {
   getNonStaticSchemaFields,
   isSame,
@@ -11,7 +11,7 @@ import _ from 'lodash';
 
 import POOLS from '@tests/mocks/pools';
 
-jest.unmock('@balancer-labs/sdk');
+jest.unmock('@sobal/sdk');
 
 describe('utils', () => {
   describe('isValidApr', () => {
@@ -134,19 +134,19 @@ describe('utils', () => {
   describe('isSchemaFieldANumber', () => {
     it('Should return true for number fields', () => {
       const schema: Schema = POOL_SCHEMA;
-      expect(isSchemaFieldANumber('volumeSnapshot', schema)).toBeTruthy()
-      expect(isSchemaFieldANumber('createTime', schema)).toBeTruthy()
-      expect(isSchemaFieldANumber('amp', schema)).toBeTruthy()
+      expect(isSchemaFieldANumber('volumeSnapshot', schema)).toBeTruthy();
+      expect(isSchemaFieldANumber('createTime', schema)).toBeTruthy();
+      expect(isSchemaFieldANumber('amp', schema)).toBeTruthy();
     });
 
     it('Should return false for non number fields', () => {
       const schema: Schema = POOL_SCHEMA;
-      expect(isSchemaFieldANumber('name', schema)).toBeFalsy()
-      expect(isSchemaFieldANumber('isNew', schema)).toBeFalsy()
-      expect(isSchemaFieldANumber('tokens', schema)).toBeFalsy()
+      expect(isSchemaFieldANumber('name', schema)).toBeFalsy();
+      expect(isSchemaFieldANumber('isNew', schema)).toBeFalsy();
+      expect(isSchemaFieldANumber('tokens', schema)).toBeFalsy();
     });
-  })
-  
+  });
+
   describe('isSame', () => {
     let newPool: Pool;
     let oldPool: Pool | undefined;

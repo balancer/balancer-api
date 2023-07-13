@@ -1,6 +1,6 @@
 import debug from 'debug';
 import { PoolDataService } from '@balancer-labs/sor';
-import { SubgraphPoolBase } from '@balancer-labs/sdk';
+import { SubgraphPoolBase } from '@sobal/sdk';
 import { queryPools } from '@/modules/dynamodb';
 import { Pool, convertPoolToSubgraphPoolBase } from '@/modules/pools';
 

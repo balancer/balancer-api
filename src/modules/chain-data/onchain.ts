@@ -5,14 +5,16 @@ import {
   BalancerSDK,
   SubgraphPoolBase,
   Pool as SDKPool,
-} from '@balancer-labs/sdk';
+} from '@sobal/sdk';
 import { getToken } from '@/modules/dynamodb';
 import { Pool } from '@/modules/pools/types';
 import { Token, getTokenInfo } from '@/modules/tokens';
 import { getSubgraphUrl, getRpcUrl } from '@/modules/network';
 import { captureException } from '@/modules/sentry';
 
-export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool>[]> {
+export async function fetchPoolsFromChain(
+  chainId: number
+): Promise<Partial<Pool>[]> {
   const infuraUrl = getRpcUrl(chainId);
   const subgraphUrl = getSubgraphUrl(chainId);
 
@@ -27,10 +29,14 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool
   try {
     fetchedPools = await balancer.sor.fetchPools();
   } catch (e) {
-    console.error("Failed to fetch pools from sor", e);
-    captureException(new Error('SOR Failed to fetch pools'), { extra: { sorError: e}});
+    console.error('Failed to fetch pools from sor', e);
+    captureException(new Error('SOR Failed to fetch pools'), {
+      extra: { sorError: e },
+    });
   }
-  const sorPools: SubgraphPoolBase[] = fetchedPools ? balancer.sor.getPools() : [];
+  const sorPools: SubgraphPoolBase[] = fetchedPools
+    ? balancer.sor.getPools()
+    : [];
 
   const subgraphPoolFetcher = new PoolsSubgraphRepository({
     url: subgraphUrl,
@@ -59,21 +65,19 @@ export async function fetchPoolsFromChain(chainId: number): Promise<Partial<Pool
     subgraphPools = subgraphPools.concat(poolBatch);
   } while (poolBatch.length > 0);
 
-  const sorPoolsMap: Record<string, SubgraphPoolBase> = Object.fromEntries(sorPools.map(pool => [pool.id, pool]));
+  const sorPoolsMap: Record<string, SubgraphPoolBase> = Object.fromEntries(
+    sorPools.map(pool => [pool.id, pool])
+  );
   const subgraphPoolsMap: Record<string, SDKPool> = Object.fromEntries(
     subgraphPools.map(pool => [pool.id, pool])
   );
 
   const pools: Partial<Pool>[] = sorPools.map(sorPool => {
     const subgraphPool = subgraphPoolsMap[sorPool.id] || {};
-    return Object.assign(
-      subgraphPool,
-      sorPool,
-      {
-        poolType: sorPool.poolType as PoolType,
-        chainId,
-      }
-    ) as Partial<Pool>;
+    return Object.assign(subgraphPool, sorPool, {
+      poolType: sorPool.poolType as PoolType,
+      chainId,
+    }) as Partial<Pool>;
   });
 
   const subgraphPoolsMissingFromSor: Partial<Pool>[] = subgraphPools

@@ -4,7 +4,7 @@ import { Contract } from '@ethersproject/contracts';
 import PriceFetcher from '@/modules/prices/price-fetcher';
 import BeetsPriceFetcher from '@/modules/prices/beets-price-fetcher';
 import { getToken, updateTokens } from '@/modules/dynamodb';
-import { TokenPrices } from '@balancer-labs/sdk';
+import { TokenPrices } from '@sobal/sdk';
 
 const log = console.log;
 
@@ -35,7 +35,6 @@ export function tokensToTokenPrices(tokens: Token[]): TokenPrices {
 
   return tokenPrices;
 }
-
 
 export async function getTokenInfo(
   provider,
@@ -80,7 +79,6 @@ export async function getTokenInfo(
 
   return tokenInfo;
 }
-
 
 export async function getSymbol(
   provider,

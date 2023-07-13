@@ -1,10 +1,5 @@
 import { BigNumber, BigNumberish, parseFixed } from '@ethersproject/bignumber';
-import {
-  Address,
-  BatchSwap,
-  SwapInfo,
-  SwapType,
-} from '@balancer-labs/sdk';
+import { Address, BatchSwap, SwapInfo, SwapType } from '@sobal/sdk';
 import { SOR_DEFAULT_SLIPPAGE } from '@/constants';
 import { SwapTokenType, SwapToken } from '@/modules/tokens';
 import { calculateDeadlineExpiry } from '@/modules/time';
@@ -14,7 +9,7 @@ export function calculateLimits(
   tokensIn: SwapToken[],
   tokensOut: SwapToken[],
   tokenAddresses: string[],
-  slippagePercentage = SOR_DEFAULT_SLIPPAGE, 
+  slippagePercentage = SOR_DEFAULT_SLIPPAGE
 ): string[] {
   const limits: string[] = [];
 
@@ -37,7 +32,10 @@ export function calculateLimits(
   return limits;
 }
 
-function calculateTokenLimit(token: SwapToken, slippagePercentage: number): BigNumberish {
+function calculateTokenLimit(
+  token: SwapToken,
+  slippagePercentage: number
+): BigNumberish {
   if (token.type === SwapTokenType.min) {
     return BigNumber.from(token.amount)
       .mul(parseFixed('1', 18))
@@ -58,17 +56,23 @@ export function convertSwapInfoToBatchSwap(
   swapInfo: SwapInfo,
   senderAddress: Address,
   recipientAddress: Address,
-  slippagePercentage?: number,
+  slippagePercentage?: number
 ): BatchSwap {
   const tokenIn: SwapToken = {
     address: swapInfo.tokenIn,
     amount: BigNumber.from(swapInfo.swapAmount),
-    type: swapType === SwapType.SwapExactIn ? SwapTokenType.fixed : SwapTokenType.max,
+    type:
+      swapType === SwapType.SwapExactIn
+        ? SwapTokenType.fixed
+        : SwapTokenType.max,
   };
   const tokenOut: SwapToken = {
     address: swapInfo.tokenOut,
     amount: BigNumber.from(swapInfo.returnAmount),
-    type: swapType === SwapType.SwapExactOut ? SwapTokenType.fixed : SwapTokenType.min,
+    type:
+      swapType === SwapType.SwapExactOut
+        ? SwapTokenType.fixed
+        : SwapTokenType.min,
   };
   const limits = calculateLimits(
     [tokenIn],
@@ -93,4 +97,3 @@ export function convertSwapInfoToBatchSwap(
 
   return batchSwapData;
 }
-

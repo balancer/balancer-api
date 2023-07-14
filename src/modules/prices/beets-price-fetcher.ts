@@ -6,7 +6,7 @@ import { Token } from '@/modules/tokens';
 import axios from 'axios';
 
 const BEETS_API_URL =
-  process.env.BEETS_API_URL || 'https://api-v3.balancer.fi/graphql';
+  process.env.BEETS_API_URL || 'https://api-v3.sobal.fi/graphql';
 
 class BeetsPriceFetcher {
   async fetch(tokens: Token[]): Promise<Token[]> {
@@ -22,18 +22,20 @@ class BeetsPriceFetcher {
 
     const tokensWithPrices: Token[] = tokens.map(token => {
       if (tokenPricesByChain[token.chainId][token.address]) {
-        token.price = token.price || {}
-        token.price.usd = tokenPricesByChain[token.chainId][token.address].toString()
+        token.price = token.price || {};
+        token.price.usd =
+          tokenPricesByChain[token.chainId][token.address].toString();
       }
       return token;
     });
-
 
     return tokensWithPrices;
   }
 
   async fetchFromBeetsAPI(chainId: number): Promise<Record<string, number>> {
-    const payload = JSON.stringify({query: 'query { tokenGetCurrentPrices { address price }}'});
+    const payload = JSON.stringify({
+      query: 'query { tokenGetCurrentPrices { address price }}',
+    });
     const result = await axios.post(BEETS_API_URL, payload, {
       headers: {
         'Content-Type': 'application/json',

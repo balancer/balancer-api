@@ -1,7 +1,7 @@
 {
   "networkId": 245022926,
   "network": "neon-devnet",
-  "rpc": "https://mainnet.neonevm.org",
+  "rpc": "https://devnet.neonevm.org",
   "subgraph": "https://ch2-graph.neontest.xyz/subgraphs/name/sobal/sobal-test",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",

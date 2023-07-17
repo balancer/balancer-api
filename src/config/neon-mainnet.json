@@ -1,17 +1,17 @@
 {
   "networkId": 245022934,
-  "network": "mainnet",
-  "rpc": "https://mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
-  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2",
+  "network": "neon-mainnet",
+  "rpc": "https://neon-proxy-mainnet.solana.p2p.org",
+  "subgraph": "https://thegraph.neonevm.org/subgraphs/name/sobal/sobal-pools",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-    "wrappedNativeAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
-    "batchRelayer": "0x2536dfeeCB7A0397CF98eDaDA8486254533b1aFA"
+    "wrappedNativeAsset": "0x202C35e517Fa803B537565c40F0a6965D7204609",
+    "vault": "0x3Ff78B826107b2FE41aDfbf9b2730658B3e52789",
+    "batchRelayer": "0xB037e2108071B4b07f359cF0C13fb0bDcF32dcB1"
   },
   "coingecko": {
-    "platformId": "ethereum",
-    "nativeAssetId": "ethereum",
-    "nativeAssetPriceSymbol": "eth"
+    "platformId": "neon-evm",
+    "nativeAssetId": "neon",
+    "nativeAssetPriceSymbol": "neon"
   }
 }

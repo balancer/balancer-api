@@ -2,7 +2,7 @@
   "networkId": 245022934,
   "network": "neon-mainnet",
   "rpc": "https://neon-proxy-mainnet.solana.p2p.org",
-  "subgraph": "https://thegraph.neonevm.org/subgraphs/name/sobal/sobal-pools",
+  "subgraph": "https://neon-subgraph.sobal.fi/sobal-pools",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x202C35e517Fa803B537565c40F0a6965D7204609",

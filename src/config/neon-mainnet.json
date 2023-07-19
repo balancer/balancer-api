@@ -6,8 +6,8 @@
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x202C35e517Fa803B537565c40F0a6965D7204609",
-    "vault": "0x3Ff78B826107b2FE41aDfbf9b2730658B3e52789",
-    "batchRelayer": "0xB037e2108071B4b07f359cF0C13fb0bDcF32dcB1"
+    "vault": "0x7122e35ceC2eED4A989D9b0A71998534A203972C",
+    "batchRelayer": "0x12977Bed9E12028789B2075119F8CcfE192C9ED6"
   },
   "coingecko": {
     "platformId": "neon-evm",

@@ -2,12 +2,12 @@
   "networkId": 245022926,
   "network": "neon-devnet",
   "rpc": "https://devnet.neonevm.org",
-  "subgraph": "https://ch2-graph.neontest.xyz/subgraphs/name/sobal/sobal-test",
+  "subgraph": "https://ch2-graph.neontest.xyz/subgraphs/name/sobal/sobal-pools",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x11adC2d986E334137b9ad0a0F290771F31e9517F",
-    "vault": "0x49CEEC2DaC51AEF3CEAa7d866F5d2488F1814D48",
-    "batchRelayer": "0x1BCaB9143061E3709caA9b612CC6AA8462848078"
+    "vault": "0x7122e35ceC2eED4A989D9b0A71998534A203972C",
+    "batchRelayer": "0x12977Bed9E12028789B2075119F8CcfE192C9ED6"
   },
   "coingecko": {
     "platformId": "neon-evm",

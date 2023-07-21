@@ -168,22 +168,31 @@ class PriceFetcher {
   private fetchPrice(data: CoinGeckoData, token: Token): Price {
     const nativeAssetSymbol = getNativeAssetPriceSymbol(token.chainId);
 
+    let tokenPriceInUSD;
+    let tokenPriceInNativeAsset;
+    if (token.address.toLowerCase() !== '0x202c35e517fa803b537565c40f0a6965d7204609') {
+
+        tokenPriceInUSD = this.nativeAssetPrices[nativeAssetSymbol];
+        tokenPriceInNativeAsset = 1;
+
+    } else {
     if (
-      data[token.address.toLowerCase()] == null ||
-      data[token.address.toLowerCase()]['usd'] == null
+     (data[token.address.toLowerCase()] == null ||
+      data[token.address.toLowerCase()]['usd'] == null)
     ) {
       const err = new HTTPError('No price returned from Coingecko');
       err.code = 404;
       throw err;
     }
 
-    const tokenPriceInUSD = new BigNumber(
+
+    tokenPriceInUSD = new BigNumber(
       data[token.address.toLowerCase()]['usd']
     );
-    const tokenPriceInNativeAsset = tokenPriceInUSD.div(
+    tokenPriceInNativeAsset = tokenPriceInUSD.div(
       this.nativeAssetPrices[nativeAssetSymbol]
     );
-
+  }
     return {
       usd: tokenPriceInUSD.toString(),
       [nativeAssetSymbol]: tokenPriceInNativeAsset.toString(),

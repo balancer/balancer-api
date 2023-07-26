@@ -56,8 +56,7 @@ class PriceFetcher {
   }
 
   private async queryCoingecko(
-    endpoint: string,
-    chainId
+    endpoint: string
   ): Promise<CoinGeckoData> {
     const response = await fetch(COINGECKO_BASEURL + endpoint, {
       method: 'GET',
@@ -78,15 +77,6 @@ class PriceFetcher {
     }
 
     const data = await response.json();
-
-    if (
-      data['0x202c35e517fa803b537565c40f0a6965d7204609'] &&
-      chainId !== ''
-    ) {
-      const nativeAssetSymbol = getNativeAssetPriceSymbol(chainId);
-      data['0x202c35e517fa803b537565c40f0a6965d7204609'].usd =
-        this.nativeAssetPrices[nativeAssetSymbol];
-    }
 
     return data;
   }
@@ -161,7 +151,7 @@ class PriceFetcher {
     const tokenAddresses = tokens.map(t => t.address);
     const endpoint = this.getEndpoint(chainId, tokenAddresses);
 
-    return await this.queryCoingecko(endpoint, chainId);
+    return await this.queryCoingecko(endpoint);
   }
 
   private getEndpoint(chainId: number, tokenAddresses: string[]) {
@@ -181,29 +171,22 @@ class PriceFetcher {
   private fetchPrice(data: CoinGeckoData, token: Token): Price {
     const nativeAssetSymbol = getNativeAssetPriceSymbol(token.chainId);
 
-    let tokenPriceInUSD;
-    let tokenPriceInNativeAsset;
     if (
-      token.address.toLowerCase() ===
-      '0x202c35e517fa803b537565c40f0a6965d7204609'
+      data[token.address.toLowerCase()] == null ||
+      data[token.address.toLowerCase()]['usd'] == null
     ) {
-      tokenPriceInUSD = this.nativeAssetPrices[nativeAssetSymbol];
-      tokenPriceInNativeAsset = 1;
-    } else {
-      if (
-        data[token.address.toLowerCase()] == null ||
-        data[token.address.toLowerCase()]['usd'] == null
-      ) {
-        const err = new HTTPError('No price returned from Coingecko');
-        err.code = 404;
-        throw err;
-      }
-
-      tokenPriceInUSD = new BigNumber(data[token.address.toLowerCase()]['usd']);
-      tokenPriceInNativeAsset = tokenPriceInUSD.div(
-        this.nativeAssetPrices[nativeAssetSymbol]
-      );
+      const err = new HTTPError('No price returned from Coingecko');
+      err.code = 404;
+      throw err;
     }
+
+    const tokenPriceInUSD = new BigNumber(
+      data[token.address.toLowerCase()]['usd']
+    );
+    const tokenPriceInNativeAsset = tokenPriceInUSD.div(
+      this.nativeAssetPrices[nativeAssetSymbol]
+    );
+
     return {
       usd: tokenPriceInUSD.toString(),
       [nativeAssetSymbol]: tokenPriceInNativeAsset.toString(),
@@ -268,7 +251,7 @@ class PriceFetcher {
 
     log('Fetching native prices with query: ', coinGeckoQuery);
 
-    const coingeckoResult = await this.queryCoingecko(coinGeckoQuery, '');
+    const coingeckoResult = await this.queryCoingecko(coinGeckoQuery);
 
     log('Coingecko result: ', coingeckoResult);
 

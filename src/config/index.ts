@@ -1,6 +1,7 @@
 import { Network } from '@/constants';
 import arbitrum from './arbitrum.json';
 import avalanche from './avalanche.json';
+import base from './base.json';
 import goerli from './goerli.json';
 import gnosis from './gnosis-chain.json';
 import mainnet from './mainnet.json';
@@ -35,6 +36,7 @@ const config: Record<number, Config> = {
   [Network.ZKEVM]: zkevm,
   [Network.AVALANCHE]: avalanche,
   [Network.SEPOLIA]: sepolia,
+  [Network.BASE]: base,
 };
 
 export default config;

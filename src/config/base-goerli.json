@@ -1,0 +1,17 @@
+{
+  "networkId": 84531,
+  "network": "base-goerli",
+  "rpc": "https://goerli.base.org",
+  "subgraph": "https://api.thegraph.com/subgraphs/name/sobal/sobal-base-goerli",
+  "addresses": {
+    "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "wrappedNativeAsset": "0x4200000000000000000000000000000000000006",
+    "vault": "0x7122e35ceC2eED4A989D9b0A71998534A203972C",
+    "batchRelayer": "0x12977Bed9E12028789B2075119F8CcfE192C9ED6"
+  },
+  "coingecko": {
+    "platformId": "base",
+    "nativeAssetId": "ethereum",
+    "nativeAssetPriceSymbol": "eth"
+  }
+}

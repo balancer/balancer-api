@@ -9,6 +9,9 @@ import sepolia from './sepolia.json';
 import zkevm from './zkevm.json';
 import neonMainnet from './neon-mainnet.json';
 import neonDevnet from './neon-devnet.json';
+import base from './base.json';
+import baseGoerli from './base-goerli.json';
+
 
 export interface Config {
   networkId: number;
@@ -39,6 +42,8 @@ const config: Record<number, Config> = {
   [Network.SEPOLIA]: sepolia,
   [Network.NEON_MAINNET]: neonMainnet,
   [Network.NEON_DEVNET]: neonDevnet,
+  [Network.BASE]: base,
+  [Network.BASE_GOERLI]: baseGoerli,
 };
 
 export default config;

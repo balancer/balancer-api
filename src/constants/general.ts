@@ -34,11 +34,13 @@ export const Network: Record<string, number> = {
   // SEPOLIA: 11155111,
   NEON_MAINNET: 245022934,
   NEON_DEVNET: 245022926,
+  BASE: 8453,
+  BASE_GOERLI: 84531,
 };
 
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(
   Object.entries(Network).filter(([, id]) => {
-    return [Network.GOERLI, Network.KOVAN].includes(id);
+    return [Network.GOERLI, Network.KOVAN, Network.BASE_GOERLI, Network.NEON_DEVNET].includes(id);
   })
 );
 

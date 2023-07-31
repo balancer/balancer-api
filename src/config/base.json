@@ -2,7 +2,7 @@
   "networkId": 8453,
   "network": "base",
   "rpc": "https://mainnet.base.org",
-  "subgraph": "https://api.thegraph.com/subgraphs/name/sobal/sobal-base",
+  "subgraph": "https://api.studio.thegraph.com/query/50526/sobal-base/version/latest",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x4200000000000000000000000000000000000006",

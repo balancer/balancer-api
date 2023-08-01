@@ -28,6 +28,7 @@ export const Network: Record<string, number> = {
   POLYGON: 137,
   GNOSIS: 100,
   ZKEVM: 1101,
+  BASE: 8453,
   ARBITRUM: 42161,
   AVALANCHE: 43114,
   SEPOLIA: 11155111,

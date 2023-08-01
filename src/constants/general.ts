@@ -40,7 +40,7 @@ export const Network: Record<string, number> = {
 
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(
   Object.entries(Network).filter(([, id]) => {
-    return [Network.GOERLI, Network.KOVAN, Network.BASE_GOERLI, Network.NEON_DEVNET].includes(id);
+    return [Network.GOERLI, Network.KOVAN].includes(id);
   })
 );
 

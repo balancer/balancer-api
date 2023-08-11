@@ -24,7 +24,11 @@ export async function allowlistPool(chainId: number, poolId: string) {
 
   console.log(`pool type: ${poolType}`);
 
-  const network = configs[chainId].network;
+  let network = configs[chainId].network;
+  if (network === 'mainnet') {
+    network = 'ethereum';
+  }
+
   const webhookData = {
     event_type: 'allowlist_pool',
     client_payload: {

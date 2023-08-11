@@ -40,7 +40,7 @@ describe('Allowlist Pool', () => {
     expect(callGitHubWebhook).toBeCalledWith(ALLOWLIST_POOL_ENDPOINT, {
       event_type: 'allowlist_pool',
       client_payload: {
-        network: "mainnet",
+        network: "ethereum",
         poolType: 'Stable',
         poolId:
           '0xfebb0bbf162e64fb9d0dfe186e517d84c395f016000000000000000000000502',

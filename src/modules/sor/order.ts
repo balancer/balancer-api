@@ -26,8 +26,8 @@ export async function createSorOrder(
   const swapType: SwapType = orderKindToSwapType(request.orderKind);
 
   const priceResponse: PriceResponse = {
-    sellAmount: swapInfo.swapAmount,
-    buyAmount: swapInfo.returnAmount,
+    sellAmount: swapType === SwapType.SwapExactIn ? swapInfo.swapAmount : swapInfo.returnAmount,
+    buyAmount: swapType === SwapType.SwapExactIn ? swapInfo.returnAmount : swapInfo.swapAmount,
     allowanceTarget: config[networkId].addresses.vault,
     price: swapInfo.marketSp,
   };

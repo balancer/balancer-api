@@ -1,16 +1,22 @@
-import { SubgraphPoolBase } from "@balancer-labs/sdk";
+import { SubgraphPoolBase, SwapInfo } from "@balancer-labs/sdk";
 import { Pool } from "@/modules/pools";
+import { BigNumber } from "ethers";
 
 export enum PoolType {
   Weighted = 'Weighted'
 }
 
-let mockSwapInfo = {
+let mockSwapInfo: SwapInfo = {
   swaps: [],
   tokenAddresses: [],
-  swapAmount: 0,
-  returnAmount: 0,
-  returnAmountConsideringFees: 0,
+  swapAmount: BigNumber.from(0),
+  swapAmountForSwaps: BigNumber.from(0),
+  returnAmount: BigNumber.from(0),
+  returnAmountFromSwaps: BigNumber.from(0),
+  returnAmountConsideringFees: BigNumber.from(0),
+  tokenIn: '0x0',
+  tokenOut: '0x0',
+  marketSp: '',
 };
 
 let mockSubgraphPools: Pool[] = [];
@@ -89,7 +95,7 @@ export enum SwapTypes {
   SwapExactOut = 1,
 }
 
-export function _setMockSwapInfo(swapInfo) {
+export function _setMockSwapInfo(swapInfo: SwapInfo) {
   mockSwapInfo = swapInfo;
 }
 

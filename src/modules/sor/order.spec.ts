@@ -32,11 +32,51 @@ describe('sor/order', () => {
       require('@/modules/dynamodb/dynamodb')._setToken(TOKENS[networkId].BAL.address, {
         ...TOKENS[networkId].BAL,
         price: {
-          usd: '25',
-          eth: '0.01'
+          usd: '10',
+          eth: '0.004'
         }
       })
+      require('@balancer-labs/sdk')._setMockSwapInfo({
+        swaps: [],
+        tokenAddresses: [],
+        swapAmount: parseFixed('1', 18),
+        returnAmount: parseFixed('250', 18),
+        marketSp: '0.004',
+        tokenIn: TOKENS[networkId].ETH.address,
+        tokenOut: TOKENS[networkId].BAL.address
+      })
     });
+
+    describe('Price Response', () => {
+      it('Generates correct price data for a sell order', async () => {
+        const sorOrder = await createSorOrder(networkId, sorRequest);
+        console.log(sorOrder.price);
+        expect(sorOrder.price.sellAmount).toEqual(parseFixed('1', 18))
+        expect(sorOrder.price.buyAmount).toEqual(parseFixed('250', 18));
+        expect(sorOrder.price.allowanceTarget).toEqual(config[networkId].addresses.vault);
+        expect(sorOrder.price.price).toEqual('0.004');
+      });
+
+      it('Generates correct price data for a buy order', async () => {
+        sorRequest.orderKind = 'buy';
+        require('@balancer-labs/sdk')._setMockSwapInfo({
+          swaps: [],
+          tokenAddresses: [],
+          tokenIn: TOKENS[networkId].ETH.address,
+          tokenOut: TOKENS[networkId].BAL.address,
+          swapAmount: parseFixed('250', 18),
+          returnAmount: parseFixed('1', 18),
+          marketSp: '0.004',
+        })
+
+        const sorOrder = await createSorOrder(networkId, sorRequest);
+        console.log(sorOrder.price);
+        expect(sorOrder.price.sellAmount).toEqual(parseFixed('1', 18))
+        expect(sorOrder.price.buyAmount).toEqual(parseFixed('250', 18));
+        expect(sorOrder.price.allowanceTarget).toEqual(config[networkId].addresses.vault);
+        expect(sorOrder.price.price).toEqual('0.004');
+      });
+    })
 
     describe('Batch Swaps', () => {
       it('Should return a valid order', async () => {

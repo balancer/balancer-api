@@ -6,7 +6,7 @@ import { allowlistPool, allowlistTokens } from '@/modules/allowlist';
 import debug from 'debug';
 
 /**
- * This webhook takes events from hal.xyz and performs actions with them
+ * This webhook takes events from OpenZeppelin Defender and performs actions with them
  *
  * The first action is to listen to new pool creation events on the Balancer Vault
  * and send the event details to a Github Webhook that creates a PR to allowlist the pool

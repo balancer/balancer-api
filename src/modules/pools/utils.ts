@@ -143,7 +143,7 @@ export function getPoolTypeFromId(poolId: string): PoolType | undefined {
   }
 }
 
-export async function getPoolSymbolFromContract(poolId: string, provider: JsonRpcProvider): Promise<PoolType | undefined> {
+export async function getPoolSymbolFromContract(poolId: string, provider: JsonRpcProvider): Promise<string | undefined> {
   const poolAddress = convertPoolIdToAddress(poolId);
 
   const poolDetailsContract = new Contract(
@@ -162,7 +162,6 @@ export async function getPoolSymbolFromContract(poolId: string, provider: JsonRp
     );
   }
 
- 
 }
 
 export async function getPoolTypeFromContract(poolId: string, provider: JsonRpcProvider): Promise<PoolType | undefined> {

@@ -1,13 +1,9 @@
 import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
 import { formatResponse } from './utils';
-import {
-  INVALID_CHAIN_ID_ERROR,
-  MISSING_CHAIN_ID_ERROR,
-} from '@/constants/errors';
-import { isValidNetworkId } from '@/modules/network';
-// import { allowlistPool, allowlistTokens } from '@/modules/allowlist';
-// import debug from 'debug';
+import { DefenderBody, DefenderEvent, TokensRegisteredMatchReason } from '@/modules/defender';
+import { allowlistPool, allowlistTokens } from '@/modules/allowlist';
+import debug from 'debug';
 
 /**
  * This webhook takes events from hal.xyz and performs actions with them
@@ -16,18 +12,10 @@ import { isValidNetworkId } from '@/modules/network';
  * and send the event details to a Github Webhook that creates a PR to allowlist the pool
  */
 
-const log = console.log;
+const log = debug('lambda:defender');
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   log("Processing event: ", event);
-
-  const chainId = parseInt(event.pathParameters.chainId);
-  if (!chainId) {
-    return MISSING_CHAIN_ID_ERROR;
-  }
-  if (!isValidNetworkId(chainId)) {
-    return INVALID_CHAIN_ID_ERROR;
-  }
 
   if (!event.body) {
     return {
@@ -37,9 +25,25 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   }
 
   try {
+    const defenderBody: DefenderBody = typeof event.body == 'object' ? event.body : JSON.parse(event.body);
+    const defenderEvent: DefenderEvent = defenderBody.events[0];
+    log("Defender Event: ", defenderEvent);
+    const chainId = defenderEvent.sentinel.chainId;
+    log('ChainID: ', chainId);
+
+    if (defenderEvent.matchReasons[0]?.signature === 'TokensRegistered(bytes32,address[],address[])') {
+      const parameters = (defenderEvent.matchReasons[0] as TokensRegisteredMatchReason).params;
+      log("Parsing parameters: ", parameters);
+      await allowlistPool(chainId, parameters.poolId);
+      console.log("Successfully allowlisted pool ", parameters.poolId);
+      await allowlistTokens(chainId, parameters.tokens);
+      console.log("Successfully allowlisted tokens ", parameters.tokens);
+    }
+
+    log("Successfully parsed all events");
     return { statusCode: 200 };
   } catch (e) {
-    console.log(`Received error processing HAL Webhook: ${e}`);
+    console.log(`Received error processing Defender Webhook: ${e}`);
     captureException(e);
     return formatResponse(500, 'Unable to process webhook event');
   }

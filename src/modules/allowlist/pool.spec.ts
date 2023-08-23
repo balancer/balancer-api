@@ -20,6 +20,10 @@ jest.mock(
 );
 
 describe('Allowlist Pool', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  })
+
   it('Should call the Github webhook with data passed into function', async () => {
     require('@ethersproject/contracts')._setSymbolMethod(() =>
       Promise.resolve('bb-a-USD')
@@ -47,5 +51,17 @@ describe('Allowlist Pool', () => {
         poolDescription: 'bb-a-USD',
       },
     });
+  });
+
+  it('Should be avoided for LBP pools', async () => {
+    require('@ethersproject/contracts')._setSymbolMethod(() =>
+      Promise.resolve('SUPER_DUMMY_LBP')
+    );
+
+    await allowlistPool(
+      1,
+      '0xfebb0bbf162e64fb9d0dfe186e517d84c395f016000000000000000000000502'
+    );
+    expect(callGitHubWebhook).not.toBeCalled();
   });
 });

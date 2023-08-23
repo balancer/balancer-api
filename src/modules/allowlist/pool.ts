@@ -13,6 +13,9 @@ export async function allowlistPool(chainId: number, poolId: string) {
 
   const poolDescription = await getPoolSymbolFromContract(poolId, provider);
 
+  // Ignore LPB pools as they do not require allowlisting
+  if (poolDescription.endsWith('_LBP')) return
+
   let poolType = getPoolTypeFromId(poolId);
   if (!poolType) {
     poolType = await getPoolTypeFromContract(poolId, provider);

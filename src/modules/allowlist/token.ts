@@ -35,6 +35,9 @@ export async function allowlistToken(chainId: number, address: string) {
   if (network === 'mainnet') {
     network = 'ethereum';
   }
+  if (network === 'gnosis-chain') {
+    network = 'gnosis';
+  }
 
   const webhookData = {
     event_type: 'allowlist_token',

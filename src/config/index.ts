@@ -8,7 +8,7 @@ import mainnet from './mainnet.json';
 import polygon from './polygon.json';
 import sepolia from './sepolia.json';
 import zkevm from './zkevm.json';
-
+import optimism from './optimism.json';
 export interface Config {
   networkId: number;
   network: string;
@@ -19,12 +19,12 @@ export interface Config {
     wrappedNativeAsset: string;
     vault: string;
     batchRelayer: string;
-  }
+  };
   coingecko: {
     platformId: string;
     nativeAssetId: string;
     nativeAssetPriceSymbol: string;
-  }
+  };
 }
 
 const config: Record<number, Config> = {
@@ -37,6 +37,7 @@ const config: Record<number, Config> = {
   [Network.AVALANCHE]: avalanche,
   [Network.SEPOLIA]: sepolia,
   [Network.BASE]: base,
+  [Network.OPTIMISM]: optimism,
 };
 
 export default config;

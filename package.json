@@ -22,7 +22,8 @@
     "test:e2e": "jest -- tests/e2e",
     "update-schemas": "node dist/scripts/update-schemas.ts",
     "watch": "tsc -w",
-    "worker": "node dist/worker.js"
+    "worker": "node dist/worker.js",
+    "script:test": "ts-node -r tsconfig-paths/register -r dotenv/config ./scripts/test.ts"
   },
   "lint-staged": {
     "*.{ts}": "eslint --cache --fix --max-warnings 0",
@@ -70,6 +71,7 @@
     "supertest": "^6.2.2",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.2.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^4.3.5"
   }
 }

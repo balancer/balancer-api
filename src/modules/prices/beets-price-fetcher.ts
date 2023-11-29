@@ -3,6 +3,7 @@
  */
 
 import { Token } from '@/modules/tokens';
+import configs from '@/config';
 import axios from 'axios';
 
 const BEETS_API_URL =
@@ -22,18 +23,25 @@ class BeetsPriceFetcher {
 
     const tokensWithPrices: Token[] = tokens.map(token => {
       if (tokenPricesByChain[token.chainId][token.address]) {
-        token.price = token.price || {}
-        token.price.usd = tokenPricesByChain[token.chainId][token.address].toString()
+        token.price = token.price || {};
+        token.price.usd =
+          tokenPricesByChain[token.chainId][token.address].toString();
       }
       return token;
     });
-
 
     return tokensWithPrices;
   }
 
   async fetchFromBeetsAPI(chainId: number): Promise<Record<string, number>> {
-    const payload = JSON.stringify({query: 'query { tokenGetCurrentPrices { address price }}'});
+    const unspupportedChains = [5, 11155111];
+    if (unspupportedChains.includes(chainId)) {
+      return {};
+    }
+    const gqlChain = configs[chainId].GqlChain || 'MAINNET';
+    const payload = JSON.stringify({
+      query: `query { tokenGetCurrentPrices(chains: [${gqlChain}]) { address price }}`,
+    });
     const result = await axios.post(BEETS_API_URL, payload, {
       headers: {
         'Content-Type': 'application/json',

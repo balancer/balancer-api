@@ -14,6 +14,7 @@ export interface Config {
   network: string;
   rpc: string;
   subgraph: string;
+  GqlChain: string;
   addresses: {
     nativeAsset: string;
     wrappedNativeAsset: string;

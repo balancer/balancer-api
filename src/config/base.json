@@ -1,6 +1,7 @@
 {
   "networkId": 8453,
   "network": "base",
+  "GqlChain": "BASE",
   "rpc": "https://developer-access-mainnet.base.org",
   "subgraph": "https://api.studio.thegraph.com/query/24660/balancer-base-v2/version/latest",
   "addresses": {

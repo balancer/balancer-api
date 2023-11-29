@@ -1,6 +1,7 @@
 {
   "networkId": 10,
   "network": "optimism",
+  "GqlChain": "OPTIMISM",
   "rpc": "https://optimism-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-optimism-v2",
   "addresses": {

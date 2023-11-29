@@ -1,6 +1,7 @@
 {
   "networkId": 43114,
   "network": "avalanche",
+  "GqlChain": "AVALANCE",
   "rpc": "https://avalanche-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
   "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-avalanche-v2",
   "addresses": {

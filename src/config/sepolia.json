@@ -1,6 +1,7 @@
 {
   "networkId": 11155111,
   "network": "sepolia",
+  "GqlChain": "SEPOLIA",
   "rpc": "https://sepolia.infura.io/v3/{{INFURA_KEY}}",
   "subgraph": "https://api.studio.thegraph.com/query/24660/balancer-sepolia-v2/version/latest",
   "addresses": {

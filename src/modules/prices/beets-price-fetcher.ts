@@ -39,7 +39,6 @@ class BeetsPriceFetcher {
       return {};
     }
     const gqlChain = configs[chainId].GqlChain || 'MAINNET';
-    console.log('Fetching prices from beets API for chain: ', gqlChain);
     const payload = JSON.stringify({
       query: `query { tokenGetCurrentPrices(chains: [${gqlChain}]) { address price }}`,
     });

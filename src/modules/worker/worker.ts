@@ -22,9 +22,7 @@ import {
   updateTokens,
 } from '@/modules/dynamodb';
 import { localAWSConfig } from '@/modules/aws';
-import {
-  getRpcUrl,
-} from '@/modules/network';
+import { getRpcUrl } from '@/modules/network';
 import { getTokenAddressesFromPools, PoolDecorator } from '@/modules/pools';
 import { updateTokenPrices } from '@/modules/tokens';
 
@@ -48,48 +46,58 @@ async function doWork() {
     exit(1);
   }
   Object.values(Network).forEach(async chainId => {
-    lastBlockNumber[chainId] = 0;
-    fetchAndSavePools(chainId);
-    if (chainId !== Network.KOVAN) {
-      decorateAndSavePools(chainId);
+    if (chainId === Network.MAINNET) {
+      lastBlockNumber[chainId] = 0;
+      fetchAndSavePools(chainId);
+      if (chainId !== Network.KOVAN) {
+        try {
+          decorateAndSavePools(chainId);
+        } catch (error) {
+          console.error(`Error decorating pools for chain ${chainId}: `, error);
+        }
+      }
     }
   });
   updatePrices();
 }
 
 async function fetchAndSavePools(chainId: number) {
-  const infuraUrl = getRpcUrl(chainId);
-  log(`Using Infura endpoint ${infuraUrl}`);
-  const provider: any = new JsonRpcProvider(infuraUrl);
-  const currentBlockNo = await provider.getBlockNumber();
+  try {
+    const infuraUrl = getRpcUrl(chainId);
+    log(`Using Infura endpoint ${infuraUrl}`);
+    const provider: any = new JsonRpcProvider(infuraUrl);
+    const currentBlockNo = await provider.getBlockNumber();
 
-  if (currentBlockNo !== lastBlockNumber[chainId]) {
-    log(`New block ${currentBlockNo} found on chain ${chainId}!`);
-    log(`Fetching pools from chain ${chainId}`);
-    const poolsFromChain = await fetchPoolsFromChain(chainId);
-    log(`Sanitizing ${poolsFromChain.length} pools`);
-    const pools = sanitizePools(poolsFromChain);
-    log(`Saving ${pools.length} pools for chain ${chainId} to database`);
-    await updatePools(pools);
-    log(`Saved pools. Fetching Tokens for pools`);
-    const tokenAddresses = getTokenAddressesFromPools(pools);
-    log(
-      `Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`
-    );
-    const filteredTokenAddresses = await removeKnownTokens(
-      chainId,
-      tokenAddresses
-    );
-    log(
-      `Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`
-    );
-    const tokens = await fetchTokens(chainId, filteredTokenAddresses);
-    await updateTokens(tokens);
-    log(`Saved ${filteredTokenAddresses.length} Tokens`);
-    lastBlockNumber[chainId] = currentBlockNo;
+    if (currentBlockNo !== lastBlockNumber[chainId]) {
+      log(`New block ${currentBlockNo} found on chain ${chainId}!`);
+      log(`Fetching pools from chain ${chainId}`);
+      const poolsFromChain = await fetchPoolsFromChain(chainId);
+      log(`Sanitizing ${poolsFromChain.length} pools`);
+      const pools = sanitizePools(poolsFromChain);
+      log(`Saving ${pools.length} pools for chain ${chainId} to database`);
+      await updatePools(pools);
+      log(`Saved pools. Fetching Tokens for pools`);
+      const tokenAddresses = getTokenAddressesFromPools(pools);
+      log(
+        `Found ${tokenAddresses.length} tokens in pools on chain ${chainId}. Filtering by known tokens`
+      );
+      const filteredTokenAddresses = await removeKnownTokens(
+        chainId,
+        tokenAddresses
+      );
+      log(
+        `Fetching ${filteredTokenAddresses.length} tokens for chain ${chainId}`
+      );
+      const tokens = await fetchTokens(chainId, filteredTokenAddresses);
+      await updateTokens(tokens);
+      log(`Saved ${filteredTokenAddresses.length} Tokens`);
+      lastBlockNumber[chainId] = currentBlockNo;
+    }
+
+    setTimeout(fetchAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
+  } catch (error) {
+    console.error(`Error fetching pools for chain ${chainId}: `, error);
   }
-
-  setTimeout(fetchAndSavePools.bind(null, chainId), UPDATE_POOLS_INTERVAL);
 }
 
 async function decorateAndSavePools(chainId: number) {
@@ -107,11 +115,15 @@ async function decorateAndSavePools(chainId: number) {
 }
 
 async function updatePrices() {
-  const tokens = await getTokens();
-  log('Updating token prices');
-  await updateTokenPrices(tokens, false);
-  log('Updated token prices');
-  setTimeout(updatePrices, UPDATE_PRICES_INTERVAL);
+  try {
+    const tokens = await getTokens();
+    log('Updating token prices');
+    await updateTokenPrices(tokens, false);
+    log('Updated token prices');
+    setTimeout(updatePrices, UPDATE_PRICES_INTERVAL);
+  } catch (error) {
+    console.error('Error updating prices: ', error);
+  }
 }
 
 doWork();

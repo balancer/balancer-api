@@ -1,13 +1,8 @@
 /* Functions for writing and reading to DynamoDB database */
 import { captureException } from '@sentry/serverless';
 import AWS from 'aws-sdk';
-import {
-  MAX_BATCH_WRITE_SIZE,
-} from '@/constants';
-import {
-  POOLS_TABLE_SCHEMA,
-  TOKENS_TABLE_SCHEMA,
-} from './schemas';
+import { MAX_BATCH_WRITE_SIZE } from '@/constants';
+import { POOLS_TABLE_SCHEMA, TOKENS_TABLE_SCHEMA } from './schemas';
 import { Token } from '@/modules/tokens';
 import { Pool } from '@/modules/pools';
 import {
@@ -25,6 +20,11 @@ export interface UpdatePoolOptions {
 
 function getDynamoDB() {
   const dynamoDBConfig = {
+    endpoint: 'http://localhost:8000',
+    credentials: {
+      accessKeyId: 'notimportant',
+      secretAccessKey: 'notimportant',
+    },
     maxRetries: 50,
     retryDelayOptions: {
       customBackoff: () => 1000,
@@ -44,7 +44,7 @@ export async function isAlive() {
     await Promise.race([
       dynamodb.listTables().promise(),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 2000)
+        setTimeout(() => reject(new Error('timeout')), 5000)
       ),
     ]);
   } catch (e) {
@@ -53,7 +53,10 @@ export async function isAlive() {
   return true;
 }
 
-export async function updatePools(pools: Partial<Pool>[], options?: UpdatePoolOptions) {
+export async function updatePools(
+  pools: Partial<Pool>[],
+  options?: UpdatePoolOptions
+) {
   const dynamodb = getDynamoDB();
 
   const allPoolUpdateRequests = pools.map(function (pool) {
@@ -89,13 +92,16 @@ export async function updatePools(pools: Partial<Pool>[], options?: UpdatePoolOp
               );
               return;
             }
-            if (e.code === 'TransactionCanceledException' && e.message.includes('TransactionConflict')) {
+            if (
+              e.code === 'TransactionCanceledException' &&
+              e.message.includes('TransactionConflict')
+            ) {
               console.error(
                 'Unable to update pools - Conflict with concurrent update'
               );
               return;
             }
-            captureException(e, { extra: { poolUpdateRequests }});
+            captureException(e, { extra: { poolUpdateRequests } });
             console.error(
               `Unable to update pools ${JSON.stringify(
                 poolUpdateRequests
@@ -137,7 +143,7 @@ export async function getPools(
     return pools.Items.map(ddbItem => unmarshallPool(ddbItem)) as Pool[];
   } catch (e) {
     console.error('Failed to get pools, error is: ', e);
-    captureException(e, { extra: { chainId } })
+    captureException(e, { extra: { chainId } });
     return [];
   }
 }
@@ -165,7 +171,7 @@ export async function queryPools(
     return pools.Items.map(ddbItem => unmarshallPool(ddbItem)) as Pool[];
   } catch (e) {
     console.error('Failed to get pools, error is: ', e);
-    captureException(e, { extra: { additionalParams, lastResult } })
+    captureException(e, { extra: { additionalParams, lastResult } });
     return [];
   }
 }
@@ -186,7 +192,7 @@ export async function getPool(chainId: number, id: string) {
     return unmarshalledPool;
   } catch (e) {
     console.error(`Failed to get pool: ${chainId}, ${id}. Error is:`, e);
-    captureException(e, { extra: { chainId, id } })
+    captureException(e, { extra: { chainId, id } });
   }
 }
 
@@ -206,7 +212,7 @@ export async function getToken(
     return token.Item as Token;
   } catch (e) {
     console.error(`Failed to get token: ${chainId}, ${address}. Error is:`, e);
-    captureException(e, { extra: { chainId, address } })
+    captureException(e, { extra: { chainId, address } });
   }
 }
 
@@ -238,7 +244,7 @@ export async function getTokens(
     return tokens.Items as Token[];
   } catch (e) {
     console.error('Failed to get tokens, error is: ', e);
-    captureException(e, { extra: { chainId } })
+    captureException(e, { extra: { chainId } });
     return [];
   }
 }
@@ -258,7 +264,7 @@ export async function updateToken(tokenInfo: Token) {
     await docClient.put(params).promise();
   } catch (e) {
     log(`Unable to add token. Error JSON: ${JSON.stringify(e, null, 2)}`);
-    captureException(e, { extra: { tokenInfo } })
+    captureException(e, { extra: { tokenInfo } });
   }
 }
 
@@ -281,7 +287,7 @@ export async function updateTokens(tokens: Token[]) {
                 token.address
               }. Error JSON: ${JSON.stringify(e, null, 2)}`
             );
-            captureException(e, { extra: { address: token.address } })
+            captureException(e, { extra: { address: token.address } });
           }
         })
         .promise();
@@ -290,6 +296,7 @@ export async function updateTokens(tokens: Token[]) {
 }
 
 export async function createPoolsTable() {
+  console.log('Creating table with params: ', POOLS_TABLE_SCHEMA);
   await createTable(POOLS_TABLE_SCHEMA);
 }
 
@@ -323,6 +330,7 @@ export async function updateTable(params) {
 
 export async function createTable(params) {
   const dynamodb = getDynamoDB();
+  console.log(dynamodb);
   log('Creating table with params: ', params);
   try {
     await dynamodb.createTable(params).promise();

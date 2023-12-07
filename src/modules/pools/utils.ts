@@ -17,7 +17,7 @@ export function convertPoolToSubgraphPoolBase(pool: Pool): SubgraphPoolBase {
   const tokens = pool.tokens.map(poolToken => {
     return {
       ...poolToken,
-      decimals: poolToken.decimals || 18,
+      decimals: poolToken.decimals ?? 18,
       priceRate: poolToken.priceRate || null,
       weight: poolToken.weight || null,
     };

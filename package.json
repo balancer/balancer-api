@@ -18,6 +18,7 @@
     "prettier": "prettier --check '**/*.*(md|json|yaml|ts)' --loglevel warn",
     "prettier:fix": "npm run prettier -- --write",
     "start": "node dist/server.js",
+    "dev": "ts-node -r tsconfig-paths/register -r dotenv/config ./src/modules/server/server.ts",
     "test": "jest -- src",
     "test:e2e": "jest -- tests/e2e",
     "update-schemas": "node dist/scripts/update-schemas.ts",

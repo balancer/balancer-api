@@ -38,7 +38,15 @@ class BeetsPriceFetcher {
     if (unspupportedChains.includes(chainId)) {
       return {};
     }
-    const gqlChain = configs[chainId].GqlChain || 'MAINNET';
+
+    let gqlChain = 'MAINNET';
+    try {
+      gqlChain = configs[chainId].GqlChain;
+    } catch (e) {
+      console.error(`Chain ${chainId} not supported`);
+      return {};
+    }
+
     const payload = JSON.stringify({
       query: `query { tokenGetCurrentPrices(chains: [${gqlChain}]) { address price }}`,
     });

@@ -9,7 +9,7 @@ export const handler = wrapHandler(async (): Promise<any> => {
     log('Fetching all tokens.');
     const tokens = await getTokens();
     log(`Fetched ${tokens.length} tokens. Updating token prices`);
-    await updateTokenPrices(tokens, true);
+    await updateTokenPrices(tokens);
     log(`Updated prices`);
     return { statusCode: 201, body: '' };
   } catch (e) {

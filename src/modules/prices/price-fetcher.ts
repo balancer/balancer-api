@@ -10,6 +10,7 @@ import {
   COINGECKO_BASEURL,
   COINGECKO_MAX_TOKENS_PER_PAGE,
   COINGECKO_MAX_TPS,
+  COINGECKO_API_KEY,
 } from '@/constants';
 import { formatPrice } from './utils';
 import configs from '@/config';
@@ -20,8 +21,6 @@ const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 60 * 7 * 1000; // 1 Week
 const HTTP_ERROR_RATELIMIT = 429;
 
 const log = debug('balancer:price-fetcher');
-
-const COINGECKO_API_KEY = 'CG-aoWSUwXAjvMtxkZv9cmjfYWG';
 
 interface PriceData {
   [key: string]: number;

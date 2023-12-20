@@ -1,6 +1,7 @@
 export const COINGECKO_BASEURL = 'https://pro-api.coingecko.com/api/v3';
 export const COINGECKO_MAX_TOKENS_PER_PAGE = 10;
 export const COINGECKO_MAX_TPS = 10;
+export const COINGECKO_API_KEY = 'CG-aoWSUwXAjvMtxkZv9cmjfYWG';
 
 export const MAX_BATCH_WRITE_SIZE = 5;
 export const MAX_DYNAMODB_PRECISION = 38;

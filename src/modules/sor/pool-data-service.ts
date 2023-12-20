@@ -36,8 +36,7 @@ export class DatabasePoolDataService implements PoolDataService {
     const allPools: Pool[] = await queryPools(this.filterParams);
     const pools = allPools.filter(
       pool => !poolsToIgnore.includes(pool.id.toLowerCase()) &&
-      pool.swapEnabled === true &&
-      pool.isInRecoveryMode !== true
+      pool.swapEnabled === true
     );
 
     log(`Retrieved ${pools.length} pools`);

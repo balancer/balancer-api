@@ -122,7 +122,12 @@ export class PoolDecorator {
 
       poolService.setIsNew();
     } catch (e) {
-      captureException(e, { extra: { pool } });
+      if (e.message === 'UNSUPPORTED_POOL_TYPE') {
+        // we get this for KassandraManaged
+        // Ignore Kassandra pools for now since they are not supported by the SDK
+      } else {
+        captureException(e, { extra: { pool } });
+      }
       console.log(
         `Failed to decorate pool ${
           pool.id

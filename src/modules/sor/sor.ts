@@ -1,4 +1,4 @@
-import { BalancerSDK, SwapInfo, SwapType, SwapTypes } from '@balancer-labs/sdk';
+import { BalancerSDK, BalancerSdkSorConfig, SwapInfo, SwapType, SwapTypes } from '@balancer-labs/sdk';
 import { SorRequest, SerializedSwapInfo } from './types';
 import { Token } from '@/modules/tokens';
 import {
@@ -11,6 +11,7 @@ import { BigNumber, parseFixed, formatFixed } from '@ethersproject/bignumber';
 import { DatabasePoolDataService } from './pool-data-service';
 import debug from 'debug';
 import { SOR_MIN_LIQUIDITY } from '@/constants/general';
+import config from '@/config';
 
 let log = debug('balancer:sor');
 
@@ -75,7 +76,30 @@ export async function getSorSwap(
   const useDb = options.useDb ?? true;
   const minLiquidity = options.minLiquidity ?? SOR_MIN_LIQUIDITY;
 
-  let sorSettings;
+  let sorSettings: BalancerSdkSorConfig = {
+    tokenPriceService: {
+      getNativeAssetPriceInToken: async (tokenIn: string) => {
+        const wrappedAddress = config[chainId].addresses.wrappedNativeAsset.toLowerCase();
+        const native = await getToken(chainId, wrappedAddress);
+        const nativePrice = native.price.usd;
+        const token = await getToken(chainId, tokenIn.toLowerCase());
+        const tokenPrice = token.price.usd;
+
+        // Get the price of native asset in token
+        if (nativePrice && tokenPrice) {
+          return formatFixed(
+            parseFixed(nativePrice, 36).div(parseFixed(tokenPrice, 36)),
+            36
+          );
+        }
+        // If we don't have a price for the token, return 0
+        return '0';
+      }
+    },
+    poolDataService: 'subgraph',
+    fetchOnChainBalances: true,
+  };
+
   if (useDb) {
     log("Using DynamoDB for SOR data.");
     log(`Minimum Liquidity: ${minLiquidity}`);
@@ -87,6 +111,7 @@ export async function getSorSwap(
     });
 
     sorSettings = {
+      ...sorSettings,
       poolDataService: dbPoolDataService
     }
   }

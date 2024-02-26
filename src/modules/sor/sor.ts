@@ -123,7 +123,7 @@ export async function getSorSwap(
       priceOfNativeAssetInSellToken = Number(
         formatFixed(
           parseFixed('1', 72).div(
-            parseFixed(sellTokenDetails.price[nativeAssetPriceSymbol], 36)
+            parseFixed(Number(sellTokenDetails.price[nativeAssetPriceSymbol]).toFixed(18), 36)
           ),
           36
         )
@@ -144,7 +144,7 @@ export async function getSorSwap(
       priceOfNativeAssetInBuyToken = Number(
         formatFixed(
           parseFixed('1', 72).div(
-            parseFixed(buyTokenDetails.price[nativeAssetPriceSymbol], 36)
+            parseFixed(Number(buyTokenDetails.price[nativeAssetPriceSymbol]).toFixed(18), 36)
           ),
           36
         )

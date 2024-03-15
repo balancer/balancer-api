@@ -33,7 +33,7 @@
   "dependencies": {
     "@aws-cdk/aws-appsync-alpha": "^2.33.0-alpha.0",
     "@aws/dynamodb-auto-marshaller": "^0.7.1",
-    "@balancer-labs/sdk": "^1.1.6-beta.14",
+    "@balancer-labs/sdk": "^1.1.6-beta.16",
     "@ethersproject/contracts": "^5.0.5",
     "@ethersproject/providers": "^5.0.5",
     "@sentry/serverless": "^7.29.0",

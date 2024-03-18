@@ -12,7 +12,9 @@ export default function template(templateString, templateVariables) {
 export function getRpcUrl(networkId: number): string {
   requireValidNetworkId(networkId);
 
-  const templateUrl = configs[networkId].rpc;
+  // Get the RPC from env, if it's not set, use the default one
+  const envRpcUrl = process.env[`RPC_URL_${networkId}`];
+  const templateUrl = envRpcUrl || configs[networkId].rpc;
   if (templateUrl.match(/INFURA_PROJECT_ID/) && INFURA_PROJECT_ID == null) {
     throw new Error(`INFURA_PROJECT_ID env variable must be set for network ${networkId}`)
   }

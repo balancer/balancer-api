@@ -6,7 +6,7 @@ import { handler } from '../src/lambdas/check-wallet';
     console.log('Fetching pools...');
     const response = await handler({
       queryStringParameters: {
-        address: '0x356226e2f6D49749FD5F0fa5656acF86b20F3485',
+        address: '0x7f367cc41522ce07553e823bf3be79a889debe1b',
       },
     });
     console.log('handler response:', response);

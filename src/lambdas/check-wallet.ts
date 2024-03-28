@@ -1,12 +1,36 @@
 import { wrapHandler } from '@/modules/sentry';
 import { captureException } from '@sentry/serverless';
 import fetch from 'isomorphic-fetch';
-import { TRMAccountDetails, TRMEntity, TRMRiskIndicator } from '@/modules/trm';
 import { formatResponse } from './utils';
 
-const SANCTIONS_ENDPOINT =
-  'https://api.trmlabs.com/public/v2/screening/addresses';
-const { SANCTIONS_API_KEY } = process.env;
+const { HYPERNATIVE_EMAIL, HYPERNATIVE_PASSWORD } = process.env;
+
+type ReputationResponse = {
+  data: Array<{ flags: string[]; address: string; recommendation: string }>;
+};
+
+async function getAuthKey(): Promise<string | null> {
+  try {
+    const res = await fetch('https://api.hypernative.xyz/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: HYPERNATIVE_EMAIL || '',
+        password: HYPERNATIVE_PASSWORD || '',
+      }),
+    });
+    const {
+      data: { token },
+    } = await res.json();
+
+    return token;
+  } catch (err) {
+    captureException(err);
+    return null;
+  }
+}
 
 export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
   const address = event.queryStringParameters.address;
@@ -17,39 +41,30 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     );
   }
 
+  const apiKey = await getAuthKey();
+  if (!apiKey) return formatResponse(500, 'Unable to perform sanctions check');
+
   try {
-    const response = await fetch(SANCTIONS_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization:
-          'Basic ' +
-          Buffer.from(`${SANCTIONS_API_KEY}:${SANCTIONS_API_KEY}`).toString(
-            'base64'
-          ),
-      },
-      body: JSON.stringify([
-        {
-          address: address.toLowerCase(),
-          chain: 'ethereum',
+    const response = await fetch(
+      'https://api.hypernative.xyz/assets/reputation/addresses',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
         },
-      ]),
-    });
-
-    const result: TRMAccountDetails[] = await response.json();
-
-    const riskIndicators: TRMRiskIndicator[] =
-      result[0]?.addressRiskIndicators || [];
-    const entities: TRMEntity[] = result[0]?.entities || [];
-
-    const hasSevereRisk = riskIndicators.some(
-      indicator => indicator.categoryRiskScoreLevelLabel === 'Severe'
-    );
-    const hasSevereEntity = entities.some(
-      entity => entity.riskScoreLevelLabel === 'Severe'
+        body: JSON.stringify({
+          addresses: [address],
+          expandDetails: true,
+        }),
+      }
     );
 
-    const isBlocked = hasSevereEntity || hasSevereRisk;
+    const {
+      data: [check],
+    }: ReputationResponse = await response.json();
+
+    const isBlocked = check.recommendation === 'Deny';
 
     return formatResponse(
       200,
@@ -61,7 +76,7 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
     console.log(
       `Received error performing wallet check on address ${address}: ${e}`
     );
-    captureException(e, { extra: { address } })
+    captureException(e, { extra: { address } });
     return formatResponse(500, 'Unable to perform sanctions check');
   }
 });

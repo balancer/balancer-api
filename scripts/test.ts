@@ -1,11 +1,15 @@
 console.log('Running test.ts!');
-import { fetchPoolsFromChain } from '../src/modules/chain-data/onchain';
+import { handler } from '../src/lambdas/check-wallet';
 
 (async () => {
   try {
     console.log('Fetching pools...');
-    const pools = await fetchPoolsFromChain(1);
-    console.log('Fetched', pools.length, 'pools');
+    const response = await handler({
+      queryStringParameters: {
+        address: '0x356226e2f6D49749FD5F0fa5656acF86b20F3485',
+      },
+    });
+    console.log('handler response:', response);
   } catch (e) {
     console.log(e);
   }

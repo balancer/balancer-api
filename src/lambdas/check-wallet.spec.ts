@@ -1,10 +1,7 @@
 import nock from 'nock';
 import { handler } from './check-wallet';
-import { TRMAccountDetails } from '@/modules/trm';
 
 nock.disableNetConnect();
-
-let trmResponse: TRMAccountDetails[] = [];
 
 const request = {
   queryStringParameters: {
@@ -12,89 +9,72 @@ const request = {
   },
 };
 
+const goodResponse = {
+  data: [
+    {
+      address: '0x0000000000000000000000000000000000000000',
+      recommendation: 'Approve',
+      flags: [],
+    },
+  ],
+};
+
+const badResponse = {
+  data: [
+    {
+      address: '0x0000000000000000000000000000000000000000',
+      recommendation: 'Deny',
+      flags: [
+        {
+          title: 'Blacklisted by circle (USDC)',
+          valence: 'Negative',
+          flagId: 'F-1401',
+          chain: 'ethereum',
+          lastUpdate: '2018-12-28T15:36:24Z',
+          events: [Array],
+        },
+        {
+          title: 'Received from OFAC-sanctioned',
+          valence: 'Negative',
+          flagId: 'F-1102',
+          chain: 'gnosis',
+          lastUpdate: '2024-03-19T22:06:55Z',
+          events: [Array],
+        },
+        {
+          title: 'Sent to OFAC-sanctioned',
+          valence: 'Negative',
+          flagId: 'F-1103',
+          chain: 'gnosis',
+          lastUpdate: '2024-01-22T09:57:45Z',
+          events: [Array],
+        },
+      ],
+    },
+  ],
+};
+
 describe('Wallet Check Lambda', () => {
   it('Should return false for an address with no issues', async () => {
-    trmResponse = [
-      {
-        accountExternalId: null,
-        address: '0x0000000000000000000000000000000000000000',
-        addressRiskIndicators: [],
-        addressSubmitted: '0x0000000000000000000000000000000000000000',
-        chain: 'ethereum',
-        entities: [],
-        trmAppUrl:
-          'https://my.trmlabs.com/address/0x0000000000000000000000000000000000000000/eth',
-      },
-    ];
-    nock('https://api.trmlabs.com')
-      .post('/public/v2/screening/addresses')
-      .reply(200, trmResponse);
+    nock('https://api.hypernative.xyz')
+      .post('/auth/login')
+      .reply(200, { data: { token: 'token' } });
+    nock('https://api.hypernative.xyz')
+      .post('/assets/reputation/addresses')
+      .reply(200, goodResponse);
     const response = await handler(request);
+    console.log('Response:', response);
     const body = JSON.parse(response.body);
     expect(body.is_blocked).toBe(false);
   });
 
   it('Should return blocked for an address that has a Severe risk', async () => {
-    trmResponse = [
-      {
-        accountExternalId: null,
-        address: '0x0000000000000000000000000000000000000000',
-        addressRiskIndicators: [
-          {
-            category: 'Sanctions',
-            categoryId: '69',
-            categoryRiskScoreLevel: 15,
-            categoryRiskScoreLevelLabel: 'Severe',
-            incomingVolumeUsd:
-              '570037717.3324722239717737602882028941260267337',
-            outgoingVolumeUsd:
-              '573357789.82550046115536928143858188991303929335',
-            riskType: 'OWNERSHIP',
-            totalVolumeUsd: '1143395507.15797268512714304172678478403906602705',
-          },
-          {
-            category: 'Sanctions',
-            categoryId: '69',
-            categoryRiskScoreLevel: 15,
-            categoryRiskScoreLevelLabel: 'Severe',
-            incomingVolumeUsd: '0',
-            outgoingVolumeUsd:
-              '428172699.46703217102356766551565669942647220227',
-            riskType: 'COUNTERPARTY',
-            totalVolumeUsd: '428172699.46703217102356766551565669942647220227',
-          },
-        ],
-        addressSubmitted: '0x0000000000000000000000000000000000000000',
-        chain: 'ethereum',
-        entities: [
-          {
-            category: 'Sanctions',
-            categoryId: '69',
-            entity: 'Lazarus Group',
-            riskScoreLevel: 15,
-            riskScoreLevelLabel: 'Severe',
-            trmAppUrl:
-              'https://my.trmlabs.com/entities/trm/75624c42-157e-4a63-8f32-070b1d1fa4d4',
-            trmUrn: '/entity/manual/75624c42-157e-4a63-8f32-070b1d1fa4d4',
-          },
-          {
-            category: 'Hacked or Stolen Funds',
-            categoryId: '34',
-            entity: 'Ronin Bridge Hack - March 2022',
-            riskScoreLevel: 15,
-            riskScoreLevelLabel: 'Severe',
-            trmAppUrl:
-              'https://my.trmlabs.com/entities/trm/9145c0ff-1544-475f-8403-40840cb051e0',
-            trmUrn: '/entity/manual/9145c0ff-1544-475f-8403-40840cb051e0',
-          },
-        ],
-        trmAppUrl:
-          'https://my.trmlabs.com/address/0x0000000000000000000000000000000000000000/eth',
-      },
-    ];
-    nock('https://api.trmlabs.com')
-      .post('/public/v2/screening/addresses')
-      .reply(200, trmResponse);
+    nock('https://api.hypernative.xyz')
+      .post('/auth/login')
+      .reply(200, { data: { token: 'token' } });
+    nock('https://api.hypernative.xyz')
+      .post('/assets/reputation/addresses')
+      .reply(200, badResponse);
     const response = await handler(request);
     const body = JSON.parse(response.body);
     expect(body.is_blocked).toBe(true);

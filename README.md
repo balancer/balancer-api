@@ -322,7 +322,6 @@ You can customize your deployment with env variables. See .env.example for all p
 #### Additional Settings - Rarely used
 
 - DOMAIN_NAME - The domain that API Gateway will run on. If specified a random AWS domain will be created.
-- SANCTIONS_API_KEY - TRM API key for running sanction checks.
 - TENDERLY_USER - Your Tenderly user id, used by the `/tenderly` endpoints.
 - TENDERLY_PROJECT - Your Tenderly project id, used by the `/tenderly` endpoints.
 - TENDERLY_ACCESS_KEY - Your tenderly access key, used by the `/tenderly` endpoints.

@@ -55,6 +55,16 @@ export const handler = wrapHandler(async (event: any = {}): Promise<any> => {
         },
         body: JSON.stringify({
           addresses: [address],
+          // https://docs.hypernative.xyz/hypernative-product-docs/hypernative-api/hypernative-screener-address-reputation/reputation-flags
+          flagIds: [
+            'F-1101',
+            'F-1102',
+            'F-1103',
+            'F-1111',
+            'F-1112',
+            'F-1113',
+            'F-1301',
+          ],
           expandDetails: true,
         }),
       }

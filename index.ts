@@ -381,18 +381,6 @@ export class BalancerPoolsAPI extends Stack {
       timeout: Duration.seconds(15),
     });
 
-    const halWebhookLambda = new NodejsFunction(this, 'halWebhookFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'hal-webhook.ts'),
-      environment: {
-        ...nodeJsFunctionProps.environment,
-        GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
-        ALLOWLIST_POOL_ENDPOINT: ALLOWLIST_POOL_ENDPOINT || '',
-        ALLOWLIST_TOKEN_ENDPOINT: ALLOWLIST_TOKEN_ENDPOINT || '',
-      },
-      runtime: Runtime.NODEJS_14_X,
-      timeout: Duration.seconds(15),
-    });
-
     const defenderWebhookLambda = new NodejsFunction(
       this,
       'defenderWebhookFunction',
@@ -546,12 +534,6 @@ export class BalancerPoolsAPI extends Stack {
           'method.request.querystring.address',
       },
     });
-    const halWebhookIntegration = new LambdaIntegration(halWebhookLambda, {
-      proxy: true,
-      requestParameters: {
-        'integration.request.path.chainId': 'method.request.path.chainId',
-      },
-    });
     const defenderWebhookIntegration = new LambdaIntegration(
       defenderWebhookLambda
     );
@@ -678,13 +660,30 @@ export class BalancerPoolsAPI extends Stack {
     tenderlyEncodeStates.addMethod('POST', tenderlyEncodeStateIntegration);
     addCorsOptions(tenderlyEncodeStates);
 
-    const hal = api.root.addResource('hal');
-    const halOnChain = hal.addResource('{chainId}');
-    halOnChain.addMethod('POST', halWebhookIntegration, {
-      requestParameters: {
-        'method.request.path.chainId': true,
-      },
-    });
+    // const halWebhookLambda = new NodejsFunction(this, 'halWebhookFunction', {
+    //   entry: join(__dirname, 'src', 'lambdas', 'hal-webhook.ts'),
+    //   environment: {
+    //     ...nodeJsFunctionProps.environment,
+    //     GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
+    //     ALLOWLIST_POOL_ENDPOINT: ALLOWLIST_POOL_ENDPOINT || '',
+    //     ALLOWLIST_TOKEN_ENDPOINT: ALLOWLIST_TOKEN_ENDPOINT || '',
+    //   },
+    //   runtime: Runtime.NODEJS_14_X,
+    //   timeout: Duration.seconds(15),
+    // });
+    // const halWebhookIntegration = new LambdaIntegration(halWebhookLambda, {
+    //   proxy: true,
+    //   requestParameters: {
+    //     'integration.request.path.chainId': 'method.request.path.chainId',
+    //   },
+    // });
+    // const hal = api.root.addResource('hal');
+    // const halOnChain = hal.addResource('{chainId}');
+    // halOnChain.addMethod('POST', halWebhookIntegration, {
+    //   requestParameters: {
+    //     'method.request.path.chainId': true,
+    //   },
+    // });
 
     const defender = api.root.addResource('defender');
     defender.addMethod('POST', defenderWebhookIntegration);

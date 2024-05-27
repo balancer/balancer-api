@@ -1,0 +1,18 @@
+{
+  "networkId": 252,
+  "network": "fraxtal",
+  "GqlChain": "FRAXTAL",
+  "rpc": "https://rpc.frax.com/",
+  "subgraph": "https://api.goldsky.com/api/public/project_clwhu1vopoigi01wmbn514m1z/subgraphs/balancer-fraxtal-v2/1.0.0/gn",
+  "addresses": {
+    "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "wrappedNativeAsset": "0xfc00000000000000000000000000000000000006",
+    "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+    "batchRelayer": "0xb541765F540447646A9545E0A4800A0Bacf9E13D"
+  },
+  "coingecko": {
+    "platformId": "fraxtal",
+    "nativeAssetId": "frax-ether",
+    "nativeAssetPriceSymbol": "frxeth"
+  }
+}

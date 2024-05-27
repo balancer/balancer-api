@@ -9,6 +9,9 @@ import polygon from './polygon.json';
 import sepolia from './sepolia.json';
 import zkevm from './zkevm.json';
 import optimism from './optimism.json';
+import fraxtal from './fraxtal.json';
+import mode from './mode.json';
+
 export interface Config {
   networkId: number;
   network: string;
@@ -39,6 +42,8 @@ const config: Record<number, Config> = {
   [Network.SEPOLIA]: sepolia,
   [Network.BASE]: base,
   [Network.OPTIMISM]: optimism,
+  [Network.FRAXTAL]: fraxtal,
+  [Network.MODE]: mode,
 };
 
 export default config;

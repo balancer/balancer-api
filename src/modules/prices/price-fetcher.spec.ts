@@ -66,7 +66,9 @@ describe('Price Fetcher', () => {
         },
       });
 
-    const networkIds = Object.values(configs).map((config) => config.coingecko.nativeAssetId).join(',')
+    const networkIds = Object.values(configs)
+      .map(config => config.coingecko.nativeAssetId)
+      .join(',');
     nock(COINGECKO_BASEURL)
       .get(`/simple/price?ids=${networkIds}&vs_currencies=usd`)
       .reply(200, {
@@ -76,11 +78,14 @@ describe('Price Fetcher', () => {
         'matic-network': {
           usd: 2,
         },
-        'xdai': {
-          usd: 1
+        xdai: {
+          usd: 1,
         },
         'avalanche-2': {
-          usd: 15
+          usd: 15,
+        },
+        'frax-ether': {
+          usd: 3000,
         },
       });
   });
@@ -417,16 +422,42 @@ describe('Price Fetcher', () => {
         .concat(gnosisTokens);
       const tokensWithPrices = await priceFetcher.fetch(tokens);
       function tokenWithPrice(chainId: number, symbol: string) {
-        return tokensWithPrices.find((token) => token.chainId === chainId && token.symbol === symbol);
+        return tokensWithPrices.find(
+          token => token.chainId === chainId && token.symbol === symbol
+        );
       }
-      expect(tokenWithPrice(Network.MAINNET, 'BAL').price).toEqual({ usd: '25', eth: '0.01' });
-      expect(tokenWithPrice(Network.MAINNET, 'DAI').price).toEqual({ usd: '1', eth: '0.0004' });
-      expect(tokenWithPrice(Network.POLYGON, 'BAL').price).toEqual({ usd: '25', matic: '12.5' });
-      expect(tokenWithPrice(Network.POLYGON, 'DAI').price).toEqual({ usd: '1', matic: '0.5' });
-      expect(tokenWithPrice(Network.ARBITRUM, 'BAL').price).toEqual({ usd: '25', eth: '0.01' });
-      expect(tokenWithPrice(Network.ARBITRUM, 'DAI').price).toEqual({ usd: '1', eth: '0.0004' });
-      expect(tokenWithPrice(Network.GNOSIS, 'BAL').price).toEqual({ usd: '25', xdai: '25' });
-      expect(tokenWithPrice(Network.GNOSIS, 'DAI').price).toEqual({ usd: '1', xdai: '1' });
+      expect(tokenWithPrice(Network.MAINNET, 'BAL').price).toEqual({
+        usd: '25',
+        eth: '0.01',
+      });
+      expect(tokenWithPrice(Network.MAINNET, 'DAI').price).toEqual({
+        usd: '1',
+        eth: '0.0004',
+      });
+      expect(tokenWithPrice(Network.POLYGON, 'BAL').price).toEqual({
+        usd: '25',
+        matic: '12.5',
+      });
+      expect(tokenWithPrice(Network.POLYGON, 'DAI').price).toEqual({
+        usd: '1',
+        matic: '0.5',
+      });
+      expect(tokenWithPrice(Network.ARBITRUM, 'BAL').price).toEqual({
+        usd: '25',
+        eth: '0.01',
+      });
+      expect(tokenWithPrice(Network.ARBITRUM, 'DAI').price).toEqual({
+        usd: '1',
+        eth: '0.0004',
+      });
+      expect(tokenWithPrice(Network.GNOSIS, 'BAL').price).toEqual({
+        usd: '25',
+        xdai: '25',
+      });
+      expect(tokenWithPrice(Network.GNOSIS, 'DAI').price).toEqual({
+        usd: '1',
+        xdai: '1',
+      });
     });
 
     it('Should handle tokens with an invalid chainID gracefully', async () => {

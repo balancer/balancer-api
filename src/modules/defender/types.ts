@@ -1,24 +1,3 @@
-
-
-export interface DefenderBody {
-  events: DefenderEvent[]
-}
-
-
-export interface DefenderEvent {
-  hash: string;
-  transaction: Transaction;
-  blockHash: string;
-  blockNumber: string;
-  timestamp: number;
-  matchReasons: MatchReason[];
-  matchedAddresses: any[];
-  matchedChecksumAddresses: any[];
-  sentinel: Sentinel;
-  type: string;
-  value: string;
-}
-
 export interface Transaction {
   blockHash: string;
   blockNumber: string;
@@ -50,8 +29,8 @@ export interface TokensRegisteredMatchReason extends MatchReason {
   params: {
     poolId: string;
     tokens: string[];
-    assetManagers: string[]
-  }
+    assetManagers: string[];
+  };
 }
 
 export interface TransactionLog {

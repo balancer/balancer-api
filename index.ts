@@ -56,9 +56,6 @@ const {
   TENDERLY_PROJECT,
   TENDERLY_ACCESS_KEY,
   SENTRY_DSN,
-  GH_WEBHOOK_PAT,
-  ALLOWLIST_POOL_ENDPOINT,
-  ALLOWLIST_TOKEN_ENDPOINT,
   DEBUG,
 } = process.env;
 
@@ -374,28 +371,12 @@ export class BalancerPoolsAPI extends Stack {
     const checkWalletLambda = new NodejsFunction(this, 'checkWalletFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'check-wallet.ts'),
       environment: {
-        HYPERNATIVE_EMAIL: HYPERNATIVE_EMAIL || '', 
+        HYPERNATIVE_EMAIL: HYPERNATIVE_EMAIL || '',
         HYPERNATIVE_PASSWORD: HYPERNATIVE_PASSWORD || '',
       },
       runtime: Runtime.NODEJS_14_X,
       timeout: Duration.seconds(15),
     });
-
-    const defenderWebhookLambda = new NodejsFunction(
-      this,
-      'defenderWebhookFunction',
-      {
-        entry: join(__dirname, 'src', 'lambdas', 'defender-webhook.ts'),
-        environment: {
-          ...nodeJsFunctionProps.environment,
-          GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
-          ALLOWLIST_POOL_ENDPOINT: ALLOWLIST_POOL_ENDPOINT || '',
-          ALLOWLIST_TOKEN_ENDPOINT: ALLOWLIST_TOKEN_ENDPOINT || '',
-        },
-        runtime: Runtime.NODEJS_14_X,
-        timeout: Duration.seconds(15),
-      }
-    );
 
     /**
      * Lambda Schedules
@@ -534,9 +515,6 @@ export class BalancerPoolsAPI extends Stack {
           'method.request.querystring.address',
       },
     });
-    const defenderWebhookIntegration = new LambdaIntegration(
-      defenderWebhookLambda
-    );
 
     const apiGatewayLogGroup = new LogGroup(this, 'ApiGatewayLogs');
 
@@ -659,34 +637,6 @@ export class BalancerPoolsAPI extends Stack {
     const tenderlyEncodeStates = tenderlyContracts.addResource('encode-states');
     tenderlyEncodeStates.addMethod('POST', tenderlyEncodeStateIntegration);
     addCorsOptions(tenderlyEncodeStates);
-
-    // const halWebhookLambda = new NodejsFunction(this, 'halWebhookFunction', {
-    //   entry: join(__dirname, 'src', 'lambdas', 'hal-webhook.ts'),
-    //   environment: {
-    //     ...nodeJsFunctionProps.environment,
-    //     GH_WEBHOOK_PAT: GH_WEBHOOK_PAT || '',
-    //     ALLOWLIST_POOL_ENDPOINT: ALLOWLIST_POOL_ENDPOINT || '',
-    //     ALLOWLIST_TOKEN_ENDPOINT: ALLOWLIST_TOKEN_ENDPOINT || '',
-    //   },
-    //   runtime: Runtime.NODEJS_14_X,
-    //   timeout: Duration.seconds(15),
-    // });
-    // const halWebhookIntegration = new LambdaIntegration(halWebhookLambda, {
-    //   proxy: true,
-    //   requestParameters: {
-    //     'integration.request.path.chainId': 'method.request.path.chainId',
-    //   },
-    // });
-    // const hal = api.root.addResource('hal');
-    // const halOnChain = hal.addResource('{chainId}');
-    // halOnChain.addMethod('POST', halWebhookIntegration, {
-    //   requestParameters: {
-    //     'method.request.path.chainId': true,
-    //   },
-    // });
-
-    const defender = api.root.addResource('defender');
-    defender.addMethod('POST', defenderWebhookIntegration);
 
     /**
      * Web Application Firewall

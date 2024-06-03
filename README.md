@@ -145,7 +145,6 @@ The `{chainId}` in each endpoint is the chain/network number you wish to request
 - `/check-wallet` - Used to perform sanctions checks with TRM.
 - `/tenderly/contracts/encode-states` - Encodes state information with Tenderly
 - `/tenderly/simulate` - Simulate a transaction with Tenderly
-- `/hal-webhook` - Receives events from hal.xyz
 
 ### Update Pools Lambda
 

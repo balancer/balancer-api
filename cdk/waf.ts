@@ -1,6 +1,10 @@
 import { CfnWebACL, CfnWebACLProps } from 'aws-cdk-lib/aws-wafv2';
 
-function createRule(name: string, searchString: string, limit: number): CfnWebACL.RuleProperty {
+function createRule(
+  name: string,
+  searchString: string,
+  limit: number
+): CfnWebACL.RuleProperty {
   const rule = {
     name,
     priority: 0,
@@ -71,5 +75,6 @@ export const rateLimitSettings: CfnWebACLProps = {
     createRule('BlockSpamForTokens', '/tokens', 100),
     createRule('BlockSpamForSor', '/sor', 10000),
     createRule('BlockSpamForOrder', '/order', 10000),
-    createRule('BlockSpamForGraphQL', '/graphql', 500),  ]),
+    createRule('BlockSpamForGraphQL', '/graphql', 500),
+  ]),
 };

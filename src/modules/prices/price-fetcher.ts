@@ -12,7 +12,7 @@ import {
   COINGECKO_MAX_TPS,
 } from '@/constants';
 import { formatPrice } from './utils';
-import configs  from '@/config';
+import configs from '@/config';
 
 const TOKEN_UPDATE_TIME = 60 * 15 * 1000; // 5 Minutes
 const TOKEN_RETRY_PRICE_DATA_TIME = 24 * 60 * 60 * 7 * 1000; // 1 Week
@@ -118,7 +118,7 @@ class PriceFetcher {
         this.queue = this.queue.concat(nextBatch);
       } else {
         console.error('Unknown Error from Coingecko. Aborting.');
-        captureException(err, { extra: { batch: nextBatch } })
+        captureException(err, { extra: { batch: nextBatch } });
       }
     }
 
@@ -241,7 +241,9 @@ class PriceFetcher {
    * token prices on their chain can be calculated accurately
    **/
   private async fetchNativeAssetPrices() {
-    const nativeAssetIds = Object.values(configs).map(c => c.coingecko.nativeAssetId).join(',');
+    const nativeAssetIds = Object.values(configs)
+      .map(c => c.coingecko.nativeAssetId)
+      .join(',');
     const coinGeckoQuery = `/simple/price?ids=${nativeAssetIds}&vs_currencies=usd`;
 
     log('Fetching native prices with query: ', coinGeckoQuery);
@@ -252,8 +254,8 @@ class PriceFetcher {
 
     Object.values(configs).forEach(config => {
       const id = config.coingecko.nativeAssetId;
-      const nativeAssetSymbol = config.coingecko.nativeAssetPriceSymbol
-      log('Id: ', id, ' symbol: ', nativeAssetSymbol);
+      const nativeAssetSymbol = config.coingecko.nativeAssetPriceSymbol;
+      console.log('Id: ', id, ' symbol: ', nativeAssetSymbol);
       this.nativeAssetPrices[nativeAssetSymbol] = new BigNumber(
         coingeckoResult[id]['usd']
       );

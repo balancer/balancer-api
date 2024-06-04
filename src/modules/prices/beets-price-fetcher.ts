@@ -42,6 +42,14 @@ export const nativeAssetMap = {
       symbol: 'avax',
       address: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
   },
+  252: {
+      symbol: 'frxeth',
+      address: '0xfc00000000000000000000000000000000000006',
+  },
+  34443: {
+      symbol: 'eth',
+      address: '0x4200000000000000000000000000000000000006',
+  },
 }
 
 class BeetsPriceFetcher {

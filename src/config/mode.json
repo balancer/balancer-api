@@ -1,0 +1,18 @@
+{
+  "networkId": 34443,
+  "network": "mode",
+  "GqlChain": "MODE",
+  "rpc": "https://1rpc.io/mode",
+  "subgraph": "https://api.studio.thegraph.com/proxy/75376/balancer-mode-v2/version/latest",
+  "addresses": {
+    "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "wrappedNativeAsset": "0x4200000000000000000000000000000000000006",
+    "vault": "0xBA12222222228d8Ba445958a75a0704d566BF2C8",
+    "batchRelayer": "0xb541765F540447646A9545E0A4800A0Bacf9E13D"
+  },
+  "coingecko": {
+    "platformId": "mode",
+    "nativeAssetId": "ethereum",
+    "nativeAssetPriceSymbol": "eth"
+  }
+}

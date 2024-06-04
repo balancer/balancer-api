@@ -34,6 +34,8 @@ export const Network: Record<string, number> = {
   AVALANCHE: 43114,
   SEPOLIA: 11155111,
   OPTIMISM: 10,
+  FRAXTAL: 252,
+  MODE: 34443,
 };
 
 export const TEST_NETWORKS: Record<string, number> = Object.fromEntries(

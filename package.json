@@ -37,7 +37,7 @@
     "@ethersproject/contracts": "^5.0.5",
     "@ethersproject/providers": "^5.0.5",
     "@sentry/serverless": "^7.29.0",
-    "aws-cdk-lib": "^2.32.1",
+    "aws-cdk-lib": "^2.144.0",
     "aws-sdk": "^2.1181.0",
     "bignumber.js": "^9.0.1",
     "constructs": "^10.1.50",

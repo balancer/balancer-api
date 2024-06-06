@@ -260,7 +260,7 @@ export class BalancerPoolsAPI extends Stack {
         SENTRY_DSN: SENTRY_DSN || '',
         DEBUG: DEBUG || '',
       },
-      runtime: Runtime.NODEJS_14_X,
+      runtime: Runtime.NODEJS_20_X,
       timeout: Duration.seconds(15),
     };
 
@@ -348,7 +348,7 @@ export class BalancerPoolsAPI extends Stack {
           TENDERLY_PROJECT: TENDERLY_PROJECT || '',
           TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
         },
-        runtime: Runtime.NODEJS_14_X,
+        runtime: Runtime.NODEJS_20_X,
         timeout: Duration.seconds(15),
       }
     );
@@ -363,7 +363,7 @@ export class BalancerPoolsAPI extends Stack {
           TENDERLY_PROJECT: TENDERLY_PROJECT || '',
           TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
         },
-        runtime: Runtime.NODEJS_14_X,
+        runtime: Runtime.NODEJS_20_X,
         timeout: Duration.seconds(15),
       }
     );
@@ -374,7 +374,7 @@ export class BalancerPoolsAPI extends Stack {
         HYPERNATIVE_EMAIL: HYPERNATIVE_EMAIL || '',
         HYPERNATIVE_PASSWORD: HYPERNATIVE_PASSWORD || '',
       },
-      runtime: Runtime.NODEJS_14_X,
+      runtime: Runtime.NODEJS_20_X,
       timeout: Duration.seconds(15),
     });
 

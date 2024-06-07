@@ -3,7 +3,7 @@
   "network": "mainnet",
   "GqlChain": "MAINNET",
   "rpc": "https://mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
-  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2",
+  "subgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/C4ayEZP2yTXRAB8vSaTrgN4m9anTe9Mdm2ViyiAuV9TV",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",

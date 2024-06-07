@@ -3,3 +3,4 @@ process.env.TENDERLY_PROJECT = 'mock-project';
 process.env.TENDERLY_ACCESS_KEY = 'xxxxxx';
 process.env.INFURA_PROJECT_ID = 'mock-infura';
 process.env.ALCHEMY_KEY = 'mock-alchemy';
+process.env.SUBGRAPH_API_KEY = 'mock-subgraph-api-key';

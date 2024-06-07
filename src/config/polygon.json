@@ -3,7 +3,7 @@
   "network": "polygon",
   "GqlChain": "POLYGON",
   "rpc": "https://polygon-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
-  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-polygon-v2",
+  "subgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/H9oPAbXnobBRq1cB3HDmbZ1E8MWQyJYQjT1QDJMrdbNp",
   "addresses": {
     "nativeAsset": "0x0000000000000000000000000000000000001010",
     "wrappedNativeAsset": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",

@@ -3,7 +3,7 @@
   "network": "arbitrum",
   "GqlChain": "ARBITRUM",
   "rpc": "https://arbitrum-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
-  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-arbitrum-v2-beta",
+  "subgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/98cQDy6tufTJtshDCuhh9z2kWXsQWBHVh2bqnLHsGAeS",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",

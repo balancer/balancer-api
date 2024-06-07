@@ -3,7 +3,7 @@
   "network": "optimism",
   "GqlChain": "OPTIMISM",
   "rpc": "https://optimism-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
-  "subgraph": "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-optimism-v2",
+  "subgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/FsmdxmvBJLGjUQPxKMRtcWKzuCNpomKuMTbSbtRtggZ7",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x4200000000000000000000000000000000000006",

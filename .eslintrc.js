@@ -2,29 +2,29 @@ module.exports = {
   root: true,
 
   env: {
-    node: true
+    node: true,
   },
 
-  plugins: [
-    "@typescript-eslint"
-  ],
+  plugins: ['@typescript-eslint'],
 
   globals: {
     NodeJS: true,
     withDefaults: true,
     defineProps: true,
-    defineEmits: true
+    defineEmits: true,
   },
 
   extends: [
     'eslint:recommended',
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
   ],
+
+  ignorePatterns: ['!.jest'],
 
   parserOptions: {
     ecmaVersion: 2020,
-    parser: '@typescript-eslint/parser'
+    parser: '@typescript-eslint/parser',
   },
 
   rules: {
@@ -37,17 +37,15 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/ban-ts-comment': 'off'
+    '@typescript-eslint/ban-ts-comment': 'off',
   },
 
   overrides: [
     {
-      files: [
-        '**/**/*.spec.{j,t}s?(x)'
-      ],
+      files: ['**/**/*.spec.{j,t}s?(x)'],
       env: {
-        jest: true
-      }
-    }
-  ]
+        jest: true,
+      },
+    },
+  ],
 };

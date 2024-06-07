@@ -269,6 +269,8 @@ export class BalancerPoolsAPI extends Stack {
     const getPoolLambda = new NodejsFunction(this, 'getPoolFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'get-pool.ts'),
       ...nodeJsFunctionProps,
+      runtime: Runtime.NODEJS_18_X,
+      bundling: undefined,
     });
     const getPoolsLambda = new NodejsFunction(this, 'getPoolsFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'get-pools.ts'),

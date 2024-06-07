@@ -252,6 +252,9 @@ export class BalancerPoolsAPI extends Stack {
      */
 
     const nodeJsFunctionProps: NodejsFunctionProps = {
+      bundling: {
+        externalModules: ['aws-sdk'],
+      },
       environment: {
         INFURA_PROJECT_ID: INFURA_PROJECT_ID || '',
         SUBGRAPH_API_KEY: SUBGRAPH_API_KEY || '',
@@ -259,13 +262,15 @@ export class BalancerPoolsAPI extends Stack {
         SENTRY_DSN: SENTRY_DSN || '',
         DEBUG: DEBUG || '',
       },
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_16_X,
       timeout: Duration.seconds(15),
     };
 
     const getPoolLambda = new NodejsFunction(this, 'getPoolFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'get-pool.ts'),
       ...nodeJsFunctionProps,
+      runtime: Runtime.NODEJS_18_X,
+      bundling: undefined,
     });
     const getPoolsLambda = new NodejsFunction(this, 'getPoolsFunction', {
       entry: join(__dirname, 'src', 'lambdas', 'get-pools.ts'),
@@ -347,7 +352,7 @@ export class BalancerPoolsAPI extends Stack {
           TENDERLY_PROJECT: TENDERLY_PROJECT || '',
           TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
         },
-        runtime: Runtime.NODEJS_18_X,
+        runtime: Runtime.NODEJS_16_X,
         timeout: Duration.seconds(15),
       }
     );
@@ -362,7 +367,7 @@ export class BalancerPoolsAPI extends Stack {
           TENDERLY_PROJECT: TENDERLY_PROJECT || '',
           TENDERLY_ACCESS_KEY: TENDERLY_ACCESS_KEY || '',
         },
-        runtime: Runtime.NODEJS_18_X,
+        runtime: Runtime.NODEJS_16_X,
         timeout: Duration.seconds(15),
       }
     );
@@ -373,7 +378,7 @@ export class BalancerPoolsAPI extends Stack {
         HYPERNATIVE_EMAIL: HYPERNATIVE_EMAIL || '',
         HYPERNATIVE_PASSWORD: HYPERNATIVE_PASSWORD || '',
       },
-      runtime: Runtime.NODEJS_18_X,
+      runtime: Runtime.NODEJS_16_X,
       timeout: Duration.seconds(15),
     });
 

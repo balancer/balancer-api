@@ -3,7 +3,7 @@
   "network": "fraxtal",
   "GqlChain": "FRAXTAL",
   "rpc": "https://rpc.frax.com/",
-  "subgraph": "https://api.goldsky.com/api/public/project_clwhu1vopoigi01wmbn514m1z/subgraphs/balancer-fraxtal-v2/1.0.0/gn",
+  "subgraph": "https://api.goldsky.com/api/public/project_clwhu1vopoigi01wmbn514m1z/subgraphs/balancer-fraxtal-v2/latest/gn",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0xfc00000000000000000000000000000000000006",

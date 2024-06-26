@@ -604,13 +604,6 @@ export class BalancerPoolsAPI extends Stack {
     updatePrices.addMethod('POST', updateTokenPricesIntegration);
     addCorsOptions(updatePrices);
 
-    const test = api.root.addResource('test');
-    const testFunction = new NodejsFunction(this, 'testFunction', {
-      entry: join(__dirname, 'src', 'lambdas', 'test-function.ts'),
-      ...nodeJsFunctionProps,
-    });
-    test.addMethod('GET', new LambdaIntegration(testFunction));
-
     const sor = api.root.addResource('sor');
     const sorOnChain = sor.addResource('{chainId}');
     sorOnChain.addMethod('POST', runSORIntegration, {

@@ -4,6 +4,8 @@
   "GqlChain": "GNOSIS",
   "rpc": "https://poa-xdai.gateway.pokt.network/v1/lb/91bc0e12a76e7a84dd76189d",
   "subgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/EJezH1Cp31QkKPaBDerhVPRWsKVZLrDfzjrLqpmv6cGg",
+  "gaugesSubgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/HW5XpZBi2iYDLBqqEEMiRJFx8ZJAQak9uu5TzyH9BBxy",
+  "blocksSubgraph": "https://api.studio.thegraph.com/query/48427/gnosis-blocks/version/latest",
   "addresses": {
     "nativeAsset": "",
     "wrappedNativeAsset": "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d",

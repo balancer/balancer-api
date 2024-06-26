@@ -4,6 +4,8 @@
   "GqlChain": "ARBITRUM",
   "rpc": "https://arbitrum-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
   "subgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/98cQDy6tufTJtshDCuhh9z2kWXsQWBHVh2bqnLHsGAeS",
+  "gaugesSubgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/Bb1hVjJZ52kL23chZyyGWJKrGEg3S6euuNa1YA6XRU4J",
+  "blocksSubgraph": "https://api.studio.thegraph.com/query/48427/arbitrum-blocks/version/latest",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",

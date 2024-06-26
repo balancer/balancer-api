@@ -4,6 +4,8 @@
   "GqlChain": "ZKEVM",
   "rpc": "https://polygonzkevm-mainnet.g.alchemy.com/v2/{{ALCHEMY_KEY}}",
   "subgraph": "https://api.studio.thegraph.com/query/24660/balancer-polygon-zk-v2/version/latest",
+  "gaugesSubgraph": "https://api.studio.thegraph.com/query/24660/balancer-gauges-polygon-zk/version/latest",
+  "blocksSubgraph": "https://api.studio.thegraph.com/query/48427/bleu-polygon-zkevm-blocks/version/latest",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x4F9A0e7FD2Bf6067db6994CF12E4495Df938E6e9",

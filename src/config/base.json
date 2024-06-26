@@ -4,6 +4,8 @@
   "GqlChain": "BASE",
   "rpc": "https://developer-access-mainnet.base.org",
   "subgraph": "https://api.studio.thegraph.com/query/24660/balancer-base-v2/version/latest",
+  "gaugesSubgraph": "https://api.studio.thegraph.com/query/24660/balancer-gauges-base/version/latest",
+  "blocksSubgraph": "https://api.studio.thegraph.com/query/48427/bleu-base-blocks/version/latest",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x4200000000000000000000000000000000000006",

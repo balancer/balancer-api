@@ -49,6 +49,40 @@ export function getSubgraphUrl(networkId: number): string {
   return subgraphUrl;
 }
 
+export function getBlockNumberSubgraphUrl(networkId: number): string {
+  requireValidNetworkId(networkId);
+
+  const templateUrl = configs[networkId].blocksSubgraph;
+  if (templateUrl.match(/SUBGRAPH_API_KEY/) && SUBGRAPH_API_KEY == null) {
+    throw new Error(
+      `SUBGRAPH_API_KEY env variable must be set for network ${networkId}`
+    );
+  }
+
+  const subgraphUrl = template(templateUrl, {
+    SUBGRAPH_API_KEY,
+  });
+
+  return subgraphUrl;
+}
+
+export function getGaugesSubgraphUrl(networkId: number): string {
+  requireValidNetworkId(networkId);
+
+  const templateUrl = configs[networkId].gaugesSubgraph;
+  if (templateUrl.match(/SUBGRAPH_API_KEY/) && SUBGRAPH_API_KEY == null) {
+    throw new Error(
+      `SUBGRAPH_API_KEY env variable must be set for network ${networkId}`
+    );
+  }
+
+  const subgraphUrl = template(templateUrl, {
+    SUBGRAPH_API_KEY,
+  });
+
+  return subgraphUrl;
+}
+
 export function isValidNetworkId(networkId: number): boolean {
   return Object.values(Network).includes(networkId);
 }

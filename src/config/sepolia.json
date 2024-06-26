@@ -4,6 +4,8 @@
   "GqlChain": "SEPOLIA",
   "rpc": "https://sepolia.infura.io/v3/{{INFURA_KEY}}",
   "subgraph": "https://api.studio.thegraph.com/query/24660/balancer-sepolia-v2/version/latest",
+  "gaugesSubgraph": "https://api.studio.thegraph.com/query/24660/balancer-gauges-sepolia/version/latest",
+  "blocksSubgraph": "https://api.studio.thegraph.com/query/48427/bleu-sepolia-blocks/version/latest",
   "addresses": {
     "nativeAsset": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "wrappedNativeAsset": "0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9",

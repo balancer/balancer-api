@@ -4,6 +4,8 @@
   "GqlChain": "AVALANCHE",
   "rpc": "https://avalanche-mainnet.infura.io/v3/{{INFURA_PROJECT_ID}}",
   "subgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/7asfmtQA1KYu6CP7YVm5kv4bGxVyfAHEiptt2HMFgkHu",
+  "gaugesSubgraph": "https://gateway-arbitrum.network.thegraph.com/api/{{SUBGRAPH_API_KEY}}/subgraphs/id/GzGBUh1X4Cq9RBdyKoCrPLhYW1saBYHwFBgcTsARPYUG",
+  "blocksSubgraph": "https://api.studio.thegraph.com/query/48427/avalanche-blocks/version/latest",
   "addresses": {
     "nativeAsset": "0x0000000000000000000000000000000000000000",
     "wrappedNativeAsset": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",

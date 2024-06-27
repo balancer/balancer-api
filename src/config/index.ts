@@ -2,7 +2,6 @@ import { Network } from '@/constants';
 import arbitrum from './arbitrum.json';
 import avalanche from './avalanche.json';
 import base from './base.json';
-import goerli from './goerli.json';
 import gnosis from './gnosis-chain.json';
 import mainnet from './mainnet.json';
 import polygon from './polygon.json';
@@ -17,6 +16,8 @@ export interface Config {
   network: string;
   rpc: string;
   subgraph: string;
+  gaugesSubgraph: string;
+  blocksSubgraph: string;
   GqlChain: string;
   addresses: {
     nativeAsset: string;
@@ -33,7 +34,6 @@ export interface Config {
 
 const config: Record<number, Config> = {
   [Network.MAINNET]: mainnet,
-  [Network.GOERLI]: goerli,
   [Network.POLYGON]: polygon,
   [Network.ARBITRUM]: arbitrum,
   [Network.GNOSIS]: gnosis,

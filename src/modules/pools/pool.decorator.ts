@@ -9,18 +9,28 @@ import {
   BalancerSdkConfig,
   BalancerSDK,
   BalancerNetworkConfig,
+  BALANCER_NETWORK_CONFIG,
   PoolType,
 } from '@balancer-labs/sdk';
 import debug from 'debug';
 import util from 'util';
-import { getRpcUrl, getSubgraphUrl } from '@/modules/network';
+import {
+  getRpcUrl,
+  getSubgraphUrl,
+  getBlockNumberSubgraphUrl,
+  getGaugesSubgraphUrl,
+} from '@/modules/network';
 import { Token, tokensToTokenPrices } from '@/modules/tokens';
 import { PoolService } from './pool.service';
 
 const log = debug('balancer:pool-decorator');
 
 const UNKNOWN_POOL_TYPES = ['HighAmpComposableStable'];
-const IGNORED_POOL_TYPES = [...UNKNOWN_POOL_TYPES, PoolType.Element, PoolType.Managed];
+const IGNORED_POOL_TYPES = [
+  ...UNKNOWN_POOL_TYPES,
+  PoolType.Element,
+  PoolType.Managed,
+];
 
 export interface PoolDecoratorOptions {
   chainId?: number;
@@ -52,9 +62,16 @@ export class PoolDecorator {
     const poolsToDecorate = this.options.poolsToDecorate || this.pools;
 
     const balancerConfig: BalancerSdkConfig = {
-      network: chainId,
+      network: {
+        ...BALANCER_NETWORK_CONFIG[chainId],
+        urls: {
+          ...BALANCER_NETWORK_CONFIG[chainId].urls,
+          subgraph: getSubgraphUrl(chainId),
+          blockNumberSubgraph: getBlockNumberSubgraphUrl(chainId),
+          gaugesSubgraph: getGaugesSubgraphUrl(chainId),
+        },
+      },
       rpcUrl: getRpcUrl(chainId),
-      customSubgraphUrl: getSubgraphUrl(chainId),
     };
     const balancerSdk = new BalancerSDK(balancerConfig);
     const dataRepositories = balancerSdk.data;
@@ -101,7 +118,7 @@ export class PoolDecorator {
         this.poolsRepositories
       );
     } catch (e) {
-      captureException(e, { extra: { pool } })
+      captureException(e, { extra: { pool } });
       console.log(
         `Failed to initialize pool service. Error is: ${e}. Pool is:  ${util.inspect(
           pool,

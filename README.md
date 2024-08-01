@@ -5,7 +5,7 @@ We have a new API for the Balancer protocol, which is available here
 see the docs here [https://docs-v3.balancer.fi/data-and-analytics/data-and-analytics/balancer-api.html](https://docs-v3.balancer.fi/data-and-analytics/data-and-analytics/balancer-api.html).
 
 1. There will be no more support or fixes to this API.
-2. We will be gradually increasing rate limits starting from the end of October.
+2. We will gradually decrease rate limits starting from the end of October.
 3. The deployed API at https://api.balancer.fi will be shutdown by the end of
    November.
 

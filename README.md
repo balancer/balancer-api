@@ -1,6 +1,17 @@
-# Balancer Pools API
+# ⛔️ This API is now deprecated
 
-**Alpha Release, use with caution, there may be breaking changes**
+We have a new API for the Balancer protocol, which is available here
+[https://github.com/balancer/backend](https://github.com/balancer/backend). Or
+see the docs here [https://docs-v3.balancer.fi/data-and-analytics/data-and-analytics/balancer-api.html](https://docs-v3.balancer.fi/data-and-analytics/data-and-analytics/balancer-api.html).
+
+1. There will be no more support or fixes to this API.
+2. We will be gradually increasing rate limits starting from the end of October.
+3. The deployed API at https://api.balancer.fi will be shutdown by the end of
+   November.
+
+If you have any questions please ask in Discord: [https://discord.balancer.fi/](https://discord.balancer.fi/)
+
+# Balancer Pools API
 
 A service that acts as a caching layer for Balancer Pools information. This service runs using AWS Lambda, DynamoDB, API Gateway and AppSync.
 This was built to speed up frontend queries, and for services such as Gnosis to use to route orders through Balancer pools.
